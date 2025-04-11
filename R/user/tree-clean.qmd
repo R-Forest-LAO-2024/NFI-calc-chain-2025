@@ -1,0 +1,620 @@
+---
+title: "Cleaning and exploration of Lao PDR NFI cycle 4 data"
+subtitle: "ຂໍ້ມູນການສຳຫລວດປ່າໄມ້ແຫ່ງຊາດຄັ້ງທີ່ 4 ທີ່ຈັດລຽງແລ້ວ"
+date: "21/03/2025"
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+  docx: 
+    number-sections: true
+    toc: true
+editor: visual
+---
+
+# Objective
+
+The objective of this document is to prepare calculations of biomass for the entity 'tree'.
+
+## List of calculations:
+
+-   Aboveground biomass
+
+-   Tree DBH class
+
+Before working with the tree data we will check if the data is clean.
+
+## Step by Step instructions
+
+1.  Setup
+    1.  Define user inputs
+    2.  Prepare environment
+2.  Explore data
+    1.  Basic information
+    2.  Error check
+    3.  Join treeplot information with tree
+3.  Add AGB and DBH class to each tree
+
+# Setup
+
+Setup has 2 parts: (1) define the user inputs to specify what data to use and (2) prepare the working environment with packages, functions and data.
+
+## User inputs
+
+We need to define user inputs for the scripts:
+
+-   Do we need to prepare the data? **YES**
+
+-   Do we need to download the initial Raw data? **NO**
+
+-   If not, what is the file name of the raw data (can be zip or master CSV)? **4th_NFI_up to2025_02_24_withpath.csv**
+
+-   Do we erase all data (only do this if you download new data)? **NO**
+
+-   What is your timezone? **Asia/Bangkok**
+
+```{r}
+
+usr <- list()
+usr$get_new      <- TRUE
+usr$get_auto     <- FALSE
+usr$get_filename <- "4th_NFI_up to2025_02_24_withpath.csv" 
+usr$clean_all    <- FALSE
+usr$time_zone    <- "Asia/Vientiane"
+```
+
+## Environment preparation
+
+List of actions:
+
+1.  Load packages and functions
+
+2.  Set paths to data and results
+
+3.  Get sampling design variables
+
+4.  Load ancillary data
+
+5.  Get harmonized data
+
+In this project, each of these steps is handled by a different script stored in "*R/setup*".
+
+These scripts have `if (condition) { action } else { action }` statements to adapt to the source of data. There are **three sources of data** considered:
+
+1.  **master CSV from ONA** (automatic download),
+
+2.  **master CSV from a local file** or
+
+3.  **ZIP folder from a local file**.
+
+More details on how the data are prepared can be found in "*R/setup/get-data.R*"
+
+```{r}
+#| include: false
+
+if (!require("here")) install.packages("here")
+library(here)
+
+source(here("R/setup/init.R"), local = T)
+
+source(here("R/setup/paths.R"), local = T)
+
+source(here("R/setup/sampling.R"), local = T)
+
+source(here("R/setup/load-anci.R"), local = T)
+
+source(here("R/setup/get-data.R"), local = T)
+
+```
+
+At this stage, the R environment contains:
+
+-   a list of user inputs.
+
+-   a list of paths to read data and write results in the correct sub-folders.
+
+-   a list of sampling design information.
+
+-   a list of data frame with the harmonized data, meaning they are structured by entity and column names are made more explicit (ex. `tree_data_basic_nest2__t_az_nest2` is renamed to `tree_azimuth`.
+
+# Data exploration
+
+Goals:
+
+-   Get some information on the data:
+
+-   Check if errors in the data
+
+-   Join land cover type and class, and canopy height from treeplot to tree
+
+------------------------------------------------------------------------
+
+Note: the harmonized data are stored in a list of entities
+
+```{r}
+
+exists("tree")
+exists("data_harmo")
+class(data_harmo)
+names(data_harmo)
+class(data_harmo$tree)
+class(data_harmo$stump)
+```
+
+------------------------------------------------------------------------
+
+## Basic information on data
+
+### Tree data
+
+tree = ຕົ້ນໄມ້
+
+data_harmo: harmonized data = ສັງລວມຂໍ້ມູນໃຫ້ເປັນ ລະບົບ ແລະ ໄຈແຍກປະເພດຂໍ້ມູນເຊັນວ່າ: ໄມ້ເປັນ, ໄມ້ຕາຍຢືນ, ໄມ້ນອນຂອນຕາຍ ແລະ ອື່ນໆ
+
+Number of trees in the data / **ຈຳນວນຕົ້ນໄມ້ທັງຫມົດໃນຖານຂໍ້ມູນ**
+
+```{r}
+nrow(data_harmo$tree)
+```
+
+Number of treeplots / ຈຳນວນດອນຍ່ອຍທັງຫມົດໃນຖານຂໍ້ມູນ
+
+```{r}
+nrow(data_harmo$treeplot)
+```
+
+Number of treeplots with trees / ຈຳນວນດອນຍ່ອຍທີ່ມີຕົ້ນໄມ້ນອນຢູ່ໃນດອນຕົວຢ່າງ
+
+```{r}
+names(data_harmo$tree)
+length(unique(data_harmo$tree$ONA_parent_index))
+```
+
+There are `{r} nrow(data_harmo$treeplot)` treeplots in the data but only `{r} length(unique(data_harmo$tree$ONA_parent_index))` treeplots with trees.
+
+Manual numbers:
+
+ຈຳນວນດອນຍ່ອນທັງຫມົດແມ່ນ 1260 (typo) ດອນຢູ່ຖານຂໍ້ມູນ, ແຕ່ມີພຽງດອນຍ່ອຍຈຳນວນ 1044 ດອນເທົ່ານັ້ນທີມີຕົ້ນໄມ້ຢູ່ໃນດອນ.
+
+Automatic numbers:
+
+ຈຳນວນດອນຍ່ອນທັງຫມົດແມ່ນ `{r} nrow(data_harmo$treeplot)` ດອນຢູ່ຖານຂໍ້ມູນ, ແຕ່ມີພຽງດອນຍ່ອຍຈຳນວນ `{r} length(unique(data_harmo$tree$ONA_parent_index))` ດອນເທົ່ານັ້ນທີມີຕົ້ນໄມ້ຢູ່ໃນດອນ.
+
+Tree DBH distribution:
+
+```{r}
+summary(data_harmo$tree$tree_dbh)
+
+```
+
+Main species:
+
+------------------------------------------------------------------------
+
+Requires several steps:
+
+-   group_by tree species and summarise to get the count. HINT: in `summarise()` use `n()` to count the number of elements
+
+-   arrange the data in decreasing order and keep only the first 20 rows
+
+------------------------------------------------------------------------
+
+```{r}
+main_species <- data_harmo$tree |>
+  group_by(tree_species_code) |>
+  summarise(count = n()) |>
+  filter(tree_species_code != "0", tree_species_code != "9999") |>
+  slice_max(n = 20, order_by = count)
+
+print(main_species)
+```
+
+We have species codes, let's get the species names.
+
+```{r}
+main_species1 <- main_species |>
+  left_join(anci$species_list, by = "tree_species_code")
+
+print(main_species1)
+
+write_csv(main_species1, here(file.path(path$res$tab, "tree-calc-main-species.csv")))
+```
+
+We can correct the table of main species by adding the weight of the trees due to sampling design (scale factor). The scale factor is the weight of each tree if they were measured in a 1 ha plot:
+
+$$
+scale\_factor = \frac{10000}{\pi \times {r}^{2}}
+$$
+
+with $r$ the plot radius in meters.
+
+R chunk description:
+
+1.  Add new columns with scale factor and tree count (1) with `mutate().`
+2.  Group the data by species code.
+3.  Calculate the sum of tree count and the sum of scale factors to get the initial number of trees per species `count` and the corrected number of trees per species if all trees were measured in 1 ha plots `count_sf`.
+4.  Filter out the missing species codes.
+5.  Keep the 20 most represented species (order_by can be switched between `count` and `count_sf` but only `count_sf` is the correct dimension).
+6.  Add the species names from the ancillary table in `anci$species_list`.
+
+```{r}
+main_species_corr <- data_harmo$tree |>
+  mutate(
+    tree_plot_radius = if_else(tree_dbh < 30, 8, 16),
+    tree_scale_factor = 10000 / (pi * tree_plot_radius^2),
+    tree_count = 1
+  ) |>
+  group_by(tree_species_code) |>
+  summarise(
+    count = sum(tree_count),
+    count_sf = sum(tree_scale_factor)
+  ) |>
+  filter(tree_species_code != "0", tree_species_code != "9999") |>
+  slice_max(n = 20, order_by = count_sf) |>
+  left_join(anci$species_list, by = "tree_species_code")
+
+## Check
+# table(main_species_corr$tree_plot_radius, main_species_corr$tree_scale_factor, useNA = "ifany")
+```
+
+### Treeplot data
+
+How many treeplots:
+
+```{r}
+nrow(data_harmo$treeplot)
+```
+
+How many land covers:
+
+Initial result can be wrong if there are missing land covers. Need to filter out the NAs first.
+
+```{r}
+length(unique(data_harmo$treeplot$treeplot_lc_class))
+
+tt <- data_harmo$treeplot |> filter(!is.na(treeplot_lc_class))
+length(unique(tt$treeplot_lc_class))
+```
+
+How many treeplot per land cover (HINT: use `table()` or `group_by()` and `summarise()`):
+
+```{r}
+
+table(data_harmo$treeplot$treeplot_lc_class, useNA = "ifany")
+
+sort(table(data_harmo$treeplot$treeplot_lc_class, useNA = "ifany"), decreasing = T)
+
+
+data_harmo$treeplot |> 
+  filter(!is.na(treeplot_lc_class)) |>
+  group_by(treeplot_lc_class) |>
+  summarise(count = n()) |>
+  arrange(desc(count))
+
+```
+
+## Error Check
+
+### Unrealistic DBH
+
+We can check that there is no outlier (very small or very big tree) and that the DBH distribution per quartile is realistic with `summary()`.
+
+```{r}
+summary(data_harmo$tree$tree_dbh)
+
+```
+
+Checklist:
+
+-   No NA: **OK**
+
+-   No trees with DBH \< 10: **OK**
+
+-   No trees with unrealistic DBH (400+, they exist but are very rare): **OK**
+
+-   Median and quartiles are towards the small trees: **OK**
+
+We can also make a histogram to see the distribution per diameter class
+
+```{r}
+hist(data_harmo$tree$tree_dbh)
+```
+
+WARNING: in this histogram there are more trees in 30-40 cm DBH than 20-30 cm. This is irregular for large inventory, but in this case it comes from the different scale factors not being considered.
+
+Let's make a proper DBH distribution histogram. The steps are:
+
+1.  add scale factors to trees
+2.  add the DBH class
+3.  group by dbh class and get the sum of scale factors
+4.  make a ggplot
+
+For steps 1 and 2:
+
+```{r}
+#| label: dbh-distri
+
+gg_dbh <- data_harmo$tree |>
+  mutate(
+    tree_treeplot_radius = if_else(tree_dbh < 30, 8, 16),
+    tree_scale_factor = 10000 / (pi * tree_treeplot_radius^2),
+    tree_dbh_class = case_when(
+      tree_dbh < 10 ~ "000-09",
+      tree_dbh < 20 ~ "010-19",
+      tree_dbh < 30 ~ "020-29",
+      tree_dbh < 40 ~ "030-39",
+      tree_dbh < 50 ~ "040-49",
+      tree_dbh < 60 ~ "050-59",
+      tree_dbh < 70 ~ "060-69",
+      tree_dbh < 80 ~ "070-79",
+      tree_dbh < 90 ~ "080-89",
+      tree_dbh < 100 ~ "090-99",
+      TRUE ~ "100+"
+    ),
+    tree_dbh_class2 = floor(tree_dbh / 10) * 10,
+    tree_dbh_class2 = if_else(tree_dbh_class2 < 100, tree_dbh_class2, 100)
+  )
+
+table(gg_dbh$tree_dbh_class, useNA = "ifany")
+table(gg_dbh$tree_dbh_class2, useNA = "ifany")
+```
+
+For steps 3 and 4:
+
+```{r}
+#| label: gg-distri
+
+n_treeplot <- length(unique(data_harmo$tree$ONA_parent_index))
+
+gg_dbh2 <- gg_dbh |>
+  group_by(tree_dbh_class2) |> 
+  summarise(
+    count_ha = sum(tree_scale_factor) / n_treeplot,
+    count = n()
+  )
+
+gg_dbh3 <- ggplot(gg_dbh2) +
+  geom_col(aes(x = tree_dbh_class2, y = count_ha))
+
+print(gg_dbh3)
+
+```
+
+### Distance or azimuth error
+
+We can check issues in azimuth in the `summary()`: Min and max should be 0 and 360, and as we cummulate many trees, the median and quartiles should be aligned with the cardinal points:
+
+-   1st quartile \~ 90
+
+-   2nd quartile \~ 180 (median)
+
+-   3rd quartile \~ 270
+
+```{r}
+summary(data_harmo$tree$tree_azimuth)
+```
+
+Checklist:
+
+-   No tree less than 0 or more than 360: **OK**
+
+-   1st quartile \~ 90: **OK**
+
+-   median \~180: **OK**
+
+-   3rd quartile \~ 270: **OK**
+
+### Small tree measured in the large circle
+
+We want to count how many trees have DBH \< 30 but distance \> 8. HINT: use `filter()` and `nrow()`.
+
+```{r}
+
+# class(data_harmo)
+# class(data_harmo$tree)
+# class(data_harmo$tree$tree_dbh)
+# with(data_harmo$tree, tree_dbh)
+
+check_dist <- data_harmo$tree |>
+  filter(tree_dbh < 30) |>
+  filter(tree_distance > 8)
+
+nrow(check_dist)
+```
+
+Checklist:
+
+-   number of trees with DBH \< 30 and distance \> 8 = 0: **OK**
+
+---
+
+PRACTICE `filter()` and `nrow()`:
+
+-   number of trees with DBH \< 10
+
+    ```{r}
+    dbh10 <- data_harmo$tree |>
+      filter(tree_dbh < 10)
+
+    nrow(dbh10)
+    ```
+
+-   number of trees with DBH class is 30-39 (tree_dbh_class2 = 30)
+
+    ```{r}
+    class30 <- gg_dbh |>
+      filter(tree_dbh_class2 == 30)
+
+    class30_new <- gg_dbh |>
+      filter(tree_dbh_class == "030-39")
+
+    nrow(class30)
+    nrow(class30_new)
+    ```
+
+-   number of trees with stem number \> 1
+
+    ```{r}
+    stem1 <- data_harmo$tree |>
+      filter(tree_stem_no > 1)
+
+    nrow(stem1)
+    ```
+
+---
+
+### Errors in stem number
+
+Tree with multiple stems count 1 for:
+
+-   *tree distribution per DBH class (to be checked)*
+
+-   importance of species,
+
+but count separately for basal area and AGB.
+
+To check:
+
+1.  all trees have stem number at least 1
+2.  all trees with stem number \> 1 have a stem number 1.
+
+EX: table with the number of trees per stem number (show the NAs). HINT: use `table()`.
+
+```{r}
+# class(data_harmo)
+# class(data_harmo$tree)
+# class(data_harmo$tree$tree_stem_no)
+
+table(data_harmo$tree$tree_stem_no, useNA = "ifany")
+table(data_harmo$tree$tree_stem_go, useNA = "ifany")
+
+```
+
+checklist:
+
+-   more stem 2 than stem 1: **NOT OK**
+
+-   NAs in stem_no: **NOT OK**
+
+We can correct when there is stem 2 but not stem 1
+
+```{r}
+
+max(data_harmo$tree$ONA_index)
+summary(data_harmo$tree$ONA_index)
+
+ID_stem2 <- data_harmo$tree |>
+  filter(tree_stem_no == 2) |>
+  select(ONA_parent_index, ONA_index, tree_stem_no) |>
+  mutate(
+    ONA_index_unique = ONA_parent_index * 1000 + ONA_index,
+    ONA_index_unique_stem1 = ONA_index_unique - 1
+    )
+
+ID_stem12 <- data_harmo$tree |>
+  mutate(ONA_index_unique = ONA_parent_index * 1000 + ONA_index) |>
+  filter(ONA_index_unique %in% c(ID_stem2$ONA_index_unique, ID_stem2$ONA_index_unique_stem1))
+
+table(ID_stem12$tree_stem_no, useNA = "ifany")
+```
+
+---
+
+ADDED OUTSIDE TRAINING
+
+```{r}
+tt <- data_harmo$tree
+```
+
+---
+
+## Join treeplot info
+
+tree data doesn't have land cover class, this information is in treeplot table. We need to get land cover class at tree level in order to apply the biomass allometric equations.
+
+Step1: Make a treeplot table with only treeplot ID and land cover class
+
+```{r}
+treeplot_lc <- data_harmo$treeplot |> 
+  select(ONA_treeplot_id, treeplot_lc_class)
+```
+
+Step 2: Join this smaller treeplot with land cover table to the tree table
+
+```{r}
+tree_lc <- data_harmo$tree |>
+  left_join(treeplot_lc, by = c("ONA_parent_index" = "ONA_treeplot_id"))
+
+table(tree_lc$treeplot_lc_class, useNA = "ifany")
+```
+
+Why NAs?
+
+```{r}
+table(data_harmo$treeplot$treeplot_lc_class, useNA = "ifany")
+table(data_harmo$treeplot$treeplot_access, useNA = "ifany")
+
+access_lc <- data_harmo$treeplot |>
+  filter(treeplot_access == "accessible") |>
+  filter(is.na(treeplot_lc_class))
+
+nrow(access_lc)
+```
+
+We have NAs in treeplot land cover but it is only in inaccessible plots. In tree table, we need to find why some treeplot are missing
+
+```{r}
+vec_lcna <- tree_lc |>
+  filter(is.na(treeplot_lc_class)) |>
+  pull(ONA_parent_index) |>
+  unique() |>
+  sort()
+
+vec_lcna
+```
+
+There too many missing treeplots so that the corresponding trees have missing land cover. Potentially, we are seeing a mix of entry treeplot code error and QAQC treeplots, that the harmonization script is automatically removing.
+
+We can come back to the initial tables to get the IDs of QAQC treeplots and remove it from `vec_lcna`.
+
+```{r}
+vec_qc <- data_init$treeplot_init |> 
+  filter(plot_info__crew_lead == "QC") |>
+  pull(ONA_index) |>
+  sort()
+```
+
+Now we want to remove the QAQC plots from the tree table
+
+```{r}
+tree_clean <- tree_lc |>
+  filter(!ONA_parent_index %in% vec_qc)
+
+vec_lcna <- tree_clean |>
+  filter(is.na(treeplot_lc_class)) |>
+  pull(ONA_parent_index) |>
+  unique() |>
+  sort()
+
+vec_lcna
+```
+
+---
+
+Not from training, additional checks
+
+```{r}
+
+tree_big <- tree_clean |>
+  filter(tree_dbh >= 100)
+
+
+ggplot(tree_big) +
+  geom_boxplot(aes(x = treeplot_lc_class, y = tree_dbh))
+
+check <- tree_big |>
+  filter(treeplot_lc_class == 13)
+
+check$tree_dbh100_url
+check$tree_species_code
+```

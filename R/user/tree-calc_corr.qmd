@@ -1,0 +1,309 @@
+---
+title: "Calculations for Lao PDR NFI cycle 4"
+format: 
+  html:
+    embed-resources: true
+    number-sections: true
+  docx: 
+    number-sections: true
+    toc: true
+editor: visual
+---
+
+# Objective
+
+Add calculation of tree AGB, basal area, distribution per DBH class and propagate to treeplot, plot and forest type. Check also main species at forest type and disaggregate per district and province.
+
+Key steps:
+
+-   Load clean data
+
+-   Join tables
+
+-   Calculate at tree level
+
+-   Propagate
+
+# Setup
+
+Prepare the environment with packages, paths, sampling info and ancillary data.
+
+```{r}
+#| include: false
+
+if (!require("here")) install.packages("here")
+library(here)
+
+source(here("R/setup/init.R"), local = T)
+source(here("R/setup/paths.R"), local = T)
+source(here("R/setup/sampling.R"), local = T)
+source(here("R/setup/load-anci.R"), local = T)
+
+```
+
+# Load the NFI data
+
+NOTE: Run first the "tree-clean.qmd" document when new data arrive to re-create the harmonized tables. This report assumes the latest data is in the folder 'data-harmo'.
+
+```{r}
+#| include: false
+
+#list.files(path$dat$harmo, pattern = "tree-", full.names = T)
+
+tree     <- read_csv(list.files(path$dat$harmo, pattern = "tree-", full.names = T))
+treeplot <- read_csv(list.files(path$dat$harmo, pattern = "treeplot-", full.names = T))
+dw       <- read_csv(list.files(path$dat$harmo, pattern = "dw-", full.names = T))
+ntfp     <- read_csv(list.files(path$dat$harmo, pattern = "ntfp-", full.names = T))
+stump    <- read_csv(list.files(path$dat$harmo, pattern = "stump-", full.names = T))
+
+## Create an empty list for temporary objects
+tmp <- list()
+```
+
+# Join tables
+
+We add land cover code, names and species names to the tree table
+
+```{r}
+#| warning: false
+
+tmp$treeplot_info <- treeplot |>
+  select(
+    ONA_treeplot_id, treeplot_plot_no, treeplot_no, treeplot_id, 
+    treeplot_crew_lead, treeplot_lc_class, treeplot_lc_type
+    ) |>
+  mutate(
+    treeplot_lc_class2 = case_when(
+      treeplot_lc_class == "16AC" ~ 161,
+      treeplot_lc_class == "16EC" ~ 162,
+      treeplot_lc_class == "16PN" ~ 163,
+      treeplot_lc_class == "16RB" ~ 164,
+      treeplot_lc_class == "16TK" ~ 165,
+      treeplot_lc_class == "16OTH" ~ 169,
+      TRUE ~ as.numeric(treeplot_lc_class)
+    )
+  )
+
+tree_join <- tree |>
+  left_join(tmp$treeplot_info, by = c("ONA_parent_index" = "ONA_treeplot_id")) |>
+  left_join(anci$lc, by = c("treeplot_lc_class2" = "lc_class")) |>
+  left_join(anci$species_list, by = "tree_species_code")
+
+#table(tree_join$treeplot_lc_class2)
+table(tree_join$lc_class_code, useNA = "ifany")
+#table(tree_join$tree_species_scientific_name, useNA = "ifany")
+```
+
+# Add tree level calculations
+
+Don't forget the scale factor
+
+```{r}
+## Need to add correction factor for back transformation of ln-ln model
+cf <- 1
+
+tree_calc <- tree_join |>
+  mutate(
+    tree_dbh_class = floor(tree_dbh / 10 ) * 10,
+    tree_dbh_class = if_else(tree_dbh_class >= 100, 100, tree_dbh_class),
+    tree_ba = round(pi * (tree_dbh/200)^2, 2),
+    tree_agb = case_when(
+      lc_class_code == "EG"  ~ cf * 0.3112 * tree_dbh^2.2331,
+      lc_class_code == "MD"  ~ cf * 0.523081 * tree_dbh^2,
+      lc_class_code == "DD"  ~ cf * 0.2137 * tree_dbh^2.2575,
+      lc_class_code == "CF"  ~ cf * 0.1277 * tree_dbh^2.3944,
+      lc_class_code == "MCB" ~ cf * 0.1277 * tree_dbh^2.3944,
+      lc_class_code == "B"   ~ 0, ## Need to find in literature
+      lc_class_code == "RV"  ~ cf * 0.523081 * tree_dbh^2, ## Same as MD
+      TRUE ~ NA_real_
+    ),
+    tree_treeplot_radius = if_else(tree_dbh < 30, 8, 16),
+    tree_scale_factor = round(10000 / (pi * tree_treeplot_radius^2), 2)
+  )
+```
+
+------------------------------------------------------------------------
+
+Quick check
+
+```{r}
+tmp$gg1 <- tree_calc |>
+  filter(!is.na(tree_agb)) |>
+  ggplot() +
+  geom_line(aes(x = tree_dbh, y = tree_agb, color = lc_class_code))
+
+print(tmp$gg1)
+```
+
+------------------------------------------------------------------------
+
+# Aggregate
+
+## Aggregate tree biomass
+
+### Tree to treeplot
+
+```{r}
+treeplot_agb <- tree_calc |>
+  filter(!is.na(treeplot_lc_class)) |>
+  group_by(treeplot_id) |>
+  summarise(
+    count_tree = n(),
+    count_ha = sum(tree_scale_factor),
+    treeplot_ba = sum(tree_ba * tree_scale_factor),
+    treeplot_agb = sum(tree_agb * tree_scale_factor / 1000),
+    .groups = "drop"
+  )
+```
+
+------------------------------------------------------------------------
+
+Quick check
+
+```{r}
+tmp$gg2 <- treeplot_agb |>
+  full_join(treeplot, by = c("treeplot_id")) |>
+  ggplot() +
+  geom_boxplot(aes(x = treeplot_lc_class, y = treeplot_agb))
+
+print(tmp$gg2)
+```
+
+------------------------------------------------------------------------
+
+We have AGB (ton/ha) at treeplot level, we can add BGB based on AGB values and land cover classes and calculate treeplot level Carbon.
+
+```{r}
+#| warning: false
+
+treeplot_final <- treeplot_agb |>
+  full_join(treeplot, by = "treeplot_id") |>
+  mutate(
+    treeplot_lc_class2 = case_when(
+      treeplot_lc_class == "16AC" ~ 161,
+      treeplot_lc_class == "16EC" ~ 162,
+      treeplot_lc_class == "16PN" ~ 163,
+      treeplot_lc_class == "16RB" ~ 164,
+      treeplot_lc_class == "16TK" ~ 165,
+      treeplot_lc_class == "16OTH" ~ 169,
+      TRUE ~ as.numeric(treeplot_lc_class)
+    )
+  ) |>
+  left_join(anci$lc, by = c("treeplot_lc_class2" = "lc_class")) |>
+  mutate(
+    treeplot_rs = case_when(
+      lc_class_code == "CF" & treeplot_agb <  50 ~ 0.46,
+      lc_class_code == "CF" & treeplot_agb <= 150 ~ 0.32,
+      lc_class_code == "CF" & treeplot_agb >  150 ~ 0.23,
+      lc_class_code != "CF" & treeplot_agb <  125 ~ 0.2,
+      lc_class_code != "CF" & treeplot_agb >= 125 ~ 0.24,
+    ),
+    treeplot_bgb = treeplot_agb * treeplot_rs,
+    treeplot_carbon = round(treeplot_agb * (1 + treeplot_rs), 3),
+    treeplot_carbon = case_when(
+      lc_class_code %in% c("U", "BR", "O", "W") ~ 0,
+      lc_class_code %in% c("UC", "RP", "OA", "AP") ~ 4.9,
+      lc_class_code %in% c("SA", "SR", "G", "SW") ~ 4.9,
+      TRUE ~ treeplot_carbon
+    )
+  ) 
+```
+
+------------------------------------------------------------------------
+
+Check, amount of Carbon per land cover class
+
+```{r}
+tmp$check <- treeplot_final |>
+  ggplot(aes(x = lc_class_code, y = treeplot_carbon)) +
+  geom_boxplot() +
+  coord_flip()
+
+print(tmp$check)
+```
+
+------------------------------------------------------------------------
+
+### Treeplot to plot
+
+Approach 1 the land cover of each plot is the and cover of the treeplot A
+
+```{r}
+tmp$plot_lc <- treeplot_final |>
+  filter(treeplot_no == "A") |>
+  select(
+    plot_no = treeplot_plot_no, 
+    treeplot_lc_class2, treeplot_coord_lat, treeplot_coord_lon, treeplot_crew_lead
+    ) |>
+  rename_with(.cols = starts_with("treeplot_"), str_replace, pattern = "treeplot_", replacement = "plot_")
+
+nrow(tmp$plot_lc)
+length(unique(treeplot_final$treeplot_plot_no))
+
+```
+
+Get the plot level carbon stock
+
+```{r}
+plot_c1 <- treeplot_final |>
+  group_by(treeplot_plot_no) |>
+  summarise(
+    treeplot_count = n(),
+    plot_c1 = mean(treeplot_carbon, na.rm = T),
+    plot_c1_sd = sd(treeplot_carbon, na.rm = T)
+  ) |>
+  left_join(tmp$plot_lc, by = c("treeplot_plot_no" = "plot_no"))
+
+
+plot_c1
+
+```
+
+To add number of TP with the dominant lc
+
+------------------------------------------------------------------------
+
+MAP!
+
+```{r}
+tmp$gg_map <- plot_c1 |>
+  filter(!is.na(plot_coord_lon), !is.na(plot_coord_lat)) |>
+  st_as_sf(coords = c("plot_coord_lon", "plot_coord_lat"), crs = 4326) |>
+  ggplot() +
+  geom_sf(data = anci$sf_country) +
+  geom_sf(aes(color = plot_c1)) +
+  scale_color_viridis_c(direction = -1)
+tmp$gg_map
+```
+
+------------------------------------------------------------------------
+
+Now forest carbon stock
+
+```{r}
+
+forest_c1 <- plot_c1 |>
+  left_join(anci$lc, by = c("plot_lc_class2" = "lc_class")) |>
+  group_by(lc_class_code, lc_name, lc_name_lao) |>
+  summarise(
+    plot_count = n(),
+    mean_c1 = mean(plot_c1, na.rm = T),
+    sd_c1 = sd(plot_c1, na.rm = T),
+    .groups = "drop"
+  )
+
+forest_c1
+```
+
+Graph
+
+```{r}
+ggplot(forest_c1) + 
+  geom_col(aes(x = lc_class_code, y = mean_c1))
+```
+
+To add:
+
+-   number of treeplot with dominant LC
+
+-   number of accessible treeplot
