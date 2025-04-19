@@ -1,6 +1,6 @@
 
 ## RUN ONLY IF USER REQUEST NEW DATA
-if (usr$get_new) {
+if (usr$recompile_source) {
   
   ## Initiate list to store source data
   data_init <- list()
@@ -27,9 +27,9 @@ if (usr$get_new) {
   ## GET INITIAL DATA ####
   
   ## Get new file, download or unzip if necessary
-  if (usr$get_auto) {
+  if (usr$download_new) {
     source(here("R/setup/get-data/download-ona.R"), local = T)
-  } else if (!usr$get_auto) {
+  } else {
     source(here("R/setup/get-data/read-manual.R"), local = T)
   }
   
@@ -43,37 +43,37 @@ if (usr$get_new) {
   
   source(here("R/setup/get-data/prepa-subplot.R"), local = T)
   
+  source(here("R/setup/get-data/prepa-nest.R"), local = T)
   
-  ## CORRECT DATA ENTRY TYPOS (MAINLY CODE ISSUES) ####
+  source(here("R/setup/get-data/prepa-sapling.R"), local = T)
   
-  source(here("R/setup/get-data/clean-subplot.R"), local = T)
+  source(here("R/setup/get-data/prepa-ntfp.R"), local = T)
   
+  source(here("R/setup/get-data/prepa-ldw.R"), local = T)
   
-  
-  
-  source(here("R/setup/get-data/clean-tree.R"), local = T)
-  
-  source(here("R/setup/get-data/clean-subplot.R"), local = T)
-  
-  source(here("R/setup/get-data/clean-subplot.R"), local = T)
-  
-  source(here("R/setup/get-data/clean-subplot.R"), local = T)
-  
-  
-  ## HARMONIZE TO ENTITY BASED TABLES ####
-  
-  source(here("R/setup/get-data/harmo-treeplot_corr.R"), local = T)
-  
-  source(here("R/setup/get-data/harmo-plot.R"), local = T)
-  
-  source(here("R/setup/get-data/harmo-nest.R"), local = T)
-  
-  source(here("R/setup/get-data/harmo-ntfp.R"), local = T)
-  
-  source(here("R/setup/get-data/harmo-write.R"), local = T)
+  source(here("R/setup/get-data/prepa-write.R"), local = T)
   
   #rm(data_init)
   
+} else {
+  
+  tmp <- list()
+  
+  tmp$prep_files <- list.files(path$dat$prep, pattern = "\\.csv", full.names = T)
+  tmp$sort_date <- tmp$prep_files |> 
+    str_remove(".*202[0-9]-") |>
+    str_remove("\\.csv") |>
+    unique() |> 
+    sort(decreasing = T)
+  
+  tmp$latest_date <- tmp$sort_date[1]
+  tmp$prep_select <- tmp$prep_files |> str_subset(pattern = tmp$latest_date)
+  tmp$prep_names  <- tmp$prep_select |>
+    str_remove(".*/") |>
+    str_remove("_202[0-9].*")
+  
+  data_prep <- map(tmp$prep_select, read_csv, show_col_type = F)
+  names(data_prep) <- tmp$prep_names
 }
 
 

@@ -5,9 +5,9 @@ tmp <- list()
 
 tmp$time <- local_time(usr$time_zone, .show_tz = F, .spe_chr = F)
 
-walk(names(data_harmo), function(x){
+walk(names(data_prep), function(x){
   
-  write_csv(data_harmo[[x]], file.path(path$dat$harmo, paste0(x, "-", tmp$time, ".csv")))
+  write_csv(data_prep[[x]], file.path(path$dat$prep, paste0(x, "_", tmp$time, ".csv")))
   
 })
 

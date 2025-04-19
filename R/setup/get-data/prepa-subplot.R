@@ -51,7 +51,7 @@ tmp$subplot <- data_init$subplot_init |>
   ) |>
   select(ONA_index, starts_with("subplot_"))
 
-
+## Store QAQC in a different table ####
 data_prep$subplot <- tmp$subplot |>
   filter(subplot_crew_lead != "QC") |>
   mutate(subplot_crew_lead = as.numeric(subplot_crew_lead))
@@ -59,4 +59,5 @@ data_prep$subplot <- tmp$subplot |>
 data_prep$subplot_qc <- tmp$subplot |>
   filter(subplot_crew_lead == "QC")
 
+## Remove temporary object
 rm(tmp)

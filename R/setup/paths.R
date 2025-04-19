@@ -6,7 +6,7 @@ path$res <- list()
 path$dat$parent <- here("data")
 path$dat$src    <- here(file.path(path$dat$parent, "data-source"))
 path$dat$anci   <- here(file.path(path$dat$parent, "data-ancillary"))
-path$dat$harmo  <- here(file.path(path$dat$parent, "data-harmo"))
+path$dat$prep   <- here(file.path(path$dat$parent, "data-prepared"))
 path$dat$clean  <- here(file.path(path$dat$parent, "data-clean"))
 
 path$res$parent <- here("results")
