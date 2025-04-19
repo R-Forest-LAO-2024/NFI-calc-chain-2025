@@ -2,14 +2,6 @@
 ## RUN ONLY IF USER REQUEST NEW DATA
 if (usr$recompile_source) {
   
-  ## Initiate list to store source data
-  data_init <- list()
-  data_prep <- list()
-  data_clean <- list()
-  
-  ## Initiate list for results
-  res <- list()
-  
   ## Load helpers
   source(here("R/setup/get-data/helpers.R"), local = T)
   

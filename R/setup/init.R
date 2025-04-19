@@ -1,18 +1,26 @@
 
-use_package <- function(.pkg_name, .github = FALSE, .gh_repo = NULL, .load = T) {
+## Create function to check if package is installed and if not install it ####
+
+## Simple function
+use_package <- function(.pkg_name) {
   pkg_name <- as.character(substitute(.pkg_name))
-  if (!require(pkg_name, character.only = T,  quietly = TRUE)) {
-    if (!.github) {
-      install.packages(pkg_name, dep =TRUE)
-    } else if (.github) {
-      if (!require(remotes, quietly = TRUE)) install.packages("remotes", dep = TRUE)
-      remotes::install_github(paste0(.gh_repo))
-    }
-  }
-  if (.load) library(pkg_name, character.only = T, quietly = TRUE)
+  if (!require(pkg_name, character.only = T,  quietly = TRUE)) install.packages(pkg_name, dep =TRUE)
+  library(pkg_name, character.only = T, quietly = TRUE)
 }
 
-#use_package(ona, .github = T, .gh_repo = "onaio/ona.R", .load = F)
+## Advanced function for Github packages FYI
+# use_package <- function(.pkg_name, .github = FALSE, .gh_repo = NULL, .load = T) {
+#   pkg_name <- as.character(substitute(.pkg_name))
+#   if (!require(pkg_name, character.only = T,  quietly = TRUE)) {
+#     if (!.github) {
+#       install.packages(pkg_name, dep =TRUE)
+#     } else if (.github) {
+#       if (!require(remotes, quietly = TRUE)) install.packages("remotes", dep = TRUE)
+#       remotes::install_github(paste0(.gh_repo))
+#     }
+#   }
+#   if (.load) library(pkg_name, character.only = T, quietly = TRUE)
+# }
 
 use_package(usethis)
 use_package(here)
@@ -28,6 +36,14 @@ use_package(terra)
 
 ## Default theme for ggplot
 theme_set(theme_bw())
+
+## Initiate lists to store data and results
+data_init  <- list()
+data_prep  <- list()
+data_clean <- list()
+res_gg     <- list()
+res        <- list()
+
 
 ## Get time in UTC
 local_time <- function(tz, .spe_chr = T, .show_tz = T) {

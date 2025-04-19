@@ -17,7 +17,7 @@ if (!exists("usr")) {
   usr$time_zone        <- "Asia/Bangkok"
 }
 
-## Get 'here' package first to avoid issues with relative paths
+## Get 'here' package first to avoid issues with relative paths #### 
 
 if (!require(here)) install.packages("here")
 library(here)
@@ -41,6 +41,7 @@ source(here("R/setup/get-data.R"), local = T)
 
 ## Clean data  ####
 ## Mainly entity code issues
+source(here("R/user/00-common.R"), local = T)
 
 source(here("R/user/01a-clean-subplot.R"), local = T)
 
