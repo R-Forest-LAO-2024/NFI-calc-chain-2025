@@ -55,4 +55,4 @@ rsconnect/
 data/
 results/
 *.DS_Store
-#log.txt
+log.txt
