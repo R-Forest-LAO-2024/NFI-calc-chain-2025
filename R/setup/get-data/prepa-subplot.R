@@ -59,5 +59,25 @@ data_prep$subplot <- tmp$subplot |>
 data_prep$subplot_qc <- tmp$subplot |>
   filter(subplot_crew_lead == "QC")
 
+## Store land cover sections in a different table
+tmp$lcs_code <- tibble(
+  luvs_location = c("center", "north", "east", "south", "west"),
+  luvs_no = 1:5
+  )
+
+
+data_prep$lc_section <- data_prep$subplot |>
+  select(subplot_plot_no, subplot_no, subplot_id, starts_with("subplot_lc_class")) |>
+  pivot_longer(
+    cols = c(starts_with("subplot_lc_class")), 
+    values_to = "luvs_lc_class",
+    names_to = "luvs_location", 
+    names_pattern = "subplot_lc_class_?(.*)"
+  ) |>
+  left_join(tmp$lcs_code, by = join_by(luvs_location))
+
+## Check
+# table(data_prep$lc_section$luvs_location, useNA = "ifany")
+
 ## Remove temporary object
 rm(tmp)

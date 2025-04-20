@@ -8,7 +8,7 @@ if (usr$recompile_source) {
   ## REMOVE EXISTING FILES ####
   
   ## Remove all harmo and clean files
-  unlink(list.files(path$dat$harmo, full.names = T, pattern = "\\.csv"))
+  unlink(list.files(path$dat$prep, full.names = T, pattern = "\\.csv"))
   unlink(list.files(path$dat$clean, full.names = T, pattern = "\\.csv"))
   
   ## Clean source files if requested
