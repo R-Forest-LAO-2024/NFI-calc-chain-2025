@@ -42,4 +42,4 @@
 
 ## TBD, for now each stem is a different tree
 
-
+data_clean$tree <- data_prep$tree

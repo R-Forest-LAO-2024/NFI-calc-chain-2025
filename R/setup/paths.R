@@ -24,5 +24,5 @@ walk(path$res, dir.create, showWarning = F)
 ## Ignore data and results files in Git
 usethis::use_git_ignore(path$dat$parent)
 usethis::use_git_ignore(path$res$parent)
-usethis::use_git_ignore(".DS_Store")
+
 

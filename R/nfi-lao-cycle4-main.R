@@ -15,31 +15,33 @@ library(here)
 
 ## Get user inputs ####
 
-source(here("R/user/00-user-inputs.R"), local = T)
+source(here("R/user/00-user-inputs.R"))
 
 
 ## Run Setup ####
 
-source(here("R/setup/init.R"), local = T)
+source(here("R/setup/init.R"))
 
-source(here("R/setup/paths.R"), local = T)
+source(here("R/setup/paths.R"))
 
-source(here("R/setup/sampling.R"), local = T)
+source(here("R/setup/sampling.R"))
 
-source(here("R/setup/load-anci.R"), local = T)
+source(here("R/setup/load-anci.R"))
 
 
 ## Load NFI data, prepare if needed ####
 
-source(here("R/setup/get-data.R"), local = T)
+source(here("R/setup/get-data.R"))
 
 
 ## Clean data  ####
 ## Mainly entity code issues
 
-source(here("R/user/01a-clean-subplot.R"), local = T)
+source(here("R/user/01a-clean-subplot.R"))
 
-source(here("R/user/01b-clean-tree.R"), local = T)
+source(here("R/user/01b-clean-lcs.R"))
+
+source(here("R/user/01c-clean-tree.R"))
 
 
 ## Run analysis #### 

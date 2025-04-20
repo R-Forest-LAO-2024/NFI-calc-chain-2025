@@ -5,7 +5,7 @@
 usr <- list()
 
 ## Erase cleaned and harmonized data and recompile from source
-usr$recompile_source <- FALSE
+usr$recompile_source <- TRUE
 
 ## Download source data from ONA
 usr$download_new <- FALSE

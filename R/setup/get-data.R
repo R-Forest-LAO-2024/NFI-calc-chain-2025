@@ -45,7 +45,7 @@ if (usr$recompile_source) {
   
   source(here("R/setup/get-data/prepa-write.R"), local = T)
   
-  #rm(data_init)
+  rm(data_init)
   
 } else {
   

@@ -61,20 +61,22 @@ data_prep$subplot_qc <- tmp$subplot |>
 
 ## Store land cover sections in a different table
 tmp$lcs_code <- tibble(
-  luvs_location = c("center", "north", "east", "south", "west"),
-  luvs_no = 1:5
+  lcs_location = c("center", "north", "east", "south", "west"),
+  lcs_no = 1:5
   )
 
 
-data_prep$lc_section <- data_prep$subplot |>
-  select(subplot_plot_no, subplot_no, subplot_id, starts_with("subplot_lc_class")) |>
+data_prep$lcs <- data_prep$subplot |>
+  select(subplot_plot_no, subplot_no, starts_with("subplot_lc_class")) |>
   pivot_longer(
     cols = c(starts_with("subplot_lc_class")), 
-    values_to = "luvs_lc_class",
-    names_to = "luvs_location", 
+    values_to = "lcs_class",
+    names_to = "lcs_location", 
     names_pattern = "subplot_lc_class_?(.*)"
   ) |>
-  left_join(tmp$lcs_code, by = join_by(luvs_location))
+  left_join(tmp$lcs_code, by = join_by(lcs_location)) |>
+  rename(lcs_plot_no = subplot_plot_no, lcs_subplot_no = subplot_no)
+  
 
 ## Check
 # table(data_prep$lc_section$luvs_location, useNA = "ifany")

@@ -118,7 +118,7 @@ tmp$subplot1 |>
 ## Pass cleaned data to data_clean ####
 ##
 
-subplot <- tmp$subplot2
+data_clean$subplot <- tmp$subplot2
 
 
 rm(tmp)
