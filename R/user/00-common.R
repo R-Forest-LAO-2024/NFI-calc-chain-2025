@@ -2,7 +2,7 @@
 ## Functions ####
 
 ## + Make plot circles in ggplots ####
-gg_showplot <- function(center, vec_radius, n){
+gg_showplot <- function(center, vec_radius, n, color = "black"){
   
   theta = seq(0, 2*pi, length = n)
   
@@ -13,7 +13,7 @@ gg_showplot <- function(center, vec_radius, n){
       y = center[2] + r * sin(theta)
     )
     
-    geom_path(data = data_circle, aes(x = x, y = y))
+    geom_path(data = data_circle, aes(x = x, y = y), color = color)
     
   })
   
