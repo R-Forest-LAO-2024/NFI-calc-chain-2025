@@ -43,6 +43,7 @@ source(here("R/user/01b-clean-lcs.R"))
 
 source(here("R/user/01c-clean-tree.R"))
 
+source(here("R/user/01z-clean-assign.R"))
 
 ## Run analysis #### 
 

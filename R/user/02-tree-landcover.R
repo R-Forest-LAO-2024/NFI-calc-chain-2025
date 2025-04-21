@@ -1,6 +1,16 @@
+
+
 tmp <- list()
 
-data_clean$tree <- data_clean$tree |>
+## Extract codes from subplot table
+tmp$subplot_codes <- subplot |>
+  select(ONA_index, subplot_plot_no, subplot_no, subplot_lc_class_center)
+
+length(unique(subplot$ONA_index))
+nrow(subplot)
+length(unique(tree$ONA_parent_index))
+
+tree2 <- tree |>
   mutate(
     tree_x = cos((90 - tree_azimuth) * pi/180) * tree_distance,
     tree_y = sin((90 - tree_azimuth) * pi/180) * tree_distance,
@@ -20,9 +30,18 @@ data_clean$tree <- data_clean$tree |>
       tree_azimuth > 225 & tree_azimuth <=315 ~ 5,
       TRUE ~ NA_integer_
     )
-  )
-  #left_join(data_clean$)
+  ) |>
+  left_join(tmp$subplot_codes, by = join_by(ONA_parent_index == ONA_index)) |>
+  left_join(data_clean$lcs, by = join_by(subplot_plot_no == lcs_plot_no, subplot_no == lcs_subplot_no, tree_lcs_no == lcs_no))
 
+
+table(tree2$lcs_class, useNA = "ifany")
+
+tmp$lcs_check <- lcs |>
+  mutate(lcs_id = paste0(lcs_plot_no, lcs_subplot_no, lcs_no))
+
+length(unique(tmp$lcs_check$lcs_id))
+nrow(lcs)
 
 ## Checks 
 ## Original split of Land cover sections
@@ -72,8 +91,3 @@ data_clean$tree |>
   theme(legend.position = "none") +
   coord_fixed()
   
-# 
-# data_clean$subplot |> 
-#   filter(ONA_index == 1) |> select(subplot_plot_no, subplot_no)
-# 
-# data_clean$lcs |> filter(lcs_plot_no == 484, lcs_subplot_no == "D")

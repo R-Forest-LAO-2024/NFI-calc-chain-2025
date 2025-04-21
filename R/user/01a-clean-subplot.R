@@ -9,7 +9,8 @@ nrow(anci$subplot_plan)
 tmp$plan_nplot <- length(unique(anci$subplot_plan$subplot_plot_no))
 
 ## Compare with data
-nrow(data_prep$subpl)
+length(unique(data_prep$subplot$subplot_id))
+nrow(data_prep$subplot)
 tmp$measured_nplot <- length(unique(data_prep$subplot$subplot_plot_no))
 
 message("NFI plot measurement percentage: ", round(tmp$measured_nplot / tmp$plan_nplot * 100), "%")
@@ -108,10 +109,14 @@ tmp$subplot2 <- tmp$subplot1 |>
     subplot_id = paste0(subplot_plot_id, subplot_no)
   )
 
-tmp$subplot1 |>
+tmp$subplot2 |>
   summarise(count = n(), .by = subplot_plot_no) |>
   filter(count != 4) |>
   nrow()
+
+
+## Check again for potential duplicates
+message("Unique subplot codes: ", length(unique(tmp$subplot2$subplot_id)) == nrow(tmp$subplot2))
 
 
 ##
