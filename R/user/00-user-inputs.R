@@ -19,5 +19,8 @@ usr$get_filename <- "4th_NFI_up to2025_02_24_withpath.csv" ## "4th_NFI_2025_02_1
 ## File name of the CEO file put in 'data/data-anci'
 usr$get_ceofile <- "ceo-25-03-07.csv"
 
+## Add QAQC data to environment / modifies R/user/01z-clean-assign.R
+usr$add_qc <- FALSE
+
 ## Specify timezone to get correct timestamps even outside country
 usr$time_zone <- "Asia/Bangkok"

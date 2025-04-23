@@ -130,5 +130,18 @@ data_prep$dw <- tmp$combi |>
 ## Check
 # nrow(tmp$combi) == nrow(data_prep$tree) + nrow(data_prep$stump) + nrow(data_prep$dw)
 
+
+## Split trees form QAQC and NFI --- Requires 'data_prep$subplot' and 'data_prep$subplot_qc'
+tmp$qc_index <- data_prep$subplot_qc |> pull(ONA_index)
+
+data_prep$tree_qc <- data_prep$tree |> filter(ONA_parent_index %in% tmp$qc_index)
+data_prep$tree    <- data_prep$tree |> filter(!ONA_parent_index %in% tmp$qc_index)
+
+data_prep$stump_qc <- data_prep$stump |> filter(ONA_parent_index %in% tmp$qc_index)
+data_prep$stump    <- data_prep$stump |> filter(!ONA_parent_index %in% tmp$qc_index)
+
+data_prep$dw_qc <- data_prep$dw |> filter(ONA_parent_index %in% tmp$qc_index)
+data_prep$dw    <- data_prep$dw |> filter(!ONA_parent_index %in% tmp$qc_index)
+
 ## Clean tmp elements
 rm(tmp)

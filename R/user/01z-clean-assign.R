@@ -10,6 +10,7 @@ tmp <- list()
 
 tmp$names <- names(data_clean)
 
+
 walk(tmp$names, function(x){ assign(x, data_clean[[x]], envir = .GlobalEnv) })
 
 rm(tmp)

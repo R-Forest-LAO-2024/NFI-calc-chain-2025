@@ -49,4 +49,7 @@ source(here("R/user/01z-clean-assign.R"))
 
 source(here("R/user/00-common.R"))
 
+source(here("R/user/02-tree-landcover.R"))
+
+source(here("R/user/03-tree-agb.R"))
 

@@ -2,46 +2,71 @@
 
 tmp <- list()
 
+## Check unique subplot index
+length(unique(subplot$ONA_index)) == nrow(subplot)
+
+## Check unique land cover section
+tmp$lcs_check <- lcs |> mutate(lcs_id = paste0(lcs_plot_no, lcs_subplot_no, lcs_no))
+
+length(unique(tmp$lcs_check$lcs_id)) == nrow(lcs)
+
 ## Extract codes from subplot table
-tmp$subplot_codes <- subplot |>
-  select(ONA_index, subplot_plot_no, subplot_no, subplot_lc_class_center)
+tmp$subplot_codes <- subplot |> select(ONA_index, subplot_plot_no, subplot_no, subplot_lc_class_center)
 
-length(unique(subplot$ONA_index))
-nrow(subplot)
-length(unique(tree$ONA_parent_index))
+## Make land cover section based on tree position
+## Add subplot and plot nuimber from 'subplot_codes'
+## Add land cover for each section from 'lcs'
 
-tree2 <- tree |>
+tree02 <- tree |>
   mutate(
     tree_x = cos((90 - tree_azimuth) * pi/180) * tree_distance,
     tree_y = sin((90 - tree_azimuth) * pi/180) * tree_distance,
     tree_lcs_no = case_when(
       tree_distance <= 8 ~ 1,
       tree_azimuth > 315 | tree_azimuth <=45  ~ 2,
-      tree_azimuth >  45 & tree_azimuth <=90  ~ 3,
-      tree_azimuth >  90 & tree_azimuth <=225 ~ 4,
+      tree_azimuth >  45 & tree_azimuth <=135 ~ 3,
+      tree_azimuth > 135 & tree_azimuth <=225 ~ 4,
       tree_azimuth > 225 & tree_azimuth <=315 ~ 5,
       TRUE ~ NA_integer_
     ),
     tree_lcs_no_new = case_when(
       abs(tree_x) <= 6 & abs(tree_y) <= 6 ~ 1,
       tree_azimuth > 315 | tree_azimuth <=45  ~ 2,
-      tree_azimuth >  45 & tree_azimuth <=90  ~ 3,
-      tree_azimuth >  90 & tree_azimuth <=225 ~ 4,
+      tree_azimuth >  45 & tree_azimuth <=135 ~ 3,
+      tree_azimuth > 135 & tree_azimuth <=225 ~ 4,
       tree_azimuth > 225 & tree_azimuth <=315 ~ 5,
       TRUE ~ NA_integer_
     )
   ) |>
   left_join(tmp$subplot_codes, by = join_by(ONA_parent_index == ONA_index)) |>
-  left_join(data_clean$lcs, by = join_by(subplot_plot_no == lcs_plot_no, subplot_no == lcs_subplot_no, tree_lcs_no == lcs_no))
+  left_join(data_clean$lcs, by = join_by(subplot_plot_no == lcs_plot_no, subplot_no == lcs_subplot_no, tree_lcs_no == lcs_no)) |>
+  mutate(
+    lcs_class_num = case_when(
+      lcs_class == "16AC" ~ 161,
+      lcs_class == "16EC" ~ 162,
+      lcs_class == "16PN" ~ 163,
+      lcs_class == "16RB" ~ 164,
+      lcs_class == "16TK" ~ 165,
+      lcs_class == "16OTH" ~ 169,
+      TRUE ~ as.numeric(lcs_class)
+    )
+  ) |>
+  left_join(anci$lc, by = join_by(lcs_class_num == lc_no)) |>
+  rename_with(.cols = starts_with("lc_"), str_replace, pattern = "lc_", replacement = "lcs_")
 
 
-table(tree2$lcs_class, useNA = "ifany")
+## Check for NAs
+table(tree02$lcs_class, useNA = "ifany")
+table(tree02$lcs_class_num, useNA = "ifany")
+table(tree02$lcs_code_new, useNA = "ifany")
+table(tree02$lcs_type, useNA = "ifany")
 
-tmp$lcs_check <- lcs |>
-  mutate(lcs_id = paste0(lcs_plot_no, lcs_subplot_no, lcs_no))
+## Check NAs
+tmp$check_na <- tree02 |>
+  filter(is.na(lcs_class)) |>
+  select(ONA_parent_index, subplot_plot_no, subplot_no, tree_lcs_no)
 
-length(unique(tmp$lcs_check$lcs_id))
-nrow(lcs)
+unique(tmp$check_na$ONA_parent_index)
 
 ## Checks 
 ## Original split of Land cover sections
@@ -51,9 +76,9 @@ tmp$NW_line <- data.frame(x1 = 8 * cos(3*pi/4), y1 = 8 * sin(3*pi/4), x2 = 16 * 
 tmp$SW_line <- data.frame(x1 = 8 * cos(5*pi/4), y1 = 8 * sin(5*pi/4), x2 = 16 * cos(5*pi/4), y2 = 16 * sin(5*pi/4))
 tmp$SE_line <- data.frame(x1 = 8 * cos(7*pi/4), y1 = 8 * sin(7*pi/4), x2 = 16 * cos(7*pi/4), y2 = 16 * sin(7*pi/4))
 
-data_clean$tree |>
-  filter(ONA_parent_index == 2) |>
-  ggplot() +
+tmp$gg_tree <- tree02 |> filter(ONA_parent_index == 2)
+
+tmp$gg_lcs_example <- ggplot(tmp$gg_tree) +
   gg_showplot(center = c(0, 0), vec_radius = c(16), n = 100) +
   gg_showplot(center = c(0, 0), vec_radius = c(8), n = 100) +
   geom_segment(data = tmp$NE_line, aes(x = x1, y = y1, xend = x2, yend = y2)) +
@@ -63,9 +88,23 @@ data_clean$tree |>
   geom_point(data = tmp$lcs_location, aes(x = x, y = y), size = 2, shape = 3) +
   geom_point(data = tmp$lcs_location, aes(x = x, y = y), size = 2, shape = 21) +
   geom_point(aes(x = tree_x, y = tree_y, color = as.character(tree_lcs_no))) +
-  geom_text_repel(aes(x = tree_x, y = tree_y, label = tree_azimuth, color = as.character(tree_lcs_no))) +
+  geom_text_repel(aes(x = tree_x, y = tree_y, label = paste0(tree_distance, "/", tree_azimuth), color = as.character(tree_lcs_no)), size = 4) +
   theme(legend.position = "none") +
-  coord_fixed()
+  coord_fixed() +
+  labs(
+    subtitle = paste0("Subplot code: ", unique(tmp$gg_tree$subplot_plot_no), unique(tmp$gg_tree$subplot_no)),
+    x = "",
+    y = "",
+    caption = "Labels: distance/azimuth"
+  )
+
+print(tmp$gg_lcs_example)
+
+ggsave(
+  file.path(path$res$fig, "example-land-cover-section.png"), tmp$gg_lcs_example,
+  width = 12, height = 8, dpi = 300
+)
+
 
 ## New split of Land cover sections
 tmp$lcs_location <- data.frame(x = c(0, 0, 12, 0, -12), y = c(0, 12, 0, -12, 0))
@@ -74,9 +113,9 @@ tmp$NW_line <- data.frame(x1 = -6, y1 =  6, x2 = 16 * cos(3*pi/4), y2 = 16 * sin
 tmp$SW_line <- data.frame(x1 = -6, y1 = -6, x2 = 16 * cos(5*pi/4), y2 = 16 * sin(5*pi/4))
 tmp$SE_line <- data.frame(x1 =  6, y1 = -6, x2 = 16 * cos(7*pi/4), y2 = 16 * sin(7*pi/4))
 
-data_clean$tree |>
-  filter(ONA_parent_index == 2) |>
-  ggplot() +
+tmp$gg_tree <- tree02 |> filter(ONA_parent_index == 2)
+
+tmp$gg_lcs_example_new <- ggplot(tmp$gg_tree) +
   gg_showplot(center = c(0, 0), vec_radius = c(16), n = 100) +
   gg_showplot(center = c(0, 0), vec_radius = c(8), n = 100, color = "grey60") +
   geom_path(data = data.frame(x = c(-6, -6, 6, 6, -6), y = c(-6, 6, 6, -6, -6)), aes(x, y)) +
@@ -87,7 +126,25 @@ data_clean$tree |>
   geom_point(data = tmp$lcs_location, aes(x = x, y = y), size = 2, shape = 3) +
   geom_point(data = tmp$lcs_location, aes(x = x, y = y), size = 2, shape = 21) +
   geom_point(aes(x = tree_x, y = tree_y, color = as.character(tree_lcs_no_new))) +
-  geom_text_repel(aes(x = tree_x, y = tree_y, label = tree_azimuth, color = as.character(tree_lcs_no_new))) +
+  geom_text_repel(aes(x = tree_x, y = tree_y, label = paste0(tree_distance, "/", tree_azimuth), color = as.character(tree_lcs_no_new)), size = 4) +
   theme(legend.position = "none") +
-  coord_fixed()
-  
+  coord_fixed() +
+  labs(
+    subtitle = paste0("Subplot code: ", unique(tmp$gg_tree$subplot_plot_no), unique(tmp$gg_tree$subplot_no)),
+    x = "",
+    y = "",
+    caption = "Labels: distance/azimuth"
+  )
+
+print(tmp$gg_lcs_example_new)
+
+ggsave(
+  file.path(path$res$fig, "example-land-cover-section_new.png"), tmp$gg_lcs_example_new,
+  width = 12, height = 8, dpi = 300
+  )
+
+## save table in 'results'
+write_csv(tree02, file.path(path$res$data, "tree_with_lcs.csv"))  
+
+## Remove tmp object
+rm(tmp)

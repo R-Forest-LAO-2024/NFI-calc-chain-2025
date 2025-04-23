@@ -35,23 +35,89 @@ CF <- 0.47
 
 
 ## + Create ggplot treeplot circles elements at the position of each treeplot in a plot
-gg_treeplot_center <- gg_showplot(center = c(0, 0), vec_radius = c(8, 16), n = 100)
+# gg_treeplot_center <- gg_showplot(center = c(0, 0), vec_radius = c(8, 16), n = 100)
+# 
+# gg_treeplot_all <- list(
+#   ## A
+#   gg_treeplot_center,
+#   ## B
+#   gg_showplot(center = c(0, 60),vec_radius = c(8, 16), n = 100),
+#   ## C
+#   gg_showplot(center = c(0, 120),vec_radius = c(8, 16), n = 100),
+#   ## D
+#   gg_showplot(center = c(0, 180),vec_radius = c(8, 16), n = 100),
+#   ## E
+#   gg_showplot(center = c(60, 0),vec_radius = c(8, 16), n = 100),
+#   ## F
+#   gg_showplot(center = c(120, 0),vec_radius = c(8, 16), n = 100),
+#   ## G
+#   gg_showplot(center = c(180, 0),vec_radius = c(8, 16), n = 100),
+#   coord_fixed(),
+#   theme_bw()
+# )
 
-gg_treeplot_all <- list(
-  ## A
-  gg_treeplot_center,
-  ## B
-  gg_showplot(center = c(0, 60),vec_radius = c(8, 16), n = 100),
-  ## C
-  gg_showplot(center = c(0, 120),vec_radius = c(8, 16), n = 100),
-  ## D
-  gg_showplot(center = c(0, 180),vec_radius = c(8, 16), n = 100),
-  ## E
-  gg_showplot(center = c(60, 0),vec_radius = c(8, 16), n = 100),
-  ## F
-  gg_showplot(center = c(120, 0),vec_radius = c(8, 16), n = 100),
-  ## G
-  gg_showplot(center = c(180, 0),vec_radius = c(8, 16), n = 100),
-  coord_fixed(),
-  theme_bw()
-)
+## function to make a tree positioning graph with land cover class 
+## !!! FOR TESTING ONLY
+.tree = tree02 |> filter(subplot_plot_no == 12, subplot_no == "A")
+.sp_center = c(0, 60)
+
+
+gg_subplot_lcs <- function(.tree, .sp_center = c(0, 0)) {
+  
+  lcs_frame   <- data.frame(
+    x = c(.sp_center[1] - 6, .sp_center[1] - 6, .sp_center[1] + 6, .sp_center[1] + 6, .sp_center[1] - 6), 
+    y = c(.sp_center[2] - 6, .sp_center[2] + 6, .sp_center[2] + 6, .sp_center[2] - 6, .sp_center[2] - 6)
+    )
+  lcs_points  <- data.frame(
+    x = c(.sp_center[1], .sp_center[1]     , .sp_center[1] + 12, .sp_center[1]     , .sp_center[1] - 12), 
+    y = c(.sp_center[2], .sp_center[2] + 12, .sp_center[2]     , .sp_center[2] - 12, .sp_center[2]     )
+    )
+  lcs_NE_line <- data.frame(
+    x1 = .sp_center[1] + 6, 
+    y1 = .sp_center[2] + 6, 
+    x2 = .sp_center[1] + 16 * cos(pi/4), 
+    y2 = .sp_center[2] + 16 * sin(pi/4)
+    )
+  lcs_NW_line <- data.frame(
+    x1 = .sp_center[1] - 6, 
+    y1 = .sp_center[2] + 6, 
+    x2 = .sp_center[1] + 16 * cos(3*pi/4), 
+    y2 = .sp_center[2] + 16 * sin(3*pi/4)
+    )
+  lcs_SW_line <- data.frame(
+    x1 = .sp_center[1] - 6, 
+    y1 = .sp_center[2] - 6, 
+    x2 = .sp_center[1] + 16 * cos(5*pi/4), 
+    y2 = .sp_center[2] + 16 * sin(5*pi/4)
+    )
+  lcs_SE_line <- data.frame(
+    x1 = .sp_center[1] + 6, 
+    y1 = .sp_center[2] - 6, 
+    x2 = .sp_center[1] + 16 * cos(7*pi/4), 
+    y2 = .sp_center[2] + 16 * sin(7*pi/4)
+    )
+  
+  list(
+    gg_showplot(center = .sp_center, vec_radius = 8, n = 100, color = "grey"),
+    gg_showplot(center = .sp_center, vec_radius = 16, n = 100),
+    geom_path(data = lcs_frame, aes(x, y)),
+    geom_segment(data = lcs_NE_line, aes(x = x1, y = y1, xend = x2, yend = y2)),
+    geom_segment(data = lcs_NW_line, aes(x = x1, y = y1, xend = x2, yend = y2)),
+    geom_segment(data = lcs_SW_line, aes(x = x1, y = y1, xend = x2, yend = y2)),
+    geom_segment(data = lcs_SE_line, aes(x = x1, y = y1, xend = x2, yend = y2)),
+    geom_point(data = lcs_points, aes(x = x, y = y), size = 2, shape = 3),
+    geom_point(data = lcs_points, aes(x = x, y = y), size = 2, shape = 21),
+    geom_point(data = .tree, aes(x = (.sp_center[1] + tree_x), y = (.sp_center[2] + tree_y), color = as.character(tree_lcs_no_new)))
+  )
+    #geom_text_repel(data = .tree, aes(x = tree_x, y = tree_y, label = paste0(tree_distance, "/", tree_azimuth), color = as.character(tree_lcs_no_new)), size = 4) +
+    # theme(legend.position = "none") +
+    # coord_fixed() +
+    # labs(
+    #   subtitle = paste0("Subplot code: ", unique(.tree$subplot_plot_no), unique(.tree$subplot_no)),
+    #   x = "",
+    #   y = "",
+    #   color = "lcs",
+    #   #caption = "Labels: distance/azimuth"
+    # )
+  
+}
