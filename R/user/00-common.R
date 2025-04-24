@@ -57,10 +57,11 @@ CF <- 0.47
 # )
 
 ## function to make a tree positioning graph with land cover class 
-## !!! FOR TESTING ONLY
-.tree = tree02 |> filter(subplot_plot_no == 12, subplot_no == "A")
-.sp_center = c(0, 60)
 
+## !!! FOR TESTING ONLY - needs tree02 from "02-*.R" first
+# .tree = tree02 |> filter(subplot_plot_no == 12, subplot_no == "A")
+# .sp_center = c(0, 60)
+## !!!
 
 gg_subplot_lcs <- function(.tree, .sp_center = c(0, 0)) {
   
@@ -107,7 +108,8 @@ gg_subplot_lcs <- function(.tree, .sp_center = c(0, 0)) {
     geom_segment(data = lcs_SE_line, aes(x = x1, y = y1, xend = x2, yend = y2)),
     geom_point(data = lcs_points, aes(x = x, y = y), size = 2, shape = 3),
     geom_point(data = lcs_points, aes(x = x, y = y), size = 2, shape = 21),
-    geom_point(data = .tree, aes(x = (.sp_center[1] + tree_x), y = (.sp_center[2] + tree_y), color = as.character(tree_lcs_no_new)))
+    geom_point(data = .tree, aes(x = (.sp_center[1] + tree_x), y = (.sp_center[2] + tree_y), color = lcs_code_new, size = tree_harmo_src)),
+    geom_text_repel(data = .tree, aes(x = (.sp_center[1] + tree_x), y = (.sp_center[2] + tree_y), label = tree_no, color = lcs_code_new), size = 4, show.legend = F) 
   )
     #geom_text_repel(data = .tree, aes(x = tree_x, y = tree_y, label = paste0(tree_distance, "/", tree_azimuth), color = as.character(tree_lcs_no_new)), size = 4) +
     # theme(legend.position = "none") +
