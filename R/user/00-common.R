@@ -1,5 +1,24 @@
 
+##
+## Objects ####
+##
+
+## + Create a AGB models parameter table ####
+agb_models <- tibble(
+  lc_class = c("EF", "DD", "MDF", "CF", "MCB"),
+  agb_equation = rep("AGB = a * DBH^b", 5),
+  param_a = c(0.3112, 0.2137, 0.523081, 0.1277, 0.1277),
+  param_b = c(2.2331, 2.2575, 2       , 2.3944, 2.3944)
+)
+
+## + Carbon fraction ####
+CF <- 0.47
+
+
+
+##
 ## Functions ####
+##
 
 ## + Make plot circles in ggplots ####
 gg_showplot <- function(center, vec_radius, n, color = "black"){
@@ -20,46 +39,10 @@ gg_showplot <- function(center, vec_radius, n, color = "black"){
 }
 
 
-## Objects ####
+## + Function to make a tree positioning graph with land cover class  ####
 
-## + Create a AGB models parameter table ####
-agb_models <- tibble(
-  lc_class = c("EF", "DD", "MDF", "CF", "MCB"),
-  agb_equation = rep("AGB = a * DBH^b", 5),
-  param_a = c(0.3112, 0.2137, 0.523081, 0.1277, 0.1277),
-  param_b = c(2.2331, 2.2575, 2       , 2.3944, 2.3944)
-)
-
-## + Carbon fraction ####
-CF <- 0.47
-
-
-## + Create ggplot treeplot circles elements at the position of each treeplot in a plot
-# gg_treeplot_center <- gg_showplot(center = c(0, 0), vec_radius = c(8, 16), n = 100)
-# 
-# gg_treeplot_all <- list(
-#   ## A
-#   gg_treeplot_center,
-#   ## B
-#   gg_showplot(center = c(0, 60),vec_radius = c(8, 16), n = 100),
-#   ## C
-#   gg_showplot(center = c(0, 120),vec_radius = c(8, 16), n = 100),
-#   ## D
-#   gg_showplot(center = c(0, 180),vec_radius = c(8, 16), n = 100),
-#   ## E
-#   gg_showplot(center = c(60, 0),vec_radius = c(8, 16), n = 100),
-#   ## F
-#   gg_showplot(center = c(120, 0),vec_radius = c(8, 16), n = 100),
-#   ## G
-#   gg_showplot(center = c(180, 0),vec_radius = c(8, 16), n = 100),
-#   coord_fixed(),
-#   theme_bw()
-# )
-
-## function to make a tree positioning graph with land cover class 
-
-## !!! FOR TESTING ONLY - needs tree02 from "02-*.R" first
-# .tree = tree02 |> filter(subplot_plot_no == 12, subplot_no == "A")
+## !!! FOR TESTING ONLY - needs tree from "03-tree-lcs-join.R" first
+# .tree = tree |> filter(subplot_plot_no == 12, subplot_no == "A")
 # .sp_center = c(0, 60)
 ## !!!
 
@@ -108,7 +91,7 @@ gg_subplot_lcs <- function(.tree, .sp_center = c(0, 0)) {
     geom_segment(data = lcs_SE_line, aes(x = x1, y = y1, xend = x2, yend = y2)),
     geom_point(data = lcs_points, aes(x = x, y = y), size = 2, shape = 3),
     geom_point(data = lcs_points, aes(x = x, y = y), size = 2, shape = 21),
-    geom_point(data = .tree, aes(x = (.sp_center[1] + tree_x), y = (.sp_center[2] + tree_y), color = lcs_code_new, size = tree_harmo_src)),
+    geom_point(data = .tree, aes(x = (.sp_center[1] + tree_x), y = (.sp_center[2] + tree_y), color = lcs_code_new, size = tree_dbh_nest)),
     geom_text_repel(data = .tree, aes(x = (.sp_center[1] + tree_x), y = (.sp_center[2] + tree_y), label = tree_no, color = lcs_code_new), size = 4, show.legend = F) 
   )
     #geom_text_repel(data = .tree, aes(x = tree_x, y = tree_y, label = paste0(tree_distance, "/", tree_azimuth), color = as.character(tree_lcs_no_new)), size = 4) +
@@ -123,3 +106,26 @@ gg_subplot_lcs <- function(.tree, .sp_center = c(0, 0)) {
     # )
   
 }
+
+
+## + Create ggplot treeplot circles elements at the position of each treeplot in a plot
+# gg_treeplot_center <- gg_showplot(center = c(0, 0), vec_radius = c(8, 16), n = 100)
+# 
+# gg_treeplot_all <- list(
+#   ## A
+#   gg_treeplot_center,
+#   ## B
+#   gg_showplot(center = c(0, 60),vec_radius = c(8, 16), n = 100),
+#   ## C
+#   gg_showplot(center = c(0, 120),vec_radius = c(8, 16), n = 100),
+#   ## D
+#   gg_showplot(center = c(0, 180),vec_radius = c(8, 16), n = 100),
+#   ## E
+#   gg_showplot(center = c(60, 0),vec_radius = c(8, 16), n = 100),
+#   ## F
+#   gg_showplot(center = c(120, 0),vec_radius = c(8, 16), n = 100),
+#   ## G
+#   gg_showplot(center = c(180, 0),vec_radius = c(8, 16), n = 100),
+#   coord_fixed(),
+#   theme_bw()
+# )
