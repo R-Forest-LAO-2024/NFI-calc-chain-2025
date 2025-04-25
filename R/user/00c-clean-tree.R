@@ -96,38 +96,60 @@ message("Trees with missisng stem_no after correction: ", nrow(tmp$check4))
 ## FLAG multi first stem no "1" missing sometimes - possible entry error or deadwood in coppice?
 tmp$check5 <- tmp$tree2 |> filter(tree_stem_go == "multi")
 
-tmp$tree2 |> filter(ONA_parent_index ==  36)
-tmp$tree2 |> filter(ONA_parent_index ==  54)
-tmp$tree2 |> filter(ONA_parent_index ==  99)
-tmp$tree2 |> filter(ONA_parent_index == 502)
-tmp$tree2 |> filter(ONA_parent_index == 741)
-tmp$tree2 |> filter(ONA_parent_index == 830)
+# tmp$tree2 |> filter(ONA_parent_index ==   36)
+# tmp$tree2 |> filter(ONA_parent_index ==   54)
+# tmp$tree2 |> filter(ONA_parent_index ==   99)
+# tmp$tree2 |> filter(ONA_parent_index ==  502)
+# tmp$tree2 |> filter(ONA_parent_index ==  741)
+# tmp$tree2 |> filter(ONA_parent_index ==  830)
+# tmp$tree2 |> filter(ONA_parent_index == 1287)
+# tmp$tree2 |> filter(ONA_parent_index == 1346)
+# tmp$tree2 |> filter(ONA_parent_index ==  192)
+# tmp$tree2 |> filter(ONA_parent_index ==  740)
+# tmp$tree2 |> filter(ONA_parent_index == 1241)
+# tmp$tree2 |> filter(ONA_parent_index == 1328)
+
 ## Manual correction of missing stem_no 1
 tmp$tree3 <- tmp$tree2 |>
   mutate(
     tree_stem_no = case_when(
-      ONA_parent_index ==  36 & ONA_index ==  237 ~ 1,
-      ONA_parent_index ==  36 & ONA_index ==  238 ~ 2,
-      ONA_parent_index ==  54 & ONA_index ==  315 ~ 1,
-      ONA_parent_index ==  54 & ONA_index ==  316 ~ 2,
-      ONA_parent_index ==  54 & ONA_index ==  317 ~ 3,
-      ONA_parent_index ==  99 & ONA_index ==  476 ~ 1,
-      ONA_parent_index == 502 & ONA_index == 2920 ~ 1,
-      ONA_parent_index == 502 & ONA_index == 2921 ~ 2,
-      ONA_parent_index == 502 & ONA_index == 2922 ~ 3,
-      ONA_parent_index == 502 & ONA_index == 2923 ~ 4,
-      ONA_parent_index == 502 & ONA_index == 2924 ~ 5,
-      ONA_parent_index == 741 & ONA_index == 4285 ~ 1,
-      ONA_parent_index == 830 & ONA_index == 4834 ~ 1,
-      
+      ONA_parent_index ==   36 & ONA_index ==  237 ~ 1,
+      ONA_parent_index ==   36 & ONA_index ==  238 ~ 2,
+      ONA_parent_index ==   54 & ONA_index ==  315 ~ 1,
+      ONA_parent_index ==   54 & ONA_index ==  316 ~ 2,
+      ONA_parent_index ==   54 & ONA_index ==  317 ~ 3,
+      ONA_parent_index ==   99 & ONA_index ==  476 ~ 1,
+      ONA_parent_index ==  502 & ONA_index == 2920 ~ 1,
+      ONA_parent_index ==  502 & ONA_index == 2921 ~ 2,
+      ONA_parent_index ==  502 & ONA_index == 2922 ~ 3,
+      ONA_parent_index ==  502 & ONA_index == 2923 ~ 4,
+      ONA_parent_index ==  502 & ONA_index == 2924 ~ 5,
+      ONA_parent_index ==  741 & ONA_index == 4285 ~ 1,
+      ONA_parent_index ==  830 & ONA_index == 4834 ~ 1,
+      ONA_parent_index == 1287 & ONA_index == 7650 ~ 1,
+      ONA_parent_index ==  192 & ONA_index ==  367 ~ 1,
+      ONA_parent_index ==  740 & ONA_index == 1382 ~ 1,
+      ONA_parent_index ==  740 & ONA_index == 1383 ~ 2,
+      ONA_parent_index == 1328 & ONA_index == 2470 ~ 2,
       TRUE ~ tree_stem_no
+    ),
+    tree_stem_go = case_when(
+      ONA_parent_index ==  1346 & ONA_index == 8072 ~ "multi",
+      ONA_parent_index ==  1241 & ONA_index == 2353 ~ "multi",
+      TRUE ~ tree_stem_go
     )
   )
+
+
+## Add tree_no based on tree_stem_no == 1
+
+
+
 
 ## Check  
 table(data_clean$tree$tree_stem_go, useNA = "ifany")
 table(data_clean$tree$tree_stem_no, useNA = "ifany")
- 
+
 # ##
 # ## Check main species ####
 # ##
