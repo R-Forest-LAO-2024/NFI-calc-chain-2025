@@ -3,8 +3,8 @@
 ## Initiate list to store temporary objects
 tmp <- list()
 
-tmp$tree1 <- data_init$tree_init1 |> mutate(harmo_src = "init1")
-tmp$tree2 <- data_init$tree_init2 |> mutate(harmo_src = "init2")
+tmp$tree1 <- data_init$tree_nest1_init |> mutate(harmo_src = "nest1")
+tmp$tree2 <- data_init$tree_nest2_init |> mutate(harmo_src = "nest2")
 
 ## Prepare tree data to combine nest1 ad nest2
 names(tmp$tree1) <- str_remove(names(tmp$tree1), pattern = ".*__")
@@ -145,3 +145,4 @@ data_prep$dw    <- data_prep$dw |> filter(!ONA_parent_index %in% tmp$qc_index)
 
 ## Clean tmp elements
 rm(tmp)
+

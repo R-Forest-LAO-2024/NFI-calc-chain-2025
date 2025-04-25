@@ -12,8 +12,8 @@ tmp$tab_names <- names(data_init$master_csv) |>
   unique()
 
 tmp$tab_names_new <- tmp$tab_names |>
-  str_replace(str_subset(tmp$tab_names, "tree_data_nest1"), "tree_init1") |>
-  str_replace(str_subset(tmp$tab_names, "tree_data_nest2"), "tree_init2") |>
+  str_replace(str_subset(tmp$tab_names, "tree_data_nest1"), "tree_nest1_init") |>
+  str_replace(str_subset(tmp$tab_names, "tree_data_nest2"), "tree_nest2_init") |>
   str_replace(str_subset(tmp$tab_names, "sapling"), "sapling_init") |>
   str_replace(str_subset(tmp$tab_names, "ldw"), "ldw_init") |>
   str_replace(str_subset(tmp$tab_names, "ntfp"), "ntfp_init")
