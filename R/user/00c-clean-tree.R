@@ -10,6 +10,8 @@ tmp <- list()
 
 tmp$tree <- data_prep$tree |>
   mutate(
+    tree_stem_go_old = tree_stem_go,
+    tree_stem_no_old = tree_stem_no,
     tree_stem_go = if_else(is.na(tree_stem_go), "one", tree_stem_go),
     tree_stem_no = if_else(is.na(tree_stem_no) & tree_stem_go == "one", 1, tree_stem_no)
   )
@@ -48,7 +50,7 @@ tmp$tree2 <- tmp$tree |>
       tree_harmo_src == "nest1" & ONA_index == 2440 ~ 1,
       tree_harmo_src == "nest1" & ONA_index == 2457 ~ 3,
       tree_harmo_src == "nest1" & ONA_index == 2468 ~ 1,
-      tree_harmo_src == "nest1" & ONA_index ==  759 ~ 1,
+      tree_harmo_src == "nest2" & ONA_index ==  759 ~ 1,
       tree_harmo_src == "nest1" & ONA_index == 2740 ~ 1,
       tree_harmo_src == "nest1" & ONA_index == 2815 ~ 1,
       
@@ -63,13 +65,66 @@ tmp$tree2 <- tmp$tree |>
       tree_harmo_src == "nest2" & ONA_index == 1481 ~ 1,
       tree_harmo_src == "nest1" & ONA_index == 5238 ~ 1,
       
+      tree_harmo_src == "nest1" & ONA_index == 5399 ~ 1,
+      tree_harmo_src == "nest1" & ONA_index == 5476 ~ 1,
+      tree_harmo_src == "nest2" & ONA_index == 1807 ~ 2,
+      tree_harmo_src == "nest1" & ONA_index == 5581 ~ 1,
+      tree_harmo_src == "nest1" & ONA_index == 6312 ~ 1,
+      tree_harmo_src == "nest2" & ONA_index == 2079 ~ 1,
+      tree_harmo_src == "nest1" & ONA_index == 6837 ~ 2,
+      tree_harmo_src == "nest1" & ONA_index == 6917 ~ 1,
+      tree_harmo_src == "nest1" & ONA_index == 6948 ~ 1,
+      tree_harmo_src == "nest1" & ONA_index == 6961 ~ 1,
+      
+      tree_harmo_src == "nest1" & ONA_index == 7006 ~ 3,
+      tree_harmo_src == "nest1" & ONA_index == 7040 ~ 1,
+      tree_harmo_src == "nest1" & ONA_index == 7049 ~ 2,
+      tree_harmo_src == "nest1" & ONA_index == 7184 ~ 2,
+      tree_harmo_src == "nest1" & ONA_index == 7195 ~ 2,
+      tree_harmo_src == "nest1" & ONA_index == 7200 ~ 1,
+      tree_harmo_src == "nest1" & ONA_index == 7431 ~ 2,
+      tree_harmo_src == "nest1" & ONA_index == 7667 ~ 1,
+      tree_harmo_src == "nest1" & ONA_index == 8121 ~ 1,
+      
       TRUE ~ tree_stem_no
     ) 
   )
 
-## FLAG multi 1 missing sometimes
+tmp$check4 <- tmp$tree2 |> filter(is.na(tree_stem_no))
+message("Trees with missisng stem_no after correction: ", nrow(tmp$check4))
 
-## Check
+## FLAG multi first stem no "1" missing sometimes - possible entry error or deadwood in coppice?
+tmp$check5 <- tmp$tree2 |> filter(tree_stem_go == "multi")
+
+tmp$tree2 |> filter(ONA_parent_index ==  36)
+tmp$tree2 |> filter(ONA_parent_index ==  54)
+tmp$tree2 |> filter(ONA_parent_index ==  99)
+tmp$tree2 |> filter(ONA_parent_index == 502)
+tmp$tree2 |> filter(ONA_parent_index == 741)
+tmp$tree2 |> filter(ONA_parent_index == 830)
+## Manual correction of missing stem_no 1
+tmp$tree3 <- tmp$tree2 |>
+  mutate(
+    tree_stem_no = case_when(
+      ONA_parent_index ==  36 & ONA_index ==  237 ~ 1,
+      ONA_parent_index ==  36 & ONA_index ==  238 ~ 2,
+      ONA_parent_index ==  54 & ONA_index ==  315 ~ 1,
+      ONA_parent_index ==  54 & ONA_index ==  316 ~ 2,
+      ONA_parent_index ==  54 & ONA_index ==  317 ~ 3,
+      ONA_parent_index ==  99 & ONA_index ==  476 ~ 1,
+      ONA_parent_index == 502 & ONA_index == 2920 ~ 1,
+      ONA_parent_index == 502 & ONA_index == 2921 ~ 2,
+      ONA_parent_index == 502 & ONA_index == 2922 ~ 3,
+      ONA_parent_index == 502 & ONA_index == 2923 ~ 4,
+      ONA_parent_index == 502 & ONA_index == 2924 ~ 5,
+      ONA_parent_index == 741 & ONA_index == 4285 ~ 1,
+      ONA_parent_index == 830 & ONA_index == 4834 ~ 1,
+      
+      TRUE ~ tree_stem_no
+    )
+  )
+
+## Check  
 table(data_clean$tree$tree_stem_go, useNA = "ifany")
 table(data_clean$tree$tree_stem_no, useNA = "ifany")
  
