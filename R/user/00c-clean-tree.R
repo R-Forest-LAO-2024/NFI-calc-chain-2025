@@ -5,8 +5,10 @@ tmp <- list()
 ## Correct multi-stems not well reported in the field and tree number now based on nest1 and nest2 + inc. deadwood
 
 ##
-## Check stem_go not working well ####
+## Replace NAs in tree_stem_go and tree_stem_no ####
 ##
+
+## + Automatic replacement of NAs for unique stems ####
 
 tmp$tree <- data_prep$tree |>
   mutate(
@@ -16,18 +18,29 @@ tmp$tree <- data_prep$tree |>
     tree_stem_no = if_else(is.na(tree_stem_no) & tree_stem_go == "one", 1, tree_stem_no)
   )
 
-tmp$check <- tmp$tree |>
-  filter(is.na(tree_stem_no))
+
+## Check  
+table(tmp$tree$tree_stem_go, useNA = "ifany")
+table(tmp$tree$tree_stem_no, useNA = "ifany")
+
+
+## + Manual correction of NAs in multi-stems trees ####
+
+## Make a table of all subplots with NAs
+tmp$check <- tmp$tree |> filter(is.na(tree_stem_no))
 
 tmp$check2 <- tmp$check |> pull(ONA_parent_index) |> unique() |> sort() 
 
 tmp$check3 <- tmp$tree |> filter(ONA_parent_index %in% tmp$check2)
 
-## Manual correction of NAs in multi
-## Screen through tmp$check3 with:
+## Manual correction of NAs in multi 
+## Steps:
+## - Screen through tmp$check3 with:
 ## View(tmp$check3)
-## Then sort by ONA_index followed by sort by ONA_parent index
-## !! Trees from different subplots (i.e different ONA_parent_index) can have the same ONA_index, 
+## - Sort by ONA_index followed by ONA_parent index
+## - See what number is missing based on previous and following records
+## - Edit the value with mutate() anmd case_when()
+## Note: Trees from different subplots (i.e different ONA_parent_index) can have the same ONA_index, 
 ## because ONA_index is assigned for nest1 and nest2 separately
 tmp$tree2 <- tmp$tree |>
   mutate(
@@ -90,10 +103,13 @@ tmp$tree2 <- tmp$tree |>
     ) 
   )
 
+## Check
 tmp$check4 <- tmp$tree2 |> filter(is.na(tree_stem_no))
 message("Trees with missisng stem_no after correction: ", nrow(tmp$check4))
 
-## FLAG multi first stem no "1" missing sometimes - possible entry error or deadwood in coppice?
+## + Manual correction of multi-stems missing value 1 ####
+
+## Screen through multi-stems and vidually check that all are sequences starting with 1
 tmp$check5 <- tmp$tree2 |> filter(tree_stem_go == "multi")
 
 # tmp$tree2 |> filter(ONA_parent_index ==   36)
@@ -108,8 +124,10 @@ tmp$check5 <- tmp$tree2 |> filter(tree_stem_go == "multi")
 # tmp$tree2 |> filter(ONA_parent_index ==  740)
 # tmp$tree2 |> filter(ONA_parent_index == 1241)
 # tmp$tree2 |> filter(ONA_parent_index == 1328)
+tmp$tree2 |> filter(ONA_parent_index == 83)
+tmp$tree2 |> filter(ONA_parent_index == 121)
 
-## Manual correction of missing stem_no 1
+## Manual correction of missing stem_no value 1
 tmp$tree3 <- tmp$tree2 |>
   mutate(
     tree_stem_no = case_when(
@@ -130,7 +148,10 @@ tmp$tree3 <- tmp$tree2 |>
       ONA_parent_index ==  192 & ONA_index ==  367 ~ 1,
       ONA_parent_index ==  740 & ONA_index == 1382 ~ 1,
       ONA_parent_index ==  740 & ONA_index == 1383 ~ 2,
-      ONA_parent_index == 1328 & ONA_index == 2470 ~ 2,
+      ONA_parent_index == 1328 & ONA_index == 2470 ~ 1,
+      ONA_parent_index ==   83 & ONA_index ==  425 ~ 1,
+      ONA_parent_index ==  121 & ONA_index ==  708 ~ 1,
+      ONA_parent_index ==  121 & ONA_index ==  709 ~ 2,
       TRUE ~ tree_stem_no
     ),
     tree_stem_go = case_when(
@@ -140,15 +161,49 @@ tmp$tree3 <- tmp$tree2 |>
     )
   )
 
+##
+## Correct tree_no based on tree_stem_no == 1 ####
+## 
 
-## Add tree_no based on tree_stem_no == 1
+## Check
+# tmp$tree |> nrow()
+# tmp$tree3 |> filter(tree_stem_no == 1) |> nrow()
+
+## + re-create tree_no based on row number for each plot ####
+tmp$first_stem <- tmp$tree3 |> 
+  filter(tree_stem_no == 1) |>
+  arrange(ONA_parent_index, tree_harmo_src, ONA_index) |>
+  group_by(ONA_parent_index) |>
+  mutate(tree_no_corr = row_number()) |>
+  ungroup() |>
+  select(ONA_parent_index, ONA_index_join = ONA_index, tree_harmo_src, tree_no_corr)
+
+## + Add tree_no back to tree table ####
+tmp$tree4 <- tmp$tree3 |>
+  mutate(ONA_index_join = if_else(tree_stem_go == "multi", ONA_index - tree_stem_no + 1, ONA_index)) |>
+  left_join(tmp$first_stem, by = join_by(ONA_parent_index, ONA_index_join, tree_harmo_src)) |>
+  mutate(
+    tree_no_old = tree_no,
+    tree_no = tree_no_corr
+    ) |>
+  select(-tree_no_corr, -ONA_index_join)
+
+## Check
+# summary(tmp$tree4$tree_no)
+
+
+##
+## Pass data to 'data_clean' ####
+##
+
+data_clean$tree <- tmp$tree4
+
+
+rm(tmp)
 
 
 
 
-## Check  
-table(data_clean$tree$tree_stem_go, useNA = "ifany")
-table(data_clean$tree$tree_stem_no, useNA = "ifany")
 
 # ##
 # ## Check main species ####
