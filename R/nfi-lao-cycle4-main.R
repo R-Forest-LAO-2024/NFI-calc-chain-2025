@@ -10,8 +10,7 @@
 
 ## Get 'here' package first to avoid issues with relative paths #### 
 ## Useful when sourcing script from Quarto doc.
-if (!require(here)) install.packages("here")
-library(here)
+if (!require(here)) install.packages("here"); library(here)
 
 ## Get user inputs ####
 
@@ -43,9 +42,11 @@ source(here("R/user/00b-clean-lcs.R"))
 
 source(here("R/user/00c-clean-tree.R"))
 
+source(here("R/user/00d-clean-dw.R"))
+
 source(here("R/user/00z-clean-assign.R"))
 
-## Run analysis #### 
+## Prepare tree calculation #### 
 
 source(here("R/user/00-common.R"))
 
@@ -58,4 +59,8 @@ source(here("R/user/03-tree-lcs-join.R"))
 source(here("R/user/04-tree-ba.R"))
 
 source(here("R/user/05-tree-agb.R"))
+
+source(here("R/user/11-sdw-agb.R"))
+
+## Aggregate data ####
 
