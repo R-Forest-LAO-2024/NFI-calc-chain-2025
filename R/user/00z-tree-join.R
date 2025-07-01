@@ -71,7 +71,7 @@ tree_ <- tree |>
 
 
 ## save table in 'results'
-# write_csv(tree, file.path(path$res$data, "tree_with_lcs.csv"))  
+write_csv(tree_, file.path(path$res$data, "tree_with_joins.csv"))  
 
 ## Remove tmp object
 rm(tmp)

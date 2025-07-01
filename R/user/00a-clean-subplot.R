@@ -41,19 +41,19 @@ message("NFI plot measurement percentage: ", round(tmp$measured_nplot / tmp$plan
 tmp$subplot1 <- data_prep$subplot |>
   mutate(
     subplot_no = case_when(
-      ONA_index == 109 ~ "B",
-      ONA_index == 113 ~ "B",
-      ONA_index == 265 ~ "C",
-      ONA_index == 440 ~ "C",
-      ONA_index == 980 ~ "B",
+      ONA_index == 109 ~ "B", ## 631C is actually 631B
+      ONA_index == 113 ~ "B", ## 632C is actually 632B
+      ONA_index == 265 ~ "C", ## 553D is actually 553C
+      ONA_index == 440 ~ "C", ## 336B is actually 336C
+      ONA_index == 980 ~ "B", ## 232C is actually 232B
       TRUE ~ subplot_no
     ),
     subplot_plot_no = case_when(
-      ONA_index == 1269 ~ 333,
+      ONA_index == 1269 ~ 333, ## plot_no typo should be 333
       ONA_index == 1270 ~ 333,
       ONA_index == 1271 ~ 333,
       ONA_index == 1272 ~ 333,
-      ONA_index == 1417 ~ 359,
+      ONA_index == 1417 ~ 359, ## plot_no 369(B) is actually 359(B)
       TRUE ~ subplot_plot_no
     ),
     ## RECALC plot_id, subplot_id
@@ -162,7 +162,7 @@ tmp$subplot3 <- tmp$subplot2 |>
   filter(!ONA_index %in% c(1819, 2237, 2245)) |>
   mutate(
     subplot_no = case_when(
-      ONA_index == 2125 ~ "C", ## issue with 620B duplicate
+      ONA_index == 2125 ~ "C", ## issue with 620B duplicate, so B becomes C and C becomes D
       ONA_index == 2126 ~ "D",
       ONA_index ==  103 ~ "C", ## issue with 627B
       TRUE ~ subplot_no

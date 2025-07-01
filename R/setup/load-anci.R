@@ -27,12 +27,35 @@ anci$subplot_plan <- read_csv(file.path(path$dat$anci, "subplot-planned-location
   )
 
 ## CEO observations ####
-anci$lc_ceo <- read_csv(file.path(path$dat$anci, "land-cover-ceo.csv"), show_col_types = F)
-
 anci$ceo <- read_csv(file.path(path$dat$anci, usr$get_ceofile), show_col_types = F)
 
+anci$lc_ceo <- read_csv(file.path(path$dat$anci, "land-cover-ceo.csv"), show_col_types = F)
+
 anci$ceo_nfi_id <-  read_csv(file.path(path$dat$anci, "ceo-phase2-codes.csv"), show_col_types = F)
-  
+
+anci$ceo_nfi_id2 <- read_csv(file.path(path$dat$anci, "ceo-phase2-full-selection.csv"), show_col_types = F) |>
+  mutate(
+    visited = if_else(!is.na(plotid), TRUE, FALSE)
+  )
+
+## + Make a clean list of all field plots from CEO ####
+# anci$ceo_nfi_id2 |>
+#   filter(Plot == "A") |>
+#   mutate(x = LON, y = LAT) |>
+#   st_as_sf(coords = c("x", "y"), crs = 4326) |>
+#   st_write(file.path(path$res$test, "NFI-phase2-fullgrid-plot.kml"))
+
+max_visited <- max(anci$ceo_nfi_id2$plotid, na.rm = T)
+
+list_plots_ph2_notvisited <- anci$ceo_nfi_id2 |>
+  arrange(plotid, ID) |>
+  filter(is.na(plotid)) |>
+  select(plotid, ID) |>
+  distinct() |>
+  mutate(plotid_all = max_visited + row_number())
+
+anci$ceo_nfi_id_all <- 
+
 ## Chave et al. 2014 environmental factor E raster file ####
 
 if (!"E.bil" %in% list.files(path$dat$anci)) {
@@ -58,3 +81,14 @@ if (!"wdData.csv" %in% list.files(path$dat$anci)) {
 anci$wd_raw <- read_csv(file.path(path$dat$anci, "wdData.csv"), show_col_types = F)
 
 names(anci$wd_raw) <- c("wd_no", "wd_family", "wd_species", "wd_value", "wd_region", "wd_biblio")
+
+
+## R:S values
+# treeplot_rs = case_when(
+#   lc_class == "CF" & treeplot_agb_ha <  50 ~ 0.46,
+#   lc_class == "CF" & treeplot_agb_ha <= 150 ~ 0.32,
+#   lc_class == "CF" & treeplot_agb_ha >  150 ~ 0.23,
+#   lc_class != "CF" & treeplot_agb_ha <  125 ~ 0.2,
+#   lc_class != "CF" & treeplot_agb_ha >= 125 ~ 0.24,
+#   TRUE ~ NA_real_
+# )
