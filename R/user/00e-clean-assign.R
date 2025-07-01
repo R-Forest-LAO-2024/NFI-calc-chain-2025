@@ -8,6 +8,9 @@
 
 tmp <- list()
 
+## NOT USED, not tree with joins is tree_
+#names(data_clean) <- paste0(names(data_clean), "_init")
+
 tmp$names <- names(data_clean)
 
 walk(tmp$names, function(x){ assign(x, data_clean[[x]], envir = .GlobalEnv) })

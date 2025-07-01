@@ -1,0 +1,41 @@
+
+table(tree_$lcs_name, tree_$lcs_code_new)
+
+tree_ <- tree_ |>
+  mutate(
+    tree_agb_local = case_when(
+      lcs_code_new == "EG"    ~ 0.3112 * tree_dbh^2.2331,
+      lcs_code_new == "MD"    ~ 0.523081 * tree_dbh^2,
+      lcs_code_new == "DD"    ~ 0.2137 * tree_dbh^2.2575,
+      lcs_code_new == "CF"    ~ 0.1277 * tree_dbh^2.3944,
+      lcs_code_new == "MCB"   ~ 0.1277 * tree_dbh^2.3944,
+      lcs_code_new == "P_AC"  ~ 0.3112 * tree_dbh^2.2331,
+      lcs_code_new == "P_EC"  ~ 0.3112 * tree_dbh^2.2331,
+      lcs_code_new == "P_RB"  ~ 0.3112 * tree_dbh^2.2331,
+      lcs_code_new == "P_TK"  ~ 0.3112 * tree_dbh^2.2331,
+      lcs_code_new == "P_OTH" ~ 0.3112 * tree_dbh^2.2331,
+      TRUE ~ 0
+    ),
+    tree_agb_chave14 = exp(-1.803 - 0.976*plot_E + 0.976*log(wd_all) + 2.673*log(tree_dbh) -0.0299*(log(tree_dbh))^2),
+    tree_agb_chave05 = wd_all * exp(-1.499 + 2.148 * log(tree_dbh) + 0.207 * (log(tree_dbh))^2 - 0.0281*(log(tree_dbh))^3),
+    tree_agb_chave05_wd06 = 0.6 * exp(-1.499 + 2.148 * log(tree_dbh) + 0.207 * (log(tree_dbh))^2 - 0.0281*(log(tree_dbh))^3)
+  )
+
+
+## Check
+table(tree_$lcs_strata_name)
+
+tree_ |>
+  filter(lcs_strata_name != "Nonforest") |>
+  ggplot(aes(x = tree_dbh)) +
+  geom_line(aes(y = tree_agb_local)) +
+  geom_line(aes(y = tree_agb_chave05_wd06), linetype = "dashed") +
+  geom_point(aes(y = tree_agb_chave14), size = 0.8, col = "darkred", alpha = 0.4) +
+  geom_point(aes(y = tree_agb_chave05), size = 0.8, col = "darkorange", shape = 4, alpha = 0.4) +
+  facet_wrap(~lcs_code_new) +
+  labs(
+    x = "DBH",
+    y = "AGB",
+    caption = "cross: Chave05, round: Chave14\nline: historical models, dash: chave05 WD=0.6g/cm3"
+  )
+

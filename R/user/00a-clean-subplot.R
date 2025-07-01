@@ -53,6 +53,7 @@ tmp$subplot1 <- data_prep$subplot |>
       ONA_index == 1270 ~ 333,
       ONA_index == 1271 ~ 333,
       ONA_index == 1272 ~ 333,
+      ONA_index == 1417 ~ 359,
       TRUE ~ subplot_plot_no
     ),
     ## RECALC plot_id, subplot_id
@@ -147,13 +148,39 @@ st_write(tmp$sf_subplot_missing, file.path(path$res$test, "plot_less4sp.kml"), a
 ## Check again for potential duplicates
 message("Unique subplot codes: ", length(unique(tmp$subplot2$subplot_id)) == nrow(tmp$subplot2))
 
+## IF not equal, investigate
+tmp$dup <- tmp$subplot2 |>
+  summarise(count = n(), .by = subplot_id) |>
+  filter(count > 1) |>
+  pull(subplot_id) |>
+  sort()
+
+print(tmp$dup)
+
+## Clean again 
+tmp$subplot3 <- tmp$subplot2 |>
+  filter(!ONA_index %in% c(1819, 2237, 2245)) |>
+  mutate(
+    subplot_no = case_when(
+      ONA_index == 2125 ~ "C", ## issue with 620B duplicate
+      ONA_index == 2126 ~ "D",
+      ONA_index ==  103 ~ "C", ## issue with 627B
+      TRUE ~ subplot_no
+    ),
+    ## Recalc subplot ID
+    subplot_id = paste0(subplot_plot_id, subplot_no)
+  )
+
+## Check again for potential duplicates
+message("Unique subplot codes: ", length(unique(tmp$subplot3$subplot_id)) == nrow(tmp$subplot3))
+
 
 
 ##
 ## Pass cleaned data to data_clean ####
 ##
 
-data_clean$subplot <- tmp$subplot2
+data_clean$subplot <- tmp$subplot3
 
 
 rm(tmp)

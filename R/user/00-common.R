@@ -4,12 +4,12 @@
 ##
 
 ## + Create a AGB models parameter table ####
-agb_models <- tibble(
-  lc_class = c("EF", "DD", "MDF", "CF", "MCB"),
-  agb_equation = rep("AGB = a * DBH^b", 5),
-  param_a = c(0.3112, 0.2137, 0.523081, 0.1277, 0.1277),
-  param_b = c(2.2331, 2.2575, 2       , 2.3944, 2.3944)
-)
+# agb_models <- tibble(
+#   lc_class = c("EF", "DD", "MDF", "CF", "MCB"),
+#   agb_equation = rep("AGB = a * DBH^b", 5),
+#   param_a = c(0.3112, 0.2137, 0.523081, 0.1277, 0.1277),
+#   param_b = c(2.2331, 2.2575, 2       , 2.3944, 2.3944)
+# )
 
 ## + Carbon fraction ####
 CF <- 0.47

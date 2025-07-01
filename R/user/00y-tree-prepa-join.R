@@ -1,5 +1,7 @@
 
-
+## Add land cover section based on:
+## - assigned supblot section circles (tree_lcs_no)
+## - equidistance between observation points (tree_lcs_no_new)
 tree <- tree |>
   mutate(
     tree_x = cos((90 - tree_azimuth) * pi/180) * tree_distance,
