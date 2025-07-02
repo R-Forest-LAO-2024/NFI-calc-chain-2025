@@ -61,13 +61,3 @@ anci$wd_raw <- read_csv(file.path(path$dat$anci, "wdData.csv"), show_col_types =
 
 names(anci$wd_raw) <- c("wd_no", "wd_family", "wd_species", "wd_value", "wd_region", "wd_biblio")
 
-
-## R:S values
-# treeplot_rs = case_when(
-#   lc_class == "CF" & treeplot_agb_ha <  50 ~ 0.46,
-#   lc_class == "CF" & treeplot_agb_ha <= 150 ~ 0.32,
-#   lc_class == "CF" & treeplot_agb_ha >  150 ~ 0.23,
-#   lc_class != "CF" & treeplot_agb_ha <  125 ~ 0.2,
-#   lc_class != "CF" & treeplot_agb_ha >= 125 ~ 0.24,
-#   TRUE ~ NA_real_
-# )
