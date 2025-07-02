@@ -1,4 +1,38 @@
 
+## 
+## misc ####
+##
+
+## + Make a clean list of all field plots from CEO ####
+# anci$ceo_nfi_id |>
+#   filter(Plot == "A") |>
+#   mutate(x = LON, y = LAT) |>
+#   st_as_sf(coords = c("x", "y"), crs = 4326) |>
+#   st_write(file.path(path$res$test, "NFI-phase2-fullgrid-plot.kml"))
+
+max_visited <- max(anci$ceo_nfi_id$plotid, na.rm = T)
+
+list_plots_ph2_notvisited <- anci$ceo_nfi_id |>
+  arrange(plotid, ID) |>
+  filter(is.na(plotid)) |>
+  select(plotid, ID) |>
+  distinct() |>
+  mutate(plotid_all = max_visited + row_number())
+
+anci$ceo_nfi_id_all <- anci$ceo_nfi_id |>
+  left_join(list_plots_ph2_notvisited, by = join_by(plotid, ID)) |>
+  mutate(
+    plotid_all = if_else(!is.na(plotid), plotid, plotid_all),
+    plot_visited = if_else(!is.na(plotid), TRUE, FALSE)
+  ) |>
+  select(pl_orig_fid = ORIG_FID, ID, plotid_all, plot_visited) |>
+  distinct()
+
+rm(max_visited, list_plots_ph2_notvisited)
+
+write_csv(anci$ceo_nfi_id_all, file.path(path$res$data, "nfi-phase2-codes-full.csv"))
+
+
 ##
 ## Objects ####
 ##

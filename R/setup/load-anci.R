@@ -31,30 +31,9 @@ anci$ceo <- read_csv(file.path(path$dat$anci, usr$get_ceofile), show_col_types =
 
 anci$lc_ceo <- read_csv(file.path(path$dat$anci, "land-cover-ceo.csv"), show_col_types = F)
 
-anci$ceo_nfi_id <-  read_csv(file.path(path$dat$anci, "ceo-phase2-codes.csv"), show_col_types = F)
-
-anci$ceo_nfi_id2 <- read_csv(file.path(path$dat$anci, "ceo-phase2-full-selection.csv"), show_col_types = F) |>
-  mutate(
-    visited = if_else(!is.na(plotid), TRUE, FALSE)
-  )
-
-## + Make a clean list of all field plots from CEO ####
-# anci$ceo_nfi_id2 |>
-#   filter(Plot == "A") |>
-#   mutate(x = LON, y = LAT) |>
-#   st_as_sf(coords = c("x", "y"), crs = 4326) |>
-#   st_write(file.path(path$res$test, "NFI-phase2-fullgrid-plot.kml"))
-
-max_visited <- max(anci$ceo_nfi_id2$plotid, na.rm = T)
-
-list_plots_ph2_notvisited <- anci$ceo_nfi_id2 |>
-  arrange(plotid, ID) |>
-  filter(is.na(plotid)) |>
-  select(plotid, ID) |>
-  distinct() |>
-  mutate(plotid_all = max_visited + row_number())
-
-anci$ceo_nfi_id_all <- 
+## > Not needed
+# anci$ceo_nfi_id <-  read_csv(file.path(path$dat$anci, "ceo-phase2-codes.csv"), show_col_types = F)
+anci$ceo_nfi_id <- read_csv(file.path(path$dat$anci, "ceo-phase2-full-selection.csv"), show_col_types = F)
 
 ## Chave et al. 2014 environmental factor E raster file ####
 

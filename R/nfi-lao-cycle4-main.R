@@ -45,8 +45,11 @@ source(here("R/setup/get-data.R"))
 ## Data preparation ####
 ##
 
-## + Clean data ####
+## + Add custom functions for analysis ####
 
+source(here("R/user/00-common.R"))
+
+## + Clean data ####
 ## GS: Mainly entity code issues
 
 source(here("R/user/00a-clean-subplot.R"))
@@ -81,9 +84,6 @@ source(here("R/user/00z-tree-join.R"))
 ## Entity level calculation #### 
 ##
 
-## + Add custom functions for analysis ####
-
-source(here("R/user/00-common.R"))
 
 
 ## + Tree level calculation ####
@@ -95,6 +95,8 @@ source(here("R/user/02-tree-weight.R"))
 source(here("R/user/05-tree-ba.R"))
 
 source(here("R/user/06-tree-agb.R"))
+
+
 
 source(here("R/user/11-sdw-agb.R"))
 
