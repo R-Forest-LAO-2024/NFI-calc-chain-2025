@@ -85,7 +85,6 @@ source(here("R/user/00z-tree-join.R"))
 ##
 
 
-
 ## + Tree level calculation ####
 
 source(here("R/user/01-tree-dbh-class.R"))
@@ -96,6 +95,7 @@ source(here("R/user/05-tree-ba.R"))
 
 source(here("R/user/06-tree-agb.R"))
 
+source(here("R/user/07-tree-bgb.R"))
 
 
 source(here("R/user/11-sdw-agb.R"))
@@ -110,4 +110,12 @@ source(here("R/user/99-save-tables.R"))
 ## Aggregate data ####
 ##
 
-source(here("R/analytics/strata-weights.R"))
+#source(here("R/analytics/strata-weights.R"))
+
+
+## 
+## Other analytics ####
+##
+
+## + Nb tree per DBH class
+source(here("R/user/99-nb-tree-dbh-class.R"))

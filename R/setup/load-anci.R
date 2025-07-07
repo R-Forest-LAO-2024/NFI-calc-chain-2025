@@ -7,7 +7,8 @@ anci$sf_prov <- st_read(file.path(path$dat$anci, "gadm/gadm41_LAO_1.json"), quie
 anci$sf_dist <- st_read(file.path(path$dat$anci, "gadm/gadm41_LAO_2.json"), quiet = T)
 
 ## Land cover table ####
-anci$lc <- read_csv(file.path(path$dat$anci, "land-cover.csv"), show_col_types = F)
+anci$lc <- read_csv(file.path(path$dat$anci, "land-cover.csv"), show_col_types = F) |>
+  rename_with(.cols = starts_with("lc_"), str_replace, "lc_", "lu_")
 
 ## Species code list ####
 anci$species_list <- read_csv(file.path(path$dat$anci, "species-list.csv"), show_col_types = F)
