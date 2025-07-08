@@ -1,9 +1,28 @@
 
+
+##
+## Objects ####
+##
+
+## + Create a AGB models parameter table ####
+# agb_models <- tibble(
+#   lc_class = c("EF", "DD", "MDF", "CF", "MCB"),
+#   agb_equation = rep("AGB = a * DBH^b", 5),
+#   param_a = c(0.3112, 0.2137, 0.523081, 0.1277, 0.1277),
+#   param_b = c(2.2331, 2.2575, 2       , 2.3944, 2.3944)
+# )
+
+## + Carbon fraction ####
+CF <- 0.47
+
+
+
 ## 
 ## misc ####
 ##
 
 ## + Make a clean list of all field plots from CEO ####
+
 # anci$ceo_nfi_id |>
 #   filter(Plot == "A") |>
 #   mutate(x = LON, y = LAT) |>
@@ -33,20 +52,6 @@ rm(max_visited, list_plots_ph2_notvisited)
 write_csv(anci$ceo_nfi_id_all, file.path(path$res$data, "nfi-phase2-codes-full.csv"))
 
 
-##
-## Objects ####
-##
-
-## + Create a AGB models parameter table ####
-# agb_models <- tibble(
-#   lc_class = c("EF", "DD", "MDF", "CF", "MCB"),
-#   agb_equation = rep("AGB = a * DBH^b", 5),
-#   param_a = c(0.3112, 0.2137, 0.523081, 0.1277, 0.1277),
-#   param_b = c(2.2331, 2.2575, 2       , 2.3944, 2.3944)
-# )
-
-## + Carbon fraction ####
-CF <- 0.47
 
 
 

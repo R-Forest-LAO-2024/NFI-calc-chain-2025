@@ -97,6 +97,8 @@ source(here("R/user/06-tree-agb.R"))
 
 source(here("R/user/07-tree-bgb.R"))
 
+source(here("R/user/08-tree-carbon.R"))
+
 
 source(here("R/user/11-sdw-agb.R"))
 
