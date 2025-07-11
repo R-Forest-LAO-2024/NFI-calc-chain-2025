@@ -8,7 +8,6 @@ tmp$ceo <- anci$ceo |>
   left_join(anci$lc_ceo, by = c("LC" = "lc_code")) |>
   left_join(anci$ceo_nfi_id, by = join_by(pl_orig_fid))
 
-
 tmp$ceo_sample_total <- nrow(anci$ceo)
 tmp$ceo_country_area <- tmp$ceo_sample_total * usr$CEO_grid_with * usr$CEO_grid_height * 100
 

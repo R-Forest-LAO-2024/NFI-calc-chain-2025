@@ -60,11 +60,20 @@ source(here("R/user/00c-clean-tree.R"))
 
 source(here("R/user/00d-clean-dw.R"))
 
-source(here("R/user/00e-clean-assign.R"))
+source(here("R/user/00e-clean-ldw.R"))
+
+source(here("R/user/00f-clean-stump.R"))
+
+
+## + Get all tables from 'data_clean' list into the Global Environment ####
+
+source(here("R/user/00i-clean-assign.R"))
+
 
 ## + Add Chave et al. 2014 environmental factor E to ancillary data ####
 
 source(here("R/user/00m-extract-chaveE.R"))
+
 
 ## + Add wood density averages at species and genus level to ancillary data ####
 
@@ -73,11 +82,15 @@ source(here("R/user/00n-average-wood-density.R"))
 
 ## + Join tables ####
 
-source(here("R/user/00y-tree-prepa-join.R"))
+## Land cover section assigned to tree and dw in the cleaning phase
 
 source(here("R/user/00z-tree-join.R"))
 
-## > Now the tree table with all info is the object 'tree_'
+source(here("R/user/00z-dw-join.R"))
+
+source(here("R/user/00z-ldw-join.R"))
+
+source(here("R/user/00z-stump-join.R"))
 
 
 ##
@@ -100,7 +113,15 @@ source(here("R/user/07-tree-bgb.R"))
 source(here("R/user/08-tree-carbon.R"))
 
 
-source(here("R/user/11-sdw-agb.R"))
+## + Deadwood calculation ###
+
+source(here("R/user/11-dw-agb.R"))
+
+source(here("R/user/12-ldw-agb.R"))
+
+source(here("R/user/13-stump-agb.R"))
+
+
 
 ## + Save tables ####
 
@@ -119,5 +140,11 @@ source(here("R/user/99-save-tables.R"))
 ## Other analytics ####
 ##
 
+## Carbon stock based on ratio estimator
+source(here("R/user/99-cstock.R"))
+
 ## + Nb tree per DBH class
-source(here("R/user/99-nb-tree-dbh-class.R"))
+# source(here("R/user/99-nb-tree-dbh-class.R"))
+
+
+
