@@ -84,16 +84,16 @@ landuse_tree <- plot_tree |>
     .by = c(lu_no, lu_code_new)
   ) |>
   mutate(
-    nb_tree_ha = sum_tree / sum_area_ha,
-    ba_ha = sum_ba / sum_area_ha,
-    agb_ha = sum_agb / sum_area_ha,
-    carbon_ha = sum_carbon / sum_area_ha,
+    nb_tree_ha = round(sum_tree / sum_area_ha, 3),
+    ba_ha = round(sum_ba / sum_area_ha, 3),
+    agb_ha = round(sum_agb / sum_area_ha, 3),
+    carbon_ha = round(sum_carbon / sum_area_ha, 3),
   ) |>
   select(-starts_with("sum_")) |>
   arrange(lu_no)
 landuse_tree
 
-write_csv(landuse_tree, paste0("results/tables/cstock-landuse-tree", Sys.Date(), ".csv"))
+write_csv(landuse_tree, paste0("results/tables/cstock-landuse-tree-", Sys.Date(), ".csv"))
 
 
 ##
@@ -144,15 +144,15 @@ landuse_dw <- plot_dw |>
     .by = c(lu_no, lu_code_new)
   ) |>
   mutate(
-    nb_dw_ha = sum_dw / sum_area_ha,
-    agb_ha = sum_agb / sum_area_ha,
-    carbon_ha = agb_ha * CF
+    nb_dw_ha = round(sum_dw / sum_area_ha, 3),
+    agb_ha = round(sum_agb / sum_area_ha, 3),
+    carbon_ha = round(agb_ha * CF, 3)
   ) |>
   select(-starts_with("sum_")) |>
   arrange(lu_no)
 landuse_dw
 
-write_csv(landuse_dw, paste0("results/tables/cstock-landuse_dw", Sys.Date(), ".csv"))
+write_csv(landuse_dw, paste0("results/tables/cstock-landuse-dw-", Sys.Date(), ".csv"))
 
 
 ##
@@ -203,15 +203,15 @@ landuse_stump <- plot_stump |>
     .by = c(lu_no, lu_code_new)
   ) |>
   mutate(
-    nb_stump_ha = sum_stump / sum_area_ha,
-    agb_ha = sum_agb / sum_area_ha,
-    carbon_ha = agb_ha * CF
+    nb_stump_ha = round(sum_stump / sum_area_ha, 3),
+    agb_ha = round(sum_agb / sum_area_ha, 3),
+    carbon_ha = round(agb_ha * CF, 3)
   ) |>
   select(-starts_with("sum_")) |>
   arrange(lu_no)
 landuse_stump
 
-write_csv(landuse_stump, paste0("results/tables/cstock-landuse-stump", Sys.Date(), ".csv"))
+write_csv(landuse_stump, paste0("results/tables/cstock-landuse-stump-", Sys.Date(), ".csv"))
 
 
 
@@ -262,12 +262,12 @@ landuse_ldw <- plot_ldw |>
     .by = c(lu_no, lu_code_new)
   ) |>
   mutate(
-    agb_ha = sum_agb / sum_area_ha,
-    carbon_ha = agb_ha * 0.47,
+    agb_ha = round(sum_agb / sum_area_ha, 3),
+    carbon_ha = round(agb_ha * CF, 3),
   ) |>
   select(-starts_with("sum_")) |>
   arrange(lu_no)
 landuse_ldw
 
-write_csv(landuse_ldw, paste0("results/tables/cstock-landuse-ldw", Sys.Date(), ".csv"))
+write_csv(landuse_ldw, paste0("results/tables/cstock-landuse-ldw-", Sys.Date(), ".csv"))
 
