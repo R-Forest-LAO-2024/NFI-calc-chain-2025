@@ -104,6 +104,32 @@ tree <- tree |>
   )
   
 
+## Add codes to lcs 
+lcs_ <- lcs |>
+  mutate(
+    lcs_lu_class_no = as.numeric(case_when(
+      lcs_lu_class_txt == "16AC" ~ "161",
+      lcs_lu_class_txt == "16EC" ~ "162",
+      lcs_lu_class_txt == "16PN" ~ "163",
+      lcs_lu_class_txt == "16RB" ~ "164",
+      lcs_lu_class_txt == "16TK" ~ "165",
+      lcs_lu_class_txt == "16OTH" ~ "169",
+      TRUE ~ lcs_lu_class_txt
+    ))
+  ) |>
+  mutate(
+    lu_code_new = NA,
+    lu_name = NA,
+    lu_name_lao = NA,
+    lu_type = NA,
+    lu_strata_no = NA,
+    lu_strata_name = NA
+  ) |>
+  left_join(anci$lc, by = join_by(lcs_lu_class_no == lu_no), suffix = c("_rm", "")) |>
+  select(-ends_with("_rm"))
+
+
+
 # OLD METHOD: CHANGING RESULT OBJ NAME TO AVOID SUFFIX ISSUE
 # tree_ <- tree |>
 #   ## Replace ONA with plot/subplot codes
