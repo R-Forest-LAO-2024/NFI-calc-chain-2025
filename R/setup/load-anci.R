@@ -32,12 +32,19 @@ anci$ceo <- read_csv(file.path(path$dat$anci, usr$get_ceofile), show_col_types =
 
 anci$lc_ceo <- read_csv(file.path(path$dat$anci, "land-cover-ceo.csv"), show_col_types = F)
 
-## > Not needed
-# anci$ceo_nfi_id <-  read_csv(file.path(path$dat$anci, "ceo-phase2-codes.csv"), show_col_types = F)
+## Matching codes between CEO and NFI plots ####
+## With all phase 2 grid 
 anci$ceo_nfi_id <- read_csv(file.path(path$dat$anci, "ceo-phase2-full-selection.csv"), show_col_types = F)
 
-## Chave et al. 2014 environmental factor E raster file ####
+## Several plots were shifted to new locations ####
+## For these plots the CEO strata will be replaced with the FTM value at the new plot location
+## Subplot A table compares plot level CEO/FTM and CEO_Class1 (?)
+## Subplot FTM assigns FTM class to each shifted subplot location
+anci$shifted_spA <- read_csv(file.path(path$dat$anci, "shifted_plots_subplot_A.csv"), show_col_types = F)
+anci$shifted_ftm <- read_csv(file.path(path$dat$anci, "shifted_subplots_FTM2022.csv"), show_col_types = F)
 
+
+## Chave et al. 2014 environmental factor E raster file ####
 if (!"E.bil" %in% list.files(path$dat$anci)) {
   download.file(
     url = "https://github.com/umr-amap/BIOMASS/raw/refs/heads/master/data-raw/climate_variable/E.zip",

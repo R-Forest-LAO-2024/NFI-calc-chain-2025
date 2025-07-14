@@ -143,6 +143,6 @@ tt
 tt2 <- dw |> filter(subplot_plot_no == 1, subplot_no == "A")
 ## >> OK, dead wood decay 1, has DBH but AGB = 0
 
-
+## >> Table tree seems to be consistent with R produced tables tree, dw and stump.
 
 
