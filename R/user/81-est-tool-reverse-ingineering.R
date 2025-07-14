@@ -262,28 +262,62 @@ lcs_agb <- tree |>
   pivot_wider(names_from = subplot_nested_level, values_from = lcs_sum_agb, values_fill = 0)
 lcs_agb
 
-## In Est. tool subplot AGB is actually grouped at subplot level, not LCS level
-
+## !!! In Est. tool subplot AGB is actually grouped at subplot level, not LCS level
 tmp$sp_agb <- lcs_agb |>
   group_by(plot_no, subplot_no) |>
   summarise(
-    agb_nested_small = sum(nested_small),
-    agb_nested_large = sum(nested_large), 
+    lcs_agb_nested_small = sum(nested_small),
+    lcs_agb_nested_large = sum(nested_large), 
     .groups = "drop"
   ) |>
   mutate(lcs_no = 1)
 
 lcs_agb <- lcs_agb |>
   mutate(
-    agb_nested_small = NA,
-    agb_nested_large = NA
+    lcs_agb_nested_small = NA,
+    lcs_agb_nested_large = NA
   ) |>
   left_join(tmp$sp_agb, by = join_by(plot_no, subplot_no, lcs_no), suffix = c("_rm", "")) |>
+  select(-ends_with("_rm"), -nested_large, - nested_small)
+# lcs_agb
+## !!!
+
+lcs_all <- lcs_all |>
+  mutate(
+    lcs_agb_nested_small = NA,
+    lcs_agb_nested_large = NA
+  ) |>
+  left_join(lcs_agb, by = join_by(plot_no, subplot_no, lcs_no), suffix = c("_rm", "")) |>
   select(-ends_with("_rm")) |>
   mutate(
-    agb_nested_small = replace_na(agb_nested_small, 0),
-    agb_nested_large = replace_na(agb_nested_large, 0)
+    lcs_agb_nested_small = replace_na(lcs_agb_nested_small, 0),
+    lcs_agb_nested_large = replace_na(lcs_agb_nested_large, 0),
+    lcs_area_nested_small = pi * 8^2 / 10000 / 5,
+    lcs_area_nested_large = pi * 16^2 / 10000/ 5 
   )
-lcs_agb
+  
+## >> Cross checked few lines and matches well with Subplot table in Est. tool
+
+##
+## Plot level estimation ####
+##  
+
+## Requires measured area which combines number of plot per stratum and sub-population
+length(unique(lcs_all$plot_no))
+
+tt <- lcs_all |> 
+  filter(subplot_access_final) |>
+  select(plot_no, subpopulation_no, ceo_plot_lc_no, ceo_plot_stratum_no_corr) |>
+  distinct()
+
+table(tt$subpopulation_no, tt$ceo_plot_stratum_no_corr)
+
+## In Est. tool, 1 plot more in subpopn 1, stratum 1 and 1 more in subpop 2, stratum 3
+tt2 <- tt |> filter(plot_no == 553)
+## >> first one is duplicate of 553
+
+## isolating subpopn 2 stratum 3 
+tt3 <- tt |> filter(subpopulation_no == 2, ceo_plot_stratum_no_corr == 3)
+## >> 1163 is back in the data
 
 
