@@ -102,19 +102,6 @@ plot_all <- plot_all |>
     ceo_subpop_txt = if_else(ceo_prov_no %in% 3:8, "FCPF ERPA", "not FCPF ERPA")
   )
 
-# lcs_all <- lcs_all |>
-#   mutate(
-#     ceo_fid = NA,
-#     province_no = NA
-#     ) |>
-#   left_join(tmp$ceo_fid, by = join_by(plot_no), suffix = c("_rm", "")) |>
-#   left_join(tmp$ceo_prov, by = join_by(ceo_fid), suffix = c("_rm", "")) |>
-#   select(-ends_with("_rm")) |>
-#   mutate(
-#     subpopulation_no = if_else(province_no %in% 3:8, 1, 2),
-#     subpopulation_txt = if_else(province_no %in% 3:8, "FCPF ERPA", "not FCPF ERPA")
-#   )
-
 ## Check
 table(plot_all$ceo_subpop_no, useNA = "ifany")
 
@@ -140,25 +127,34 @@ plot_all <- plot_all |>
     TRUE ~ NA_integer_
   ))
 
-# lcs_all <- lcs_all |>
-#   mutate(
-#     ceo_plot_lc_no = NA, 
-#     ceo_plot_lc_code = NA,
-#     ceo_plot_stratum_name = NA, 
-#     ceo_plot_ftm = NA
-#   ) |>
-#   left_join(tmp$ceo_strata, by = join_by(ceo_fid), suffix = c("_rm", "")) |>
-#   select(-ends_with("_rm")) |>
-#   mutate(ceo_plot_stratum_no = case_when(
-#     ceo_plot_stratum_name == "Natural Forest" ~ 1,
-#     ceo_plot_stratum_name == "Forest plantation" ~ 2,
-#     ceo_plot_stratum_name == "Potential Forest" ~ 3,
-#     ceo_plot_stratum_name == "Non Forest" ~ 4,
-#     TRUE ~ NA_integer_
-#   ))
-
 ## Check 
 table(plot_all$ceo_stratum_no, useNA = "ifany")
+
+
+## + + Add shifted plot correction ####
+tmp$shifted_lc <- anci$shifted_spA |> select(plot_no = plot_code_, shifted_lc = CEO_Phase_I)
+tmp$lc_corr <- anci$lc_ceo |> 
+  select(
+    ceo_lc_no_corr = lc_no, 
+    ceo_lc_code_corr = lc_code, 
+    ceo_stratum_no_corr = lc_strata_no, 
+    ceo_stratum_name_corr = lc_strata_name
+  )
+
+plot_all <- plot_all |>
+  mutate(
+    shifted_lc = NA,
+    ceo_lc_no_corr = NA, 
+    ceo_lc_code_corr = NA, 
+    ceo_stratum_name_corr = NA, 
+    ceo_stratum_no_corr = NA
+  ) |>
+  left_join(tmp$shifted_lc, by = join_by(plot_no), suffix = c("_rm", "")) |>
+  mutate(
+    ceo_lc_no_corr = if_else(!is.na(shifted_lc), shifted_lc, ceo_lc_no),
+  ) |>
+  left_join(tmp$lc_corr, by = join_by(ceo_lc_no_corr), suffix = c("_rm", "")) |>
+  select(-ends_with("_rm")) 
 
 
 ## + LCS level ####
@@ -201,112 +197,7 @@ lcs_all <- lcs_all |>
       )
   )
 
-## NEXT SECTION NOT NEEDED ANYMORE
-## >> discrepancies between R and Est. tool mainly due shifted plot new LC 
-##    and rules for non-visited 
-
-# ## Checks 
-# table(lcs_all$subplot_access1, useNA = "ifany")
-# table(lcs_all$ceo_stratum_no, lcs_all$subplot_access1, useNA = "ifany")
-# ## >> Big difference with est. tool :'(
-# 
-# ## Adding not visited plots, see subplot_access2
-# table(lcs_all$subplot_access2, useNA = "ifany")
-# table(lcs_all$ceo_stratum_no, useNA = "ifany")
-# table(lcs_all$ceo_stratum_no, lcs_all$subplot_access2, useNA = "ifany")
-# ## >> Not fully aligned but almost there 
-# 
-# ## Comparing stratum, access at lcs level with pivottable in the Est. Tool
-# write_csv(lcs_all, "results/tests/check_lcs_access_strata.csv")
-# 
-# ## Solving inconsistencies, probably due to shifted plots
-# ## Ex. plot 38: RV/stratum 3 in Est. tool, MDF/stratum 1 in lcs_all
-# tt <- lcs_all |> filter(plot_no == 38)
-# tt2 <- anci$ceo |> filter(pl_orig_fid == unique(tt$ceo_fid))
-# tt3 <- anci$shifted_spA |> filter(plot_code_ == 38)
-# ## >> CEO: LC = 12, ftm = 11. shifted plot table: LC_class = 12, FTM = 11, LC_CEO = 22 (RV/strata 3)
-# 
-# ## Cross checking at spatial location with google earth
-# tt2 |>
-#   mutate(x = str_remove(pl_xy, ".*,"), y = str_remove(pl_xy, ",.*")) |>
-#   st_as_sf(coords = c("x", "y"), crs = 4326) |>
-#   st_write("results/tests/ceo_38.kml", delete_dsn = T)
-# 
-# tt3 |> 
-#   mutate(x = LON, y = LAT) |>
-#   st_as_sf(coords = c("x", "y"), crs = 4326) |>
-#   st_write("results/tests/ceo_38_shifted.kml", delete_dsn = T)
-# ## >> None seem to be RV/stratum 3, need more info on CEO_Phase_I
-# 
-# ## Test adding shifted plot LC correction
-# tmp$shifted_lc <- anci$shifted_spA |> select(plot_no = plot_code_, shifted_lc = CEO_Phase_I)
-# tmp$lc_corr <- anci$lc_ceo |> 
-#   select(
-#     ceo_plot_lc_no_corr = lc_no, 
-#     ceo_plot_lc_code_corr = lc_code, 
-#     ceo_plot_stratum_no_corr = lc_strata_no, 
-#     ceo_plot_stratum_name_corr = lc_strata_name
-#     )
-# 
-# lcs_all <- lcs_all |> 
-#   mutate(
-#     shifted_lc = NA,
-#     ceo_plot_lc_no_corr = NA, 
-#     ceo_plot_lc_code_corr = NA, 
-#     ceo_plot_stratum_name_corr = NA, 
-#     ceo_plot_stratum_no_corr = NA
-#     ) |>
-#   left_join(tmp$shifted_lc, by = join_by(plot_no), suffix = c("_rm", "")) |>
-#   mutate(
-#     ceo_plot_lc_no_corr = if_else(!is.na(shifted_lc), shifted_lc, ceo_plot_lc_no),
-#   ) |>
-#   left_join(tmp$lc_corr, by = join_by(ceo_plot_lc_no_corr), suffix = c("_rm", "")) |>
-#   select(-ends_with("_rm")) |>
-#   mutate(
-#     subplot_access3 = case_when(
-#       plot_no %in% tmp$subplot_notvisited & ceo_plot_stratum_no_corr == 1 ~ FALSE,
-#       plot_no %in% tmp$subplot_notvisited & ceo_plot_stratum_no_corr == 2 ~ FALSE,
-#       plot_no %in% tmp$subplot_notvisited & ceo_plot_stratum_no_corr == 3 ~ TRUE,
-#       plot_no %in% tmp$subplot_notvisited & ceo_plot_stratum_no_corr == 4 ~ TRUE,
-#       TRUE ~ subplot_access1
-#     )
-#   )
-# 
-# ## Check again
-# table(lcs_all$subplot_access3, useNA = "ifany")
-# table(lcs_all$subplot_access2, lcs_all$subplot_access3, useNA = "ifany")
-# 
-# table(lcs_all$ceo_plot_stratum_no, useNA = "ifany")
-# table(lcs_all$ceo_plot_stratum_no_corr, useNA = "ifany")
-# table(lcs_all$ceo_plot_stratum_no, lcs_all$ceo_plot_stratum_no_corr, useNA = "ifany")
-# ## >> Now stratum consistent with Est. tool
-# 
-# table(lcs_all$ceo_plot_stratum_no_corr, lcs_all$subplot_access3, useNA = "ifany")
-# ## >> Much better but still not perfect
-# ## >> 25 points more not accessible in Est. tool. for stratum 1
-# 
-# ## Investigate 
-# tt <- lcs_all |> 
-#   filter(ceo_plot_stratum_no_corr == 1) |>
-#   mutate(subplot_access_txt = if_else(subplot_access3, "access", "no_access")) |>
-#   group_by(plot_no, subplot_access_txt) |>
-#   summarise(count_lcs = n(), .groups = "drop") |>
-#   pivot_wider(names_from = subplot_access_txt, values_from = count_lcs, values_fill = 0)
-# 
-# write_csv(tt, file.path(path$res$test, "check_access_plot_stratum1.csv"))
-# ## >> plots 232B, 620D, 627C, 631B, 632B fully access in R but 1 subplot not access in Est. tool
-# ## >> Should be accessed, plenty of trees in tree table, noted accessed in subplot table
-
-## Adding shifted plot corrected LC
-tmp$shifted_lc <- anci$shifted_spA |> select(plot_no = plot_code_, shifted_lc = CEO_Phase_I)
-tmp$lc_corr <- anci$lc_ceo |> 
-  select(
-    ceo_lc_no_corr = lc_no, 
-    ceo_lc_code_corr = lc_code, 
-    ceo_stratum_no_corr = lc_strata_no, 
-    ceo_stratum_name_corr = lc_strata_name
-  )
-
+## + + shifted plot correction ####
 lcs_all <- lcs_all |> 
   mutate(
     shifted_lc = NA,
@@ -320,7 +211,11 @@ lcs_all <- lcs_all |>
     ceo_lc_no_corr = if_else(!is.na(shifted_lc), shifted_lc, ceo_lc_no),
   ) |>
   left_join(tmp$lc_corr, by = join_by(ceo_lc_no_corr), suffix = c("_rm", "")) |>
-  select(-ends_with("_rm")) |>
+  select(-ends_with("_rm"))
+
+
+## + + correct access based on corrected stratum ####
+lcs_all <- lcs_all |>
   mutate(
     subplot_access3 = case_when(
       plot_no %in% tmp$subplot_notvisited & ceo_stratum_no_corr == 1 ~ FALSE,
@@ -330,7 +225,6 @@ lcs_all <- lcs_all |>
       TRUE ~ subplot_access1
     )
   )
-
 
 ## + + !!! Matching Est. tool access issues ####
 lcs_all <- lcs_all |>
@@ -353,7 +247,7 @@ table(lcs_all$ceo_stratum_no_corr, lcs_all$subplot_access_final, useNA = "ifany"
 
 
 ## 
-## LCS level estimation ####
+## LCS level AGB / AREA estimation ####
 ##
 
 lcs_agb <- tree |>
@@ -365,7 +259,6 @@ lcs_agb <- tree |>
     .groups = "drop"
   ) |>
   pivot_wider(names_from = subplot_nested_level, values_from = lcs_sum_agb, values_fill = 0)
-lcs_agb
 
 ## !!! In Est. tool subplot AGB is actually grouped at subplot level, not LCS level
 tmp$sp_agb <- lcs_agb |>
@@ -377,13 +270,13 @@ tmp$sp_agb <- lcs_agb |>
   ) |>
   mutate(lcs_no = 1)
 
-lcs_agb <- lcs_agb |>
-  mutate(
-    lcs_agb_nested_small = NA,
-    lcs_agb_nested_large = NA
-  ) |>
-  left_join(tmp$sp_agb, by = join_by(plot_no, subplot_no, lcs_no), suffix = c("_rm", "")) |>
-  select(-ends_with("_rm"), -nested_large, - nested_small)
+# lcs_agb <- lcs_all |>
+#   mutate(
+#     lcs_agb_nested_small = NA,
+#     lcs_agb_nested_large = NA
+#   ) |>
+#   left_join(tmp$sp_agb, by = join_by(plot_no, subplot_no, lcs_no), suffix = c("_rm", "")) |>
+#   select(-ends_with("_rm"))
 # lcs_agb
 ## !!!
 
@@ -392,67 +285,222 @@ lcs_all <- lcs_all |>
     lcs_agb_nested_small = NA,
     lcs_agb_nested_large = NA
   ) |>
-  left_join(lcs_agb, by = join_by(plot_no, subplot_no, lcs_no), suffix = c("_rm", "")) |>
+  left_join(tmp$sp_agb, by = join_by(plot_no, subplot_no, lcs_no), suffix = c("_rm", "")) |>
   select(-ends_with("_rm")) |>
   mutate(
     lcs_agb_nested_small = replace_na(lcs_agb_nested_small, 0),
     lcs_agb_nested_large = replace_na(lcs_agb_nested_large, 0),
     lcs_area_nested_small = pi * 8^2 / 10000 / 5,
-    lcs_area_nested_large = pi * 16^2 / 10000/ 5 
-  )
+    lcs_area_nested_large = pi * 16^2 / 10000/ 5
+  ) |>
+  rowwise() |>
+  mutate(lcs_area_largest = max(lcs_area_nested_small, lcs_area_nested_large)) |>
+  ungroup()
   
 ## >> Cross checked few lines and matches well with Subplot table in Est. tool
 
+## Check again
+table(lcs_all$ceo_stratum_no_corr, lcs_all$subplot_access_final, useNA = "ifany")
+table(lcs_all$ceo_stratum_no_corr, lcs_all$ceo_subpop_no, useNA = "ifany")
+
+tmp$lcs_access <- lcs_all |> filter(subplot_access_final)
+table(tmp$lcs_access$ceo_stratum_no_corr, tmp$lcs_access$subplot_access_final, useNA = "ifany")
+table(tmp$lcs_access$ceo_stratum_no_corr, tmp$lcs_access$ceo_subpop_no, useNA = "ifany")
+
+
+
+##
+## Measured Area ####
+##
+
+## + + Count nb of plots that are not accessible: Est. tool 187
+tmp$plot_access_partial <- lcs_all |>
+  filter(subplot_access_final) |>
+  pull(plot_no) |>
+  unique() |>
+  sort()
+
+plot_access <- plot_all |> filter(plot_no %in% c(tmp$plot_access_partial, 1163))
+
+table(plot_access$ceo_subpop_no, useNA = "ifany")
+table(plot_access$ceo_stratum_no_corr, useNA = "ifany")
+table(plot_access$ceo_subpop_no, plot_access$ceo_stratum_no_corr, useNA = "ifany")
+## >> Full match, yes!
+
+
+sample_size <- plot_access |>
+  summarise(count_plot = n(), .by = c(ceo_subpop_no, ceo_stratum_no_corr)) |>
+  arrange(ceo_subpop_no, ceo_stratum_no_corr)
+sample_size
+## >> Full match too!
+
+tmp$sum_area <- lcs_all |>
+  filter(subplot_access_final) |>
+  summarise(
+    count_lcs = n(),
+    sum_area_nested_small = sum(lcs_area_nested_small), 
+    sum_area_nested_large = sum(lcs_area_nested_large),
+    .by = c(ceo_subpop_no, ceo_stratum_no_corr)
+  ) |>
+  arrange(ceo_subpop_no, ceo_stratum_no_corr)
+tmp$sum_area
+
+measured_area <- sample_size |>
+  mutate(
+    count_lcs = NA,
+    sum_area_nested_small = NA,
+    sum_area_nested_large = NA
+  ) |>
+  left_join(tmp$sum_area, by = join_by(ceo_subpop_no, ceo_stratum_no_corr), suffix = c("_rm", "")) |>
+  select(-ends_with("_rm")) |>
+  rowwise() |>
+  mutate(
+    mean_area_nested_small = sum_area_nested_small / count_plot,
+    mean_area_nested_large = sum_area_nested_large / count_plot,
+    mean_area_nested_largest = max(mean_area_nested_small, mean_area_nested_large),
+  ) |>
+  ungroup()
+
+
+conv <- list()
+conv$ratio_small_to_large <- pi * 16^2 / (pi * 8^2)
 
 
 ##
 ## Plot level estimation ####
 ##  
 
-## Requires measured area which combines number of plot per stratum and sub-population
-length(unique(lcs_all$plot_no))
 
-## + Get stratum and subpop to plot ####
-plot_all <- plot_all |>
-  lcs_all <- lcs_all |> 
+## + Plot AGB ####
+plot_agb <- lcs_all |>
+  filter(subplot_access_final) |>
+  group_by(plot_no, ceo_subpop_no, ceo_stratum_no_corr) |>
+  summarise(
+    plot_count_lcs = n(),
+    plot_agb_nested_small = sum(lcs_agb_nested_small),
+    plot_agb_nested_large = sum(lcs_agb_nested_large),
+    plot_area_largest     = sum(lcs_area_largest),
+    .groups = "drop"
+  ) 
+
+plot_access <- plot_access |>
   mutate(
-    shifted_lc = NA,
-    ceo_plot_lc_no_corr = NA, 
-    ceo_plot_lc_code_corr = NA, 
-    ceo_plot_stratum_name_corr = NA, 
-    ceo_plot_stratum_no_corr = NA
+    plot_count_lcs = NA, 
+    plot_agb_nested_small = NA,
+    plot_agb_nested_large = NA,
+    plot_area_largest = NA,
   ) |>
-  left_join(tmp$shifted_lc, by = join_by(plot_no), suffix = c("_rm", "")) |>
+  left_join(plot_agb, by = join_by(plot_no, ceo_subpop_no, ceo_stratum_no_corr), suffix = c("_rm", "")) |>
+  select(-ends_with("_rm")) |>
+  mutate(across(starts_with("plot_"), \(x) replace_na(x, 0))) |>
   mutate(
-    ceo_plot_lc_no_corr = if_else(!is.na(shifted_lc), shifted_lc, ceo_plot_lc_no),
+    plot_yid = plot_agb_nested_small * conv$ratio_small_to_large + plot_agb_nested_large,
+    plot_yid_sq = plot_yid^2,
+    plot_ai = plot_area_largest,
+    plot_ai_sq = plot_ai^2,
+    plot_yid_times_ai = plot_yid * plot_ai,
+    plot_xid =  plot_area_largest,
+    plot_xid_sq = plot_xid^2,
+    plot_xid_times_ai = plot_xid * plot_ai,
+    plot_yid_times_xid = plot_yid * plot_xid
   ) |>
-  left_join(tmp$lc_corr, by = join_by(ceo_plot_lc_no_corr), suffix = c("_rm", "")) |>
+  filter(plot_no != 1163)
+  
+
+## 
+## AGGREGATES ####
+##
+
+## + Make tables of strata weights ####
+tmp$ceo <- anci$ceo |> 
+  left_join(anci$lc_ceo, by = join_by(LC_ID == lc_no)) |>
+  mutate(ceo_subpop_no = if_else(pl_pcode %in% 3:8, 1, 2))
+
+table(tmp$ceo$ceo_subpop_no, tmp$ceo$lc_strata_no)
+
+tmp$strata_weights <- tmp$ceo |>
+  rename(ceo_stratum_no = lc_strata_no) |>
+  group_by(ceo_subpop_no, ceo_stratum_no) |>
+  summarise(count_ceo = n(), .groups = "drop")
+
+tmp$subpop_ceo_totals <- tmp$strata_weights |>
+  summarise(subpop_count_ceo = sum(count_ceo), .by = ceo_subpop_no)
+
+tmp$subpop_plot_totals <- sample_size |>
+  summarise(subpop_count_plot = sum(count_plot), .by = ceo_subpop_no)
+  
+## >> Mismatches in biomass at tree level, reverted plantation AGB model to chave 2005
+## >> Still few mismatches, seems to affect mosty RV and B at the LC level in the tree table
+## >> No clear pattern though.
+
+
+## + Stats from plot level ####
+subpop_stratum <- plot_access |>
+  filter(plot_no %in% tmp$plot_access_partial) |>
+  group_by(ceo_subpop_no, ceo_stratum_no_corr) |>
+  summarise(
+    count_plot = n(),
+    sum_yi    = sum(plot_yid),
+    sum_yi_sq = sum(plot_yid^2),
+    sum_yiai  = sum(plot_yid * plot_ai),
+    sum_ai    = sum(plot_ai),
+    sum_ai_sq = sum(plot_ai^2),
+    sum_xi    = sum(plot_xid),
+    sum_xi_sq = sum(plot_xid^2),
+    sum_xiai  = sum(plot_xid * plot_ai),
+    sum_yixi  = sum(plot_yid * plot_xid),
+    .groups = "drop"
+    ) |>
+  mutate(
+    mean_yi = sum_yi / sum_ai,
+    mean_xi = sum_xi / sum_ai
+  )
+
+## + Add strata weights ####
+subpop_stratum <- subpop_stratum |>
+  mutate(
+    count_plot = NA,
+    subpop_count_plot = NA,
+    count_ceo = NA, 
+    subpop_count_ceo = NA
+    ) |>
+  left_join(sample_size, by = join_by(ceo_subpop_no, ceo_stratum_no_corr), suffix = c("_rm", "")) |>
+  left_join(tmp$subpop_plot_totals, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
+  left_join(tmp$strata_weights, by = join_by(ceo_subpop_no, ceo_stratum_no_corr == ceo_stratum_no), suffix = c("_rm", "")) |>
+  left_join(tmp$subpop_ceo_totals, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
   select(-ends_with("_rm")) |>
   mutate(
-    subplot_access3 = case_when(
-      plot_no %in% tmp$subplot_notvisited & ceo_plot_stratum_no_corr == 1 ~ FALSE,
-      plot_no %in% tmp$subplot_notvisited & ceo_plot_stratum_no_corr == 2 ~ FALSE,
-      plot_no %in% tmp$subplot_notvisited & ceo_plot_stratum_no_corr == 3 ~ TRUE,
-      plot_no %in% tmp$subplot_notvisited & ceo_plot_stratum_no_corr == 4 ~ TRUE,
-      TRUE ~ subplot_access1
+    stratum_Wh = count_ceo / subpop_count_ceo
     )
+
+
+## + Add subpopulation totals ####
+subpop <- subpop_stratum |>
+  group_by(ceo_subpop_no) |>
+  summarise(
+    subpop_mean_y = sum(mean_yi * stratum_Wh),
+    subpop_mean_x = sum(mean_xi * stratum_Wh)
+  )
+
+subpop_stratum <- subpop_stratum |>
+  mutate(
+    subpop_mean_y = NA,
+    subpop_mean_x = NA
+    ) |>
+  left_join(subpop, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
+  select(-ends_with("_rm"))
+
+## + Calc variance ####
+subpop_stratum <- subpop_stratum |>
+  mutate(
+    var_yi = count_plot^2 / (count_plot - 1) * (sum_yi_sq - 2 * mean_yi * sum_yiai + mean_yi^2 * sum_ai_sq) / (sum_ai^2),
+    var_mean_yi = stratum_Wh * (count_ceo - 1) / (subpop_count_ceo - 1) * var_yi / count_plot,
+    var_xi = count_plot^2 / (count_plot - 1) * (sum_xi_sq - 2 * mean_xi * sum_xiai + mean_xi^2 * sum_ai_sq) / (sum_ai^2),
+    var_mean_xi = stratum_Wh * (count_ceo - 1) / (subpop_count_ceo - 1) * var_xi / count_plot,
   )
 
 
-tt <- lcs_all |> 
-  filter(subplot_access_final) |>
-  select(plot_no, subpopulation_no, ceo_plot_lc_no, ceo_plot_stratum_no_corr) |>
-  distinct()
 
-table(tt$subpopulation_no, tt$ceo_plot_stratum_no_corr)
-
-## In Est. tool, 1 plot more in subpopn 1, stratum 1 and 1 more in subpop 2, stratum 3
-tt2 <- tt |> filter(plot_no == 553)
-## >> first one is duplicate of 553
-
-## isolating subpopn 2 stratum 3 
-tt3 <- tt |> filter(subpopulation_no == 2, ceo_plot_stratum_no_corr == 3)
-## >> 1163 is back in the data
 
 
 
