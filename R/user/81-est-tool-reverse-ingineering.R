@@ -365,41 +365,99 @@ measured_area <- sample_size |>
 conv <- list()
 conv$ratio_small_to_large <- pi * 16^2 / (pi * 8^2)
 
+## Assign land use ####
+## + Field observations ####
+tmp$lcs_lu <- lcs_ |> select(plot_no = lcs_plot_no, subplot_no = lcs_subplot_no, lcs_no, lu_no = lcs_lu_class_no, lu_txt = lu_code_new)
+
+table(tmp$lcs_lu$lu_txt, useNA = "ifany")
+
+## + FTM value for not accessed / not visited ####
+tmp$ftm_lu <- anci$ceo_nfi_id |>
+  left_join(anci$ceo_nfi_id_all, b = join_by(ORIG_FID == pl_orig_fid, ID)) |>
+  filter(!plot_visited) |>
+  left_join(anci$lc_ceo, by = join_by(FTM2022 == lc_no)) |>
+  select(plot_no = plotid_all, subplot_no = Plot, ftm_lu_no = FTM2022, ftm_lu_txt = lc_code) |>
+  mutate(
+    ftm_lu_no = case_when(
+      ftm_lu_no == 16 ~ 169,
+      TRUE ~ ftm_lu_no
+    ),
+    ftm_lu_txt = case_when(
+      ftm_lu_txt == "MDF" ~ "MD",
+      ftm_lu_txt == "P" ~ "P_OTH",
+      ftm_lu_txt == "MDF" ~ "MD",
+      TRUE ~ ftm_lu_txt
+    )
+  )
+  
+## + combine all ####
+lcs_all <- lcs_all |> 
+  mutate(lu_no = NA, lu_txt = NA, ftm_lu_no = NA, ftm_lu_txt = NA) |>
+  left_join(tmp$lcs_lu, by = join_by(plot_no, subplot_no, lcs_no), suffix = c("_rm", "")) |>
+  left_join(tmp$ftm_lu, by = join_by(plot_no, subplot_no), suffix = c("_rm", "")) |>
+  mutate(
+    lu_no_corr = if_else(!is.na(lu_no), lu_no, ftm_lu_no),
+    lu_txt_corr = if_else(!is.na(lu_txt), lu_txt, ftm_lu_txt)
+  ) |>
+  select(-ends_with("_rm"))
+
+table(lcs_all$lu_txt_corr, useNA = "ifany")
+
+
+lcs_access <- lcs_all |> filter(subplot_access_final)
+
+table(lcs_access$lu_txt_corr, useNA = "ifany")
+
+
 
 ##
 ## Plot level estimation ####
 ##  
 
+## !!! INSERT LAND CLASS FILTERING ####
+
+lcs_lu <- lcs_all |> filter(lu_txt_corr == "EG")
+#lcs_lu <- lcs_all
+
+## !!!
+
 
 ## + Plot AGB ####
-plot_agb <- lcs_all |>
+plot_area <- lcs_all |>
+  filter(subplot_access_final) |>
+  group_by(plot_no, ceo_subpop_no, ceo_stratum_no_corr) |>
+  summarise(plot_area_largest_all = sum(lcs_area_largest), .groups = "drop")
+
+plot_agb <- lcs_lu |>
   filter(subplot_access_final) |>
   group_by(plot_no, ceo_subpop_no, ceo_stratum_no_corr) |>
   summarise(
     plot_count_lcs = n(),
     plot_agb_nested_small = sum(lcs_agb_nested_small),
     plot_agb_nested_large = sum(lcs_agb_nested_large),
-    plot_area_largest     = sum(lcs_area_largest),
+    plot_area_largest_lu = sum(lcs_area_largest),
     .groups = "drop"
-  ) 
+  )
 
 plot_access <- plot_access |>
   mutate(
+    plot_area_largest_all = NA,
     plot_count_lcs = NA, 
     plot_agb_nested_small = NA,
     plot_agb_nested_large = NA,
-    plot_area_largest = NA,
+    plot_area_largest_lu = NA,
   ) |>
+  left_join(plot_area, by = join_by(plot_no, ceo_subpop_no, ceo_stratum_no_corr), suffix = c("_rm", "")) |>
   left_join(plot_agb, by = join_by(plot_no, ceo_subpop_no, ceo_stratum_no_corr), suffix = c("_rm", "")) |>
   select(-ends_with("_rm")) |>
   mutate(across(starts_with("plot_"), \(x) replace_na(x, 0))) |>
   mutate(
     plot_yid = plot_agb_nested_small * conv$ratio_small_to_large + plot_agb_nested_large,
     plot_yid_sq = plot_yid^2,
-    plot_ai = plot_area_largest,
+    plot_ai = plot_area_largest_all,
     plot_ai_sq = plot_ai^2,
     plot_yid_times_ai = plot_yid * plot_ai,
-    plot_xid =  plot_area_largest,
+    plot_xid =  plot_area_largest_lu,
     plot_xid_sq = plot_xid^2,
     plot_xid_times_ai = plot_xid * plot_ai,
     plot_yid_times_xid = plot_yid * plot_xid
@@ -423,18 +481,19 @@ tmp$strata_weights <- tmp$ceo |>
   group_by(ceo_subpop_no, ceo_stratum_no) |>
   summarise(count_ceo = n(), .groups = "drop")
 
-tmp$subpop_ceo_totals <- tmp$strata_weights |>
+tmp$subpop_count_ceo <- tmp$strata_weights |>
   summarise(subpop_count_ceo = sum(count_ceo), .by = ceo_subpop_no)
 
-tmp$subpop_plot_totals <- sample_size |>
+tmp$subpop_count_plot <- sample_size |>
   summarise(subpop_count_plot = sum(count_plot), .by = ceo_subpop_no)
   
 ## >> Mismatches in biomass at tree level, reverted plantation AGB model to chave 2005
 ## >> Still few mismatches, seems to affect mosty RV and B at the LC level in the tree table
 ## >> No clear pattern though.
 
+## + Sub-population x strata ####
 
-## + Stats from plot level ####
+## + + Stats from plot level ####
 subpop_stratum <- plot_access |>
   filter(plot_no %in% tmp$plot_access_partial) |>
   group_by(ceo_subpop_no, ceo_stratum_no_corr) |>
@@ -452,11 +511,11 @@ subpop_stratum <- plot_access |>
     .groups = "drop"
     ) |>
   mutate(
-    mean_yi = sum_yi / sum_ai,
-    mean_xi = sum_xi / sum_ai
+    mean_yi = if_else(sum_ai > 0, sum_yi / sum_ai, 0),
+    mean_xi = if_else(sum_ai > 0, sum_xi / sum_ai, 0)
   )
 
-## + Add strata weights ####
+## + + Add strata weights ####
 subpop_stratum <- subpop_stratum |>
   mutate(
     count_plot = NA,
@@ -465,17 +524,17 @@ subpop_stratum <- subpop_stratum |>
     subpop_count_ceo = NA
     ) |>
   left_join(sample_size, by = join_by(ceo_subpop_no, ceo_stratum_no_corr), suffix = c("_rm", "")) |>
-  left_join(tmp$subpop_plot_totals, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
+  left_join(tmp$subpop_count_plot, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
   left_join(tmp$strata_weights, by = join_by(ceo_subpop_no, ceo_stratum_no_corr == ceo_stratum_no), suffix = c("_rm", "")) |>
-  left_join(tmp$subpop_ceo_totals, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
+  left_join(tmp$subpop_count_ceo, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
   select(-ends_with("_rm")) |>
   mutate(
     stratum_Wh = count_ceo / subpop_count_ceo
     )
 
 
-## + Add subpopulation totals ####
-subpop <- subpop_stratum |>
+## + + Add sub-population mean ####
+tmp$subpop_mean <- subpop_stratum |>
   group_by(ceo_subpop_no) |>
   summarise(
     subpop_mean_y = sum(mean_yi * stratum_Wh),
@@ -487,21 +546,90 @@ subpop_stratum <- subpop_stratum |>
     subpop_mean_y = NA,
     subpop_mean_x = NA
     ) |>
-  left_join(subpop, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
+  left_join(tmp$subpop_mean, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
   select(-ends_with("_rm"))
 
-## + Calc variance ####
+## + + Calc variance ####
 subpop_stratum <- subpop_stratum |>
   mutate(
-    var_yi = count_plot^2 / (count_plot - 1) * (sum_yi_sq - 2 * mean_yi * sum_yiai + mean_yi^2 * sum_ai_sq) / (sum_ai^2),
-    var_mean_yi = stratum_Wh * (count_ceo - 1) / (subpop_count_ceo - 1) * var_yi / count_plot,
-    var_xi = count_plot^2 / (count_plot - 1) * (sum_xi_sq - 2 * mean_xi * sum_xiai + mean_xi^2 * sum_ai_sq) / (sum_ai^2),
-    var_mean_xi = stratum_Wh * (count_ceo - 1) / (subpop_count_ceo - 1) * var_xi / count_plot,
+    var_yi      = if_else(count_plot > 1 & sum_ai > 0, count_plot^2 / (count_plot - 1) * (sum_yi_sq - 2*mean_yi*sum_yiai + mean_yi^2*sum_ai_sq) / (sum_ai^2), 0),
+    var_xi      = if_else(count_plot > 1 & sum_ai > 0, count_plot^2 / (count_plot - 1) * (sum_xi_sq - 2*mean_xi*sum_xiai + mean_xi^2*sum_ai_sq) / (sum_ai^2), 0),
+    covar_xiyi  = if_else(count_plot > 1 & sum_ai > 0, count_plot^2 / (count_plot - 1) * (sum_yixi - mean_yi*sum_xiai - mean_xi*sum_yiai + mean_yi*mean_xi*sum_ai_sq) / (sum_ai^2), 0),
+    var_mean_yi = if_else(subpop_count_ceo > 1 & count_plot > 0, stratum_Wh * (count_ceo - 1) / (subpop_count_ceo - 1) * var_yi / count_plot, 0),
+    var_mean_xi = if_else(subpop_count_ceo > 1 & count_plot > 0, stratum_Wh * (count_ceo - 1) / (subpop_count_ceo - 1) * var_xi / count_plot, 0),
+    covar_mean  = if_else(subpop_count_ceo > 1 & count_plot > 0, stratum_Wh * (count_ceo - 1) / (subpop_count_ceo - 1) * covar_xiyi / count_plot, 0)
   )
 
+print(subpop_stratum)
+
+## + Sub-population level ####
+
+tmp$N_strata <- length(unique(subpop_stratum$ceo_stratum_no_corr))
+
+## + + Calc variance ####
+tmp$subpop_var <- subpop_stratum |>
+  group_by(ceo_subpop_no) |>
+  summarise(
+    subpop_var_y = sum(var_mean_yi),
+    subpop_var_x = sum(var_mean_xi),
+    subpop_covar = sum(covar_mean),
+    .groups = "drop"
+  )
+
+## + + calc strata areas (ha) ####
+tmp$country_area <- 23680000
+tmp$ceo_total <- nrow(anci$ceo)
 
 
+## + + combine sub-population aggregates ####
+subpop <- tibble(ceo_subpop_no = sort(unique(subpop_stratum$ceo_subpop_no))) |>
+  mutate(
+    subpop_count_ceo = NA,
+    subpop_count_plot = NA
+  ) |>
+  left_join(tmp$subpop_count_ceo, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
+  left_join(tmp$subpop_count_plot, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
+  mutate(
+    subpop_weight = subpop_count_ceo / tmp$ceo_total,
+    subpop_area   = subpop_weight * tmp$country_area,
+    subpop_mean_y = NA,
+    subpop_mean_x = NA
+  ) |>
+  left_join(tmp$subpop_mean, by = join_by(ceo_subpop_no), suffix = c("_rm", "")) |>
+  mutate(
+    subpop_var_y = NA,
+    subpop_var_x = NA,
+    subpop_covar = NA,
+  ) |>
+  left_join(tmp$subpop_var, by = join_by(ceo_subpop_no ), suffix = c("_rm", "")) |>
+  select(-ends_with("_rm")) |>
+  mutate(
+    subpop_R        = if_else(subpop_mean_x > 0, subpop_mean_y / subpop_mean_x, 0),
+    subpop_R_var    = if_else(subpop_mean_x > 0, (subpop_var_y + subpop_R^2*subpop_var_x - 2*subpop_R*subpop_covar) / (subpop_mean_x^2), 0),
+    subpop_R_se     = qt(1-0.1/2, df = subpop_count_plot - tmp$N_strata) * sqrt(subpop_R_var),
+    subpop_R_seperc = if_else(subpop_R > 0, round(subpop_R_se / subpop_R * 100, 1), 0)
+    )
+subpop
 
+totals <- subpop |>
+  summarise(
+    Y     = sum(subpop_mean_y * subpop_weight),
+    Y_var = sum(subpop_var_y * subpop_weight * subpop_weight),
+    X     = sum(subpop_mean_x * subpop_weight),
+    X_var = sum(subpop_var_x * subpop_weight * subpop_weight),
+    covar = sum(subpop_covar * subpop_weight * subpop_weight),
+    Y_tot = sum(subpop_mean_y * subpop_area),
+    X_tot = sum(subpop_mean_x * subpop_area),
+    A_tot = sum(subpop_area)
+  ) |>
+    mutate(
+    R     = Y / X,
+    R_var = (Y_var + R^2*X_var - 2*R*covar)/X^2,
+    ## Margin of Error = half width of confidence interval
+    R_me  = round(qt(1-0.1/2, df = Inf) * sqrt(R_var) / R * 100, 1)
+  )
+totals 
 
+## !!! Works well !!! 
 
 
