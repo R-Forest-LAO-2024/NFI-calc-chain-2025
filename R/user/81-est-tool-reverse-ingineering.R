@@ -385,7 +385,6 @@ tmp$ftm_lu <- anci$ceo_nfi_id |>
     ftm_lu_txt = case_when(
       ftm_lu_txt == "MDF" ~ "MD",
       ftm_lu_txt == "P" ~ "P_OTH",
-      ftm_lu_txt == "MDF" ~ "MD",
       TRUE ~ ftm_lu_txt
     )
   )
@@ -416,7 +415,7 @@ table(lcs_access$lu_txt_corr, useNA = "ifany")
 
 ## !!! INSERT LAND CLASS FILTERING ####
 
-lcs_lu <- lcs_all |> filter(lu_txt_corr == "EG")
+lcs_lu <- lcs_all |> filter(lu_txt_corr == "RV")
 #lcs_lu <- lcs_all
 
 ## !!!
@@ -632,4 +631,14 @@ totals
 
 ## !!! Works well !!! 
 
+
+## Manual grouping waiting for optimized script
+# totals_EG <- totals |> bind_cols(lc_txt = "EG")
+# totals_MD <- totals |> bind_cols(lc_txt = "MD")
+# totals_DD <- totals |> bind_cols(lc_txt = "DD")
+# totals_CF <- totals |> bind_cols(lc_txt = "CF")
+# totals_MCB <- totals |> bind_cols(lc_txt = "MCB")
+# totals_RV <- totals |> bind_cols(lc_txt = "RV")
+
+out <- bind_rows(totals_EG, totals_MD, totals_DD, totals_CF, totals_MCB, totals_RV)
 
