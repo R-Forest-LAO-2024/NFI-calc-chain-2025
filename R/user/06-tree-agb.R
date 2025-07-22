@@ -9,10 +9,10 @@ tree <- tree |>
       lu_code_new == "DD"    ~ 0.2137 * tree_dbh^2.2575,
       lu_code_new == "CF"    ~ 0.1277 * tree_dbh^2.3944,
       lu_code_new == "MCB"   ~ 0.1277 * tree_dbh^2.3944,
-      lu_code_new == "P_AC"  ~ 0.3112 * tree_dbh^2.2331,# 0.1173 * tree_dbh^2.454,  
-      lu_code_new == "P_EC"  ~ 0.3112 * tree_dbh^2.2331,# 0.199 * tree_dbh^2.185,   
-      lu_code_new == "P_RB"  ~ 0.3112 * tree_dbh^2.2331,# 0.0082 * tree_dbh^2.5623, 
-      lu_code_new == "P_TK"  ~ 0.3112 * tree_dbh^2.2331,# 0.077 * tree_dbh^2.546, 
+      lu_code_new == "P_AC"  ~ 0.1173 * tree_dbh^2.454,  # 0.3112 * tree_dbh^2.2331,#  
+      lu_code_new == "P_EC"  ~ 0.199 * tree_dbh^2.185,   # 0.3112 * tree_dbh^2.2331,#    
+      lu_code_new == "P_RB"  ~ 0.0082 * tree_dbh^2.5623, # 0.3112 * tree_dbh^2.2331,# 
+      lu_code_new == "P_TK"  ~ 0.077 * tree_dbh^2.546,   # 0.3112 * tree_dbh^2.2331,# 
       lu_code_new == "P_OTH" ~ 0.3112 * tree_dbh^2.2331,
       lu_code_new == "RV"    ~ 0.6 * exp(-1.499 + 2.148 * log(tree_dbh) + 0.207 * (log(tree_dbh))^2 - 0.0281*(log(tree_dbh))^3),
       lu_code_new == "B"     ~ 0.6 * exp(-1.499 + 2.148 * log(tree_dbh) + 0.207 * (log(tree_dbh))^2 - 0.0281*(log(tree_dbh))^3),

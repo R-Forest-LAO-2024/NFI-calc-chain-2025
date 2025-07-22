@@ -120,10 +120,10 @@ ph2_subplot <- expand_grid(
       stratum == 4 ~ TRUE,
       TRUE ~ NA
     ),
-    max_area = round((pi*16^2 / 5) / 10000, 4)
-    #max_area = round(if_else(lcs_no == 1, 12^2, (pi*16^2 - 12^2)/4) / 10000, 4)
+    #sp_area = round((pi*16^2 / 5) / 10000, 4)
+    sp_area = round(if_else(lcs_no == 1, 12^2, (pi*16^2 - 12^2)/4) / 10000, 4)
   ) |>
-  select(plot_id, subplot_id, subpop, stratum, lc_no, access, max_area) |>
+  select(plot_id, subplot_id, subpop, stratum, lc_no, access, sp_area) |>
   arrange(plot_id)
 
 ## Checks
@@ -148,7 +148,7 @@ tree2 <- tree |>
   )
 
 dw2 <- dw |>
-  select(plot_id = subplot_plot_no, subplot_no, lcs_no = dw_lcs_no, dw_no, dw_dbh, agb = dw_agb) |>
+  select(plot_id = subplot_plot_no, subplot_no, lcs_no = dw_lcs_no, dw_no, dw_dbh, dw = dw_agb) |>
   mutate(
     subplot_id = paste0(subplot_no, lcs_no),
     meas_area = case_when(
@@ -156,11 +156,12 @@ dw2 <- dw |>
       lcs_no != 1 & dw_dbh <= 30 ~ round((pi*8^2 - 12^2)/40000, 4), ## Quarter of 8 m radius circle minus the 12x12 m square 
       lcs_no != 1 & dw_dbh > 30 ~ round((pi*16^2 - 12^2)/40000, 4), ## Quarter of 16 m radius circle minus the 12x12 m square
       TRUE ~ NA_real_
-    )
+    ),
+    dw = dw / 1000
   )
 
 stump2 <- stump |>
-  select(plot_id = subplot_plot_no, subplot_no, lcs_no = stump_lcs_no, stump_no, stump_diameter_mean, agb = stump_agb) |>
+  select(plot_id = subplot_plot_no, subplot_no, lcs_no = stump_lcs_no, stump_no, stump_diameter_mean, stump = stump_agb) |>
   mutate(
     subplot_id = paste0(subplot_no, lcs_no),
     meas_area = case_when(
@@ -168,7 +169,8 @@ stump2 <- stump |>
       lcs_no != 1 & stump_diameter_mean <= 30 ~ round((pi*8^2 - 12^2)/40000, 4), ## Quarter of 8 m radius circle minus the 12x12 m square 
       lcs_no != 1 & stump_diameter_mean > 30 ~ round((pi*16^2 - 12^2)/40000, 4), ## Quarter of 16 m radius circle minus the 12x12 m square
       TRUE ~ NA_real_
-    )
+    ),
+    stump = stump / 1000
   )
 
 

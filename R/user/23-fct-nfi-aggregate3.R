@@ -11,15 +11,14 @@
 ##    - plot_id   : plot ID of the phase 2 plots, matching plot_no from the Phase 1 plot data frame, 
 ##    - subplot_id: Subplot ID (see .subplot_id),
 ##    - class_d   : domain of interest, for example forest classes.
-##    - max_area  : maximum measured area (in ha) at subplot level, i.e. largest nested measurement level for the attribute of interest,  
 ##    - access    : accessibility of each subplot (TRUE/FALSE)
-##    - An attribute x, at subplot level, denominator of the Ratio, R = Y / X (See .attr_x).
+##    - An attribute x, at subplot level, denominator of the Ratio, R = Y / X (See .attr_x). It normally is the maximum measured area (in ha) at subplot level, i.e. largest nested measurement level for the attribute of interest,
 ## .ph2_en: Phase 2 data frame at the entity level (tree, deadwood, etc.)
 ##    - plot_id: Phase 2 plot ID same as phase 1 plots and phase 2 suplots.
 ##    - meas_area: area where the attribute y is measured, in ha, important for nested subplots.
 ##    - An attribute y at entity level, attribute of interest, with the same unit as the expected reporting unit (ton for biomass, m3 for volume, m2 for basal area, etc.)
 ## .class_d: domain values (in supblot table)
-## .attr_y: attribute of interest (in entity table), numerator of the Ratio
+## .attr_y: attribute of interest (in entity table), numerator of the Ratio. Best use carbon pool name.
 ## .attr_x: attribute of interest (in subplot_table), denominator of the Ratio. Most often the largest measurement area at the subplot or subplot x lcs level.
 ## .aoi_area: total area of the area of interest (in ha). In case of NFIs, country area.
 
@@ -31,7 +30,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .ph2_en, .class_d, .attr_y, .attr_x
   # .ph2_sp = ph2_subplot
   # .ph2_en = tree2
   # class_d = quo(lc_no)
-  # attr_x  = quo(max_area)
+  # attr_x  = quo(sp_area)
   # attr_y  = quo(agb)
   # .aoi_area = 23680000
   ## !!!
@@ -64,10 +63,10 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .ph2_en, .class_d, .attr_y, .attr_x
     ) |>
     right_join(.ph2_sp, by = join_by(plot_id, subplot_id)) |>
     mutate(
-      entity_count = if_else(!is.na(entity_count_ha), entity_count_ha * max_area, 0),
-      entity_value = if_else(!is.na(entity_value_ha), entity_value_ha * max_area, 0)
+      entity_count = if_else(!is.na(entity_count_ha), entity_count_ha * !!attr_x, 0),
+      entity_value = if_else(!is.na(entity_value_ha), entity_value_ha * !!attr_x, 0)
     ) |>
-    select(plot_id, subplot_id, entity_count_ha, entity_value_ha, entity_count, entity_value, subpop, stratum, max_area, access, !!class_d) |>
+    select(plot_id, subplot_id, entity_count_ha, entity_value_ha, entity_count, entity_value, subpop, stratum, !!attr_x, access, !!class_d) |>
     arrange(plot_id, subplot_id)
   
   
@@ -77,7 +76,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .ph2_en, .class_d, .attr_y, .attr_x
     filter(access) |>
     group_by(plot_id, subpop, stratum) |>
     summarise(
-      ai = sum(max_area), 
+      ai = sum(!!attr_x), 
       .groups = "drop"
     ) 
   
@@ -140,15 +139,15 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .ph2_en, .class_d, .attr_y, .attr_x
   subpop_stratum_attr <- plot_attr |>
     group_by(subpop, stratum, !!class_d) |>
     summarise(
-      #count_plot_h  = n(),
-      count_sp    = sum(count_sp),
-      sum_yid     = sum(yid),
-      sum_yid_sq  = sum(yid^2),
-      sum_yid_ai  = sum(yid * ai),
-      sum_xid     = sum(xid),
-      sum_xid_sq  = sum(xid^2),
-      sum_xid_ai  = sum(xid * ai),
-      sum_yid_xid = sum(yid * xid),
+      count_plot_h = n(),
+      count_sp     = sum(count_sp),
+      sum_yid      = sum(yid),
+      sum_yid_sq   = sum(yid^2),
+      sum_yid_ai   = sum(yid * ai),
+      sum_xid      = sum(xid),
+      sum_xid_sq   = sum(xid^2),
+      sum_xid_ai   = sum(xid * ai),
+      sum_yid_xid  = sum(yid * xid),
       .groups = "drop"
     ) 
   
@@ -199,7 +198,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .ph2_en, .class_d, .attr_y, .attr_x
   subpop_d <- subpop_stratum_d |>
     group_by(!!class_d, subpop) |>
     summarise(
-      #count_plot     = sum(count_plot_h),
+      count_plot     = sum(count_plot_h),
       subpop_mean_yd = sum(mean_yd * Wh),
       subpop_mean_xd = sum(mean_xd * Wh),
       subpop_var_yd  = sum(var_mean_yd),
@@ -213,7 +212,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .ph2_en, .class_d, .attr_y, .attr_x
     mutate(
       subpop_W      = subpop_N / Ntot,
       subpop_Rd     = if_else(subpop_mean_xd > 0, subpop_mean_yd / subpop_mean_xd, 0),
-      subpop_Rd_var = if_else(subpop_mean_xd > 0, (subpop_var_yd + subpop_Rd^2*subpop_var_xd - 2*subpop_Rd*subpop_covar_xdyd) / (subpop_mean_xd^2), 0),
+      subpop_Rd_var = if_else(subpop_mean_xd > 0, abs((subpop_var_yd + subpop_Rd^2*subpop_var_xd - 2*subpop_Rd*subpop_covar_xdyd) / (subpop_mean_xd^2)), 0),
       subpop_Rd_se  = sqrt(subpop_Rd_var),
       subpop_Rd_me  = qt(1-0.1/2, df = subpop_n - Nstrat) * subpop_Rd_se,
       subpop_Rd_mep = if_else(subpop_Rd > 0, round(subpop_Rd_me / subpop_Rd * 100, 1), 0)
@@ -225,7 +224,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .ph2_en, .class_d, .attr_y, .attr_x
   totals_d <- subpop_d |>
     group_by(!!class_d) |>
     summarise(
-      #total_plot = sum(count_plot),
+      total_plot = sum(count_plot),
       Yd         = sum(subpop_mean_yd * subpop_W),
       Yd_var     = sum(subpop_var_yd * subpop_W^2),
       Xd         = sum(subpop_mean_xd * subpop_W),
@@ -236,34 +235,30 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .ph2_en, .class_d, .attr_y, .attr_x
       .groups = "drop"
     ) |>
     mutate(
-      Yd_mep  = if_else(Yd != 0, round(qt(1-0.1/2, df = Inf) * sqrt(Yd_var) / Yd * 100, 1), 0),
-      Xd_mep  = if_else(Xd != 0, round(qt(1-0.1/2, df = Inf) * sqrt(Xd_var) / Xd * 100, 1), 0),
-      Rd     = Yd / Xd,
+      Yd_mep = if_else(Yd != 0, round(qt(1-0.1/2, df = Inf) * sqrt(Yd_var) / Yd * 100, 1), 0),
+      Xd_mep = if_else(Xd != 0, round(qt(1-0.1/2, df = Inf) * sqrt(Xd_var) / Xd * 100, 1), 0),
+      Rd     = round(Yd / Xd, 3),
       Rd_var = (Yd_var + Rd^2*Xd_var - 2*Rd*covar_XdYd)/Xd^2,
-      ## Margin of Error = half width of confidence interval
-      Rd_mep  = if_else(Rd != 0, round(qt(1-0.1/2, df = Inf) * sqrt(Rd_var) / Rd * 100, 1), 0)
+      ## Margin of Error = half width of confidence interval, mep = percentage margin of error
+      Rd_mep = if_else(Rd != 0, round(qt(1-0.1/2, df = Inf) * sqrt(Rd_var) / Rd * 100, 1), 0)
     ) |>
-    select(!!class_d, Yd, Yd_mep, Xd, Xd_mep, Rd, Rd_mep, Ytot, Xtot)
+    select(!!class_d, total_plot, Yd, Yd_mep, Xd, Xd_mep, Rd, Rd_mep, Ytot, Xtot)
   totals_d
   
-  out_d <- totals_d 
-  names(out_d) <- c(
-    as_label(class_d), 
-    paste0(as_label(attr_y), "_meas"), 
-    paste0(as_label(attr_y), "_meas_mep"), 
-    paste0(as_label(attr_x), "_meas"), 
-    paste0(as_label(attr_x), "_meas_mep"),
-    
+  out_d <- totals_d  |> 
+    mutate(attr = as_label(attr_y)) |>
+    select(!!class_d, attr, N_pp = total_plot, Rd, Rd_mep)
+  
+  out <- list(
+    suplot = sp_attr, 
+    plot = plot_attr, 
+    subpop_stratum = subpop_stratum_d, 
+    subpop = subpop_d,
+    totals = totals_d,
+    totals_short = out_d
     )
-  |>
-    select(!!class_d, sym(paste0("total_", as_label(attr_y)) := Yd))
   
-  
-  
-  
-  
-  
-  
-  
+  out
   
 }
+
