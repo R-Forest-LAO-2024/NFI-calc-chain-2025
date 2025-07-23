@@ -234,7 +234,7 @@ ph2_sp_ldw <- ph2_subplot |>
   left_join(ph2_sp_main, by = join_by(plot_id, subplot_no)) |>
   left_join(ldw_aggregate, by = join_by(plot_id == subplot_plot_no, subplot_no)) |>
   mutate(
-    ldw_ha_corr = if_else(is.na(ldw_agb_ha) | lc_no != lc_center , 0, ldw_agb_ha * (pi*16^2/10000) / sp_area_centerlc),
+    ldw_ha_corr = if_else(is.na(ldw_agb_ha) | lc_no != lc_center , 0, ldw_agb_ha / 1000 * (pi*16^2/10000) / sp_area_centerlc),
     ldw = ldw_ha_corr * sp_area
   ) |>
   select(plot_id, subplot_id, ldw) |>
