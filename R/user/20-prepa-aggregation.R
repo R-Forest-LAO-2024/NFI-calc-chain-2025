@@ -120,7 +120,7 @@ ph2_subplot <- expand_grid(
       stratum == 4 ~ TRUE,
       TRUE ~ NA
     ),
-    #sp_area = round((pi*16^2 / 5) / 10000, 4)
+    # sp_area = (pi*16^2 / 5) / 10000
     sp_area = round(if_else(lcs_no == 1, 12^2, (pi*16^2 - 12^2)/4) / 10000, 4)
   ) |>
   select(plot_id, subplot_id, subpop, stratum, lc_no, access, sp_area) |>
@@ -131,15 +131,16 @@ table(ph2_subplot$lc_no, useNA = "ifany")
 table(ph2_subplot$access, useNA = "ifany")
 
 
-## + Phase 2 entities ####
+## + Phase 2 entities that are measured on the same nested subplot level ####
 
 tree2 <- tree |>
   select(plot_id = subplot_plot_no, subplot_no, lcs_no = tree_lcs_no, tree_no, tree_stem_no, tree_dbh, agb = tree_agb_final, bgb = tree_bgb) |>
   mutate(
     subplot_id = paste0(subplot_no, lcs_no),
+    # meas_area = if_else(tree_dbh <= 30, pi*8^2/5 / 10000, pi*16^2/5 / 10000),
     meas_area = case_when(
       lcs_no == 1 ~ round(12^2 / 10000, 4), ## Square of 12x12 m for all trees
-      lcs_no != 1 & tree_dbh <= 30 ~ round((pi*8^2 - 12^2)/40000, 4), ## Quarter of 8 m radius circle minus the 12x12 m square 
+      lcs_no != 1 & tree_dbh <= 30 ~ round((pi*8^2 - 12^2)/40000, 4), ## Quarter of 8 m radius circle minus the 12x12 m square
       lcs_no != 1 & tree_dbh > 30 ~ round((pi*16^2 - 12^2)/40000, 4), ## Quarter of 16 m radius circle minus the 12x12 m square
       TRUE ~ NA_real_
     ),
@@ -174,14 +175,33 @@ stump2 <- stump |>
   )
 
 
-## Check
-# ggplot(tree) +
-#   geom_point(aes(x = tree_dbh, y = tree_agb_final)) +
-#   facet_wrap(~lu_code_new)
-# 
-# ggplot(tree2) +
-#   geom_point(aes(x = tree_dbh, y = agb))
+## Supblot level entities ####
 
+ph2_sp_ldw <- ph2_subplot |>
+  mutate(subplot_no = str_sub(subplot_id, 1, 1)) |>
+  left_join(ldw_aggregate, by = join_by(plot_id == subplot_plot_no, subplot_no)) |>
+  mutate(
+    agb = if_else(is.na(ldw_agb_ha), 0, (ldw_agb_ha * sp_area / 1000))
+  )
+
+
+
+sapling_aggregate <- sapling |>
+  mutate(sapling_area = pi*2^2/10000) |>
+  group_by(subplot_plot_no, subplot_no) |>
+  summarise(
+    sap_agb_ha = sum(sapling_agb / sapling_area) / 10000,
+    .groups = "drop"
+  )
+
+ph2_sp_sap <- ph2_subplot |>
+  mutate(subplot_no = str_sub(subplot_id, 1, 1)) |>
+  left_join(sapling_aggregate, by = join_by(plot_id == subplot_plot_no, subplot_no)) |>
+  mutate(
+    agb = if_else(is.na(sap_agb_ha), 0, (sap_agb_ha * sp_area / 1000))
+  )
+
+## add all variables to subplot x lcs level ####
 
 
 

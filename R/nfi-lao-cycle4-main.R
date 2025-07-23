@@ -64,6 +64,7 @@ source(here("R/user/00e-clean-ldw.R"))
 
 source(here("R/user/00f-clean-stump.R"))
 
+source(here("R/user/00g-clean-sapling.R"))
 
 ## + Get all tables from 'data_clean' list into the Global Environment ####
 
@@ -82,7 +83,7 @@ source(here("R/user/00n-average-wood-density.R"))
 
 ## + Join tables ####
 
-## Land cover section assigned to tree and dw in the cleaning phase
+## Land cover section assigned to entity in the cleaning phase
 
 source(here("R/user/00z-tree-join.R"))
 
@@ -91,6 +92,9 @@ source(here("R/user/00z-dw-join.R"))
 source(here("R/user/00z-ldw-join.R"))
 
 source(here("R/user/00z-stump-join.R"))
+
+source(here("R/user/00z-sapling-join.R"))
+
 
 
 ##
@@ -113,7 +117,7 @@ source(here("R/user/07-tree-bgb.R"))
 source(here("R/user/08-tree-carbon.R"))
 
 
-## + Deadwood calculation ###
+## + other entities ####
 
 source(here("R/user/11-dw-agb.R"))
 
@@ -121,11 +125,12 @@ source(here("R/user/12-ldw-agb.R"))
 
 source(here("R/user/13-stump-agb.R"))
 
+source(here("R/user/14-sapling-agb.R"))
 
 
 ## + Save tables ####
 
-# source(here("R/user/99-save-tables.R"))
+source(here("R/user/99-save-tables.R"))
 
 
 
@@ -134,6 +139,19 @@ source(here("R/user/13-stump-agb.R"))
 ##
 
 # source(here("R/analytics/strata-weights.R"))
+
+source(here("R/user/20-prepa-aggregation.R"))
+
+source(here("R/user/21-fct-nfi-aggregate1.R"))
+
+source(here("R/user/22-fct-nfi-aggregate2.R"))
+
+source(here("R/user/23-fct-nfi-aggregate3.R"))
+
+source(here("R/user/24-fct-nfi-aggregate4.R"))
+
+source(here("R/user/25-aggregate-all.R"))
+
 
 
 ## 

@@ -21,6 +21,8 @@ res3_agb <- allres3_agb$totals_short |>
   left_join(tmp_lc, by = join_by(lc_no)) |>
   select(lc_no, lc_code, everything())
 
+write_csv(allres3_agb$plot, file.path(path$res$data, "plot-summary-live-tree-agb.csv"))
+
 ## + BGB ####
 allres3_bgb <- nfi_aggregate3(
   .ph1_df = ph1_data, 
@@ -85,4 +87,4 @@ write_csv(res3, file.path(path$res$data, paste0("res3-", Sys.Date(), ".csv")))
 
 
 
-
+tt <- allres3_agb$subpop_stratum |> filter(lc_no == 11, subpop == 2)

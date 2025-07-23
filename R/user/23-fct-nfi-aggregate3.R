@@ -102,7 +102,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .ph2_en, .class_d, .attr_y, .attr_x
   ss_ph1 <- .ph1_df |>
     group_by(subpop, stratum) |>
     summarise(Nh = n(), .groups = "drop") |>
-    left_join(ss1_totals, by = join_by(subpop)) |>
+    left_join(ss_ph1_totals, by = join_by(subpop)) |>
     mutate(
       Wh = Nh/N, 4,
       Ah = .aoi_area * Nh / Ntot
@@ -117,7 +117,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .ph2_en, .class_d, .attr_y, .attr_x
     distinct(plot_id, subpop, stratum) |>
     group_by(subpop, stratum) |>
     summarise(nh = n(), .groups = "drop") |>
-    left_join(ss2_totals, by = join_by(subpop)) |>
+    left_join(ss_ph2_totals, by = join_by(subpop)) |>
     mutate(wh = nh/n, 4)
   
   ## + Initiate subpop x stratum ####
