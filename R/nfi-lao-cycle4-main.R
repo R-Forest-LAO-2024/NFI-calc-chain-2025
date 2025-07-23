@@ -140,13 +140,13 @@ source(here("R/user/99-save-tables.R"))
 
 # source(here("R/analytics/strata-weights.R"))
 
-source(here("R/user/20-prepa-aggregation.R"))
+source(here("R/user/20-prepa-aggregation-new.R"))
 
 source(here("R/user/21-fct-nfi-aggregate1.R"))
 
 source(here("R/user/22-fct-nfi-aggregate2.R"))
 
-source(here("R/user/23-fct-nfi-aggregate3.R"))
+source(here("R/user/23-fct-nfi-aggregate3-new.R"))
 
 source(here("R/user/24-fct-nfi-aggregate4.R"))
 
