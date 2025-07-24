@@ -35,11 +35,14 @@ res3 <- map(c("agb", "bgb", "sap_agb", "dw", "stump", "ldw", "Ctot"), function(x
     .aoi_area = 23680000
   )
   
-  tt$totals_short |> filter(lc_no < 30 | lc_no > 160)
+  tt$totals_short |> 
+    filter(lc_no < 30 | lc_no > 160) |>
+    left_join(tmp_lc, by = join_by(lc_no)) |>
+    select(lc_no, lc_code, everything())
   
 }) |> list_rbind()
 
-
+write_csv(res3, file.path(path$res$data, paste0("res3-allpools-", Sys.Date(),".csv")))
 
 
 

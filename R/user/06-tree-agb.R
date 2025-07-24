@@ -11,7 +11,7 @@ tree <- tree |>
       lu_code_new == "MCB"   ~ 0.1277 * tree_dbh^2.3944,
       lu_code_new == "P_AC"  ~ 0.1173 * tree_dbh^2.454,
       lu_code_new == "P_EC"  ~ 0.199 * tree_dbh^2.185,
-      lu_code_new == "P_RB"  ~ 0.0082 * tree_dbh^2.5623,
+      lu_code_new == "P_RB"  ~ 0.0082 * (pi*tree_dbh)^2.5623, ## Rubber model uses circumference
       lu_code_new == "P_TK"  ~ 0.077 * tree_dbh^2.546,
       # lu_code_new == "P_AC"  ~ 0.3112 * tree_dbh^2.2331,  
       # lu_code_new == "P_EC"  ~ 0.3112 * tree_dbh^2.2331,    
