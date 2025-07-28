@@ -214,7 +214,7 @@ sapling_aggregate <- sapling |>
   mutate(sapling_area = pi*2^2/10000) |>
   group_by(subplot_plot_no, subplot_no) |>
   summarise(
-    sap_agb_ha = sum(sapling_agb / sapling_area) / 10000,
+    sap_agb_ha = sum(sapling_agb / sapling_area) / 1000,
     .groups = "drop"
   )
 

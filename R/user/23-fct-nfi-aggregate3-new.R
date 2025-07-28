@@ -35,7 +35,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
   
   ## !!! FOR TESTING ONLY
   # .ph1_df = ph1_data
-  # .ph2_sp = ph2_subplot
+  # .ph2_sp = ph2_sp_all
   # class_d = quo(lc_no)
   # attr_x  = quo(sp_area)
   # attr_y  = quo(agb)
@@ -78,7 +78,9 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
       xid = sum(!!attr_x),
       .groups = "drop"
     ) |> 
-    left_join(plot_a, by = join_by(plot_id, subpop, stratum))
+    left_join(plot_a, by = join_by(plot_id, subpop, stratum)) |>
+    mutate(attr = as_label(attr_y)) |>
+    select(attr, everything())
   
   
   ## Aggregate plot to subpop x stratum ####
@@ -93,7 +95,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
     summarise(Nh = n(), .groups = "drop") |>
     left_join(ss_ph1_totals, by = join_by(subpop)) |>
     mutate(
-      Wh = Nh/N, 4,
+      Wh = Nh/N,
       Ah = .aoi_area * Nh / Ntot
     )
   
@@ -107,7 +109,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
     group_by(subpop, stratum) |>
     summarise(nh = n(), .groups = "drop") |>
     left_join(ss_ph2_totals, by = join_by(subpop)) |>
-    mutate(wh = nh/n, 4)
+    mutate(wh = nh/n)
   
   ## + Initiate subpop x stratum ####
   subpop_stratum_init <- expand_grid(
@@ -180,7 +182,9 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
       var_mean_yd     = if_else(Nh > 1 & n > 0, Wh * (Nh - 1) / (N - 1) * var_yd / nh, 0),
       var_mean_xd     = if_else(Nh > 1 & n > 0, Wh * (Nh - 1) / (N - 1) * var_xd / nh, 0),
       covar_mean_xdyd = if_else(Nh > 1 & n > 0, Wh * (Nh - 1) / (N - 1) * covar_xdyd / nh, 0)
-    )
+    ) |>
+    mutate(attr = as_label(attr_y)) |>
+    select(attr, everything())
   
   ## Aggregate to sub-populations ####
   
@@ -205,7 +209,9 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
       subpop_Rd_se  = sqrt(subpop_Rd_var),
       subpop_Rd_me  = qt(1-0.1/2, df = subpop_n - Nstrat) * subpop_Rd_se,
       subpop_Rd_mep = if_else(subpop_Rd > 0, round(subpop_Rd_me / subpop_Rd * 100, 1), 0)
-    )
+    ) |>
+    mutate(attr = as_label(attr_y)) |>
+    select(attr, everything())
   
   
   ## Totals ####
@@ -231,19 +237,21 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
       ## Margin of Error = half width of confidence interval, mep = percentage margin of error
       Rd_mep = if_else(Rd != 0, round(qt(1-0.1/2, df = Inf) * sqrt(Rd_var) / Rd * 100, 1), 0)
     ) |>
-    select(!!class_d, total_plot, Yd, Yd_mep, Xd, Xd_mep, Rd, Rd_mep, Ytot, Xtot)
+    select(!!class_d, n_pp = total_plot, Yd, Yd_mep, Xd, Xd_mep, Rd, Rd_mep, Ytot, Xtot) |>
+    mutate(attr = as_label(attr_y)) |>
+    select(attr, everything())
   totals_d
   
-  out_d <- totals_d  |> 
+  totals_short <- totals_d  |> 
     mutate(attr = as_label(attr_y)) |>
-    select(!!class_d, attr, N_pp = total_plot, Rd, Rd_mep)
+    select(!!class_d, attr, n_pp, Rd, Rd_mep)
   
   out <- list(
     plot = plot_attr, 
     subpop_stratum = subpop_stratum_d, 
     subpop = subpop_d,
     totals = totals_d,
-    totals_short = out_d
+    totals_short = totals_short
   )
   
   out
