@@ -24,6 +24,28 @@ write_csv(allres3_agb$plot, file.path(path$res$data, "plot-summary-live-tree-agb
 
 
 ## + Combine all totals simplified ####
+res3_simple <- map(vec_pools, function(x){
+  
+  tt <- nfi_aggregate3(
+    .ph1_df = ph1_data, 
+    .ph2_sp = ph2_sp_all, 
+    .class_d = lc_no, 
+    .attr_y = !!sym(x), 
+    .attr_x = sp_area, 
+    .aoi_area = 23680000
+  )
+  
+  tt$totals_short |>
+    filter(lc_no < 30 | lc_no > 160) |>
+    left_join(tmp_lc, by = join_by(lc_no)) |>
+    select(lc_no, lc_code, everything())
+  
+}) |> list_rbind()
+
+write_csv(res3_simple, file.path(path$res$data, paste0("res3-simple-allpools-", Sys.Date(),".csv")))
+
+
+## + Combine all totals simplified ####
 res3_totals <- map(vec_pools, function(x){
   
   tt <- nfi_aggregate3(
@@ -35,7 +57,7 @@ res3_totals <- map(vec_pools, function(x){
     .aoi_area = 23680000
   )
   
-  tt$totals_short |> 
+  tt$totals |>
     filter(lc_no < 30 | lc_no > 160) |>
     left_join(tmp_lc, by = join_by(lc_no)) |>
     select(lc_no, lc_code, everything())
