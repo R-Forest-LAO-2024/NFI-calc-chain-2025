@@ -1,5 +1,4 @@
 
-
 ## Compared to previous version, this version builds subplot level tables for the aggregation function
 ## The idea is that all entities cn be aggregated to the smallest measurement area.
 ## In case of Lao that area, coded as subplot, is in fact the land cover section or subplot x land cover section.

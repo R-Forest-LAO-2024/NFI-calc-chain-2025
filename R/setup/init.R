@@ -35,6 +35,7 @@ use_package(purrr)
 use_package(dplyr)
 use_package(sf)
 use_package(terra)
+use_package(writexl)
 
 ## Default theme for ggplot
 theme_set(theme_bw())

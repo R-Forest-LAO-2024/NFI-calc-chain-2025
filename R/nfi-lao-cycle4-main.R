@@ -130,7 +130,7 @@ source(here("R/user/14-sapling-agb.R"))
 
 ## + Save tables ####
 
-#source(here("R/user/99-save-tables.R"))
+source(here("R/user/99-save-tables.R"))
 
 
 
@@ -140,7 +140,7 @@ source(here("R/user/14-sapling-agb.R"))
 
 # source(here("R/analytics/strata-weights.R"))
 
-source(here("R/user/20-prepa-aggregation-new.R"))
+source(here("R/user/20a-prepa-aggregation-SPxLCS.R"))
 
 source(here("R/user/21-fct-nfi-aggregate1.R"))
 
