@@ -175,8 +175,8 @@ ph2_sp_stump <- stump |>
   ) |>
   right_join(select(ph2_subplot, plot_id, subplot_id, sp_area), by = join_by(plot_id, subplot_id)) |>
   mutate(
-    n_stump = if_else(!is.na(n_stump), n_stump * sp_area, 0),
-    stump   = if_else(!is.na(stump), stump * sp_area, 0)
+    n_stump = if_else(!is.na(n_stump), n_stump, 0),
+    stump   = if_else(!is.na(stump)  , stump    , 0)
   ) |>
   select(plot_id, subplot_id, n_stump, stump) |>
   arrange(plot_id, subplot_id)

@@ -156,32 +156,29 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
     arrange(!!class_d, subpop, stratum)
   
   ## + Add sub-population mean ####
-  ## >> NOT NEEDED for function 3. Needed for double sampling for post-stratification
-  # subpop_mean_d <- subpop_stratum_d |>
-  #   group_by(!!class_d, subpop) |>
-  #   summarise(
-  #     subpop_mean_yd = sum(mean_yd * Wh),
-  #     subpop_mean_xd = sum(mean_xd * Wh),
-  #     .groups = "drop"
-  #   )
-  # 
-  # subpop_stratum_d <- subpop_stratum_d |>
-  #   mutate(
-  #     subpop_mean_yd = NA,
-  #     subpop_mean_xd = NA
-  #   ) |>
-  #   left_join(subpop_mean_d, by = join_by(!!class_d, subpop), suffix = c("_rm", "")) |>
-  #   select(-ends_with("_rm"))
-  
+  subpop_mean_d <- subpop_stratum_d |>
+    group_by(!!class_d, subpop) |>
+    summarise(
+      subpop_mean_yd = sum(mean_yd * Wh),
+      subpop_mean_xd = sum(mean_xd * Wh),
+      .groups = "drop"
+    )
+
   ## + Calc variance ####
   subpop_stratum_d <- subpop_stratum_d |>
+    mutate(
+      subpop_mean_yd = NA,
+      subpop_mean_xd = NA
+    ) |>
+    left_join(subpop_mean_d, by = join_by(!!class_d, subpop), suffix = c("_rm", "")) |>
+    select(-ends_with("_rm")) |>
     mutate(
       var_yd          = if_else(nh > 1 & sum_ai > 0, nh^2/(nh - 1) * (sum_yid_sq - 2*mean_yd*sum_yid_ai + mean_yd^2*sum_ai_sq) / (sum_ai^2), 0),
       var_xd          = if_else(nh > 1 & sum_ai > 0, nh^2/(nh - 1) * (sum_xid_sq - 2*mean_xd*sum_xid_ai + mean_xd^2*sum_ai_sq) / (sum_ai^2), 0),
       covar_xdyd      = if_else(nh > 1 & sum_ai > 0, nh^2/(nh - 1) * (sum_yid_xid - mean_yd*sum_xid_ai - mean_xd*sum_yid_ai + mean_yd*mean_xd*sum_ai_sq) / (sum_ai^2), 0),
-      var_mean_yd     = if_else(Nh > 1 & n > 0, Wh * (Nh - 1) / (N - 1) * var_yd / nh, 0),
-      var_mean_xd     = if_else(Nh > 1 & n > 0, Wh * (Nh - 1) / (N - 1) * var_xd / nh, 0),
-      covar_mean_xdyd = if_else(Nh > 1 & n > 0, Wh * (Nh - 1) / (N - 1) * covar_xdyd / nh, 0)
+      var_mean_yd     = if_else(Nh > 1 & n > 0, Wh * (Nh - 1) / (N - 1) * var_yd / nh + Wh / (N - 1) * (mean_yd - subpop_mean_yd)^2, 0),
+      var_mean_xd     = if_else(Nh > 1 & n > 0, Wh * (Nh - 1) / (N - 1) * var_xd / nh + Wh / (N - 1) * (mean_xd - subpop_mean_xd)^2, 0),
+      covar_mean_xdyd = if_else(Nh > 1 & n > 0, Wh * (Nh - 1) / (N - 1) * covar_xdyd / nh + Wh / (N - 1) * (mean_xd - subpop_mean_xd) * (mean_yd - subpop_mean_yd), 0)
     ) |>
     mutate(attr = as_label(attr_y)) |>
     select(attr, everything())

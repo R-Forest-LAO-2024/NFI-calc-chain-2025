@@ -159,7 +159,7 @@ source(here("R/user/25-aggregate-all.R"))
 ##
 
 ## Carbon stock based on ratio estimator
-source(here("R/user/99-cstock.R"))
+# source(here("R/user/99-cstock.R"))
 
 ## + Nb tree per DBH class
 # source(here("R/user/99-nb-tree-dbh-class.R"))

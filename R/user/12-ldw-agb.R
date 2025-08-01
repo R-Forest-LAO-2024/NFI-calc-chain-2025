@@ -13,7 +13,7 @@ ldw_aggregate <- ldw |>
   group_by(subplot_plot_no, subplot_no, ldw_density, lu_code_new) |>
   summarise(sum_d_sq = sum(d_sq), .groups = "drop") |>
   mutate(
-    ldw_v_ha = round(pi^2 / (8 * 32) * sum_d_sq),
+    ldw_v_ha = pi^2 / (8 * 32) * sum_d_sq,
     ldw_wd = case_when(
       lu_code_new == "EG" & ldw_density == 1 ~ 0.39,
       lu_code_new == "EG" & ldw_density == 2 ~ 0.34,
@@ -24,9 +24,9 @@ ldw_aggregate <- ldw |>
       lu_code_new == "DD" & ldw_density == 1 ~ 0.44,
       lu_code_new == "DD" & ldw_density == 2 ~ 0.35,
       lu_code_new == "DD" & ldw_density == 3 ~ 0.32,
-      ldw_density == 1 ~ 0.54,
-      ldw_density == 2 ~ 0.46,
-      ldw_density == 3 ~ 0.21,
+      ldw_density == 1 ~ 0.44,
+      ldw_density == 2 ~ 0.33,
+      ldw_density == 3 ~ 0.3,
       TRUE ~ NA_real_
     ),
     ldw_agb_ha_density = ldw_v_ha * ldw_wd * 1000, ## q1 g/cm3 = 1000 kg/m3

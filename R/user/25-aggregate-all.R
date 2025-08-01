@@ -7,7 +7,8 @@ tmp_plotgps <- anci$ceo |>
     plot_lon = as.numeric(str_remove(pl_xy, ".*,")),
     plot_lat = as.numeric(str_remove(pl_xy, ",.*"))
   ) |>
-  select(plot_no = plotid_all, prov_no = pl_pcode, prov_name = pl_prov, plot_lon, plot_lat)
+  select(plot_id = plotid_all, prov_no = pl_pcode, prov_name = pl_prov, plot_lon, plot_lat) |>
+  arrange(plot_id)
   
 
 vec_pools <- c("agb", "bgb", "sap_agb", "dw", "stump", "ldw", "Ctot")
