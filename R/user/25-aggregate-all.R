@@ -1,5 +1,5 @@
 
-tmp_lc <- anci$lc |> select(lc_no = lu_no, lc_code = lu_code_new)
+tmp_lc <- anci$lc |> select(lc_no = lu_no, lc_code = lu_code_new, lc_name = lu_name, lc_name_lao = lu_name_lao)
 tmp_plotgps <- anci$ceo |> 
   left_join(anci$ceo_nfi_id_all, by = join_by(pl_orig_fid)) |>
   filter(!is.na(plotid_all)) |>
@@ -73,41 +73,94 @@ if (save_csv) write_csv(plot_all, file.path(path$res$data, paste0(save_pre, "plo
 
 ## + + Save all subpop_stratum ####
 subpop_stratum_all <- res3_all[str_detect(names(res3_all), "subpopstratum")] |>
-  list_rbind()
+  list_rbind() |>
+  filter(!lc_no %in% 30:90)
 
 if (save_csv) write_csv(subpop_stratum_all, file.path(path$res$data, paste0(save_pre, "subpopstratum-allvar", Sys.Date(),".csv")))
 
 ## + + Save all subpop ####
 subpop_all <- res3_all[str_detect(names(res3_all), "subpop_")] |>
-  list_rbind()
+  list_rbind() |>
+  filter(!lc_no %in% 30:90)
 
 if (save_csv) write_csv(subpop_all, file.path(path$res$data, paste0(save_pre, "subpop-allvar", Sys.Date(),".csv")))
 
 
 ## + + Save all totals ####
 totals_all <- res3_all[str_detect(names(res3_all), "totals_")] |>
-  list_rbind()
+  list_rbind() |>
+  filter(!lc_no %in% 30:90)
 
 if (save_csv) write_csv(totals_all, file.path(path$res$data, paste0(save_pre, "totals-allvar", Sys.Date(),".csv")))
 
 
 ## + + Save all totals simplified ####
 totalshort_all <- res3_all[str_detect(names(res3_all), "totalshort_")] |>
-  list_rbind()
+  list_rbind() |>
+  filter(!lc_no %in% 30:90)
 
 if (save_csv) write_csv(totalshort_all, file.path(path$res$data, paste0(save_pre, "totals-short-allvar", Sys.Date(),".csv")))
 
+
+## + Make XLSX table ####
+plot_out <- plot_all |>
+  left_join(tmp_lc, by = join_by(lc_no)) |>
+  left_join(tmp_plotgps, by = join_by(plot_id)) |>
+  mutate(
+    AGB_tha   = round(yid_agb / xid, 3),
+    BGB_tha   = round(yid_bgb / xid, 3),
+    sapB_tha  = round(yid_sap_agb / xid, 3),
+    liveB_tha = AGB_tha + BGB_tha + sapB_tha,
+    AGC_tha   = AGB_tha * CF,
+    BGC_tha   = BGB_tha * CF,
+    sapC_tha  = sapB_tha * CF,
+    liveC_tha = liveB_tha * CF,
+    DW_tha    = round(yid_dw / xid, 3),
+    stump_tha = round(yid_stump / xid, 3),
+    LDW_tha   = round(yid_ldw / xid, 3),
+    totC_tha  = liveC_tha + (DW_tha + stump_tha + LDW_tha) * CF
+  ) |>
+  select(plot_id, lc_no, lc_code, prov_no, prov_name, plot_lon, plot_lat, AGB_tha, AGC_tha, BGB_tha, BGC_tha, ends_with("_tha"), everything())
+
+## + + Make unique plot table ####
+## Take majority AGB
+plot_match_agb <- plot_out |> summarise(agb_max = max(yid_agb), .by = plot_id)
+
+plot_unique_init <- plot_out |>
+  semi_join(plot_match_agb, by = join_by(plot_id, yid_agb == agb_max))
+
+plot_dup <- plot_unique_init |>
+  summarise(count = n(), .by = plot_id) |>
+  filter(count > 1) |>
+  pull(plot_id)
+
+## Take min LC for the remaining dups (all have 0 AGB)
+plot_match_lc <- plot_out |>
+  filter(plot_id %in% plot_dup) |>
+  summarise(lc_min = min(lc_no), .by = plot_id)
+
+plot_unique_lc <- plot_unique_init |>
+  filter(plot_id %in% plot_dup) |>
+  semi_join(plot_match_lc, by = join_by(plot_id, lc_no == lc_min))
+
+plot_unique <- plot_unique_init |>
+  filter(!plot_id %in% plot_dup) |>
+  bind_rows(plot_unique_lc)
+
+## Make a list of all tables
 res3_list <- list(
   ph1_data       = ph1_data,
   ph2_sp_all     = ph2_sp_all,
   plot_summary   = plot_all,
+  plot_output    = plot_out,
+  plot_unique    = plot_unique,
   subpop_stratum = subpop_stratum_all,
   subpop         = subpop_all,
   totals         = totals_all,
   totals_short   = totalshort_all
 )
 
-writexl::write_xlsx(res3_list, file.path(path$res$data, paste0(save_pre, "all-results", Sys.Date(),".xlsx")))
+writexl::write_xlsx(res3_list, file.path(path$res$data, paste0(save_pre, "all-results-", Sys.Date(),".xlsx")))
 
 
 ## + Combine province results
@@ -134,7 +187,7 @@ writexl::write_xlsx(res3_list, file.path(path$res$data, paste0(save_pre, "all-re
 
 
 # ## NOT NEEDED: showcasing less abstraction
-# ## + Combine all totals simplified ####
+# ## + Combine all totals simplified
 # res3_simple <- map(vec_pools, function(x){
 #   
 #   tt <- nfi_aggregate3(
