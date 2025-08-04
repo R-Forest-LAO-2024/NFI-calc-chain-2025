@@ -1,5 +1,5 @@
 # 
-# ## UPDATED IN 20a and 20b. Kept for back-tracing if needed later.
+# ## UPDATED IN 60a and 60b. Kept for back-tracing if needed later.
 # 
 # ##
 # ## Steps ####

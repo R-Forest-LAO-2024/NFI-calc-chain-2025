@@ -26,22 +26,22 @@ if (usr$save_csv) write_csv(ph2_sp_all, file.path(path$res$data, paste0(save_pre
 ## USING FUNCTION 3: ratio estimator, 2 phase sampling for stratification ####
 ##
 
-## + AGB ####
-allres3_agb <- nfi_aggregate3(
-  .ph1_df = ph1_data, 
-  .ph2_sp = ph2_sp_all, 
-  .class_d = lc_no, 
-  .attr_y = agb, 
-  .attr_x = sp_area, 
-  .aoi_area = 23680000
-  ) 
-
-res3_agb <- allres3_agb$totals_short |> 
-  filter(lc_no <= 22 | lc_no >= 160) |>
-  left_join(tmp_lc, by = join_by(lc_no)) |>
-  select(lc_no, lc_code, everything())
-
-if (usr$save_csv) write_csv(allres3_agb$plot, file.path(path$res$data, paste0(save_pre, "plot-summary-live-tree-agb.csv")))
+# ## + AGB ####
+# allres3_agb <- nfi_aggregate3(
+#   .ph1_df = ph1_data, 
+#   .ph2_sp = ph2_sp_all, 
+#   .class_d = lc_no, 
+#   .attr_y = agb, 
+#   .attr_x = sp_area, 
+#   .aoi_area = 23680000
+#   ) 
+# 
+# res3_agb <- allres3_agb$totals_short |> 
+#   filter(lc_no <= 22 | lc_no >= 160) |>
+#   left_join(tmp_lc, by = join_by(lc_no)) |>
+#   select(lc_no, lc_code, everything())
+# 
+# if (usr$save_csv) write_csv(allres3_agb$plot, file.path(path$res$data, paste0(save_pre, "plot-summary-live-tree-agb.csv")))
 
 
 
@@ -62,6 +62,8 @@ res3_all <- map(vec_pools, function(x){
 
 res3_all <- flatten(res3_all)
 names(res3_all) <- as.vector(outer(c("plot", "subpopstratum", "subpop", "totals", "totalshort"), vec_pools, paste, sep = "_"))
+
+
 
 ## + + Save all plot data ####
 plot_all <- res3_all[str_detect(names(res3_all), "plot_")] |>

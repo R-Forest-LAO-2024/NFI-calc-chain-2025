@@ -39,7 +39,14 @@ source(here("R/setup/load-anci.R"))
 
 source(here("R/setup/get-data.R"))
 
+## + Load analytics functions
 
+source(here("R/analytics/fct-nfi-aggregate1.R"))
+source(here("R/analytics/fct-nfi-aggregate2.R"))
+source(here("R/analytics/fct-nfi-aggregate3-new.R"))
+source(here("R/analytics/fct-nfi-aggregate4.R"))
+
+source(here("R/analytics/fct-make-outputs.R"))
 
 ##
 ## Data preparation ####
@@ -108,13 +115,13 @@ source(here("R/user/01-tree-dbh-class.R"))
 
 source(here("R/user/02-tree-weight.R"))
 
-source(here("R/user/05-tree-ba.R"))
+source(here("R/user/03-tree-ba.R"))
 
-source(here("R/user/06-tree-agb.R"))
+source(here("R/user/04-tree-agb.R"))
 
-source(here("R/user/07-tree-bgb.R"))
+source(here("R/user/05-tree-bgb.R"))
 
-source(here("R/user/08-tree-carbon.R"))
+source(here("R/user/06-tree-carbon.R"))
 
 
 ## + other entities ####
@@ -130,7 +137,7 @@ source(here("R/user/14-sapling-agb.R"))
 
 ## + Save tables ####
 
-source(here("R/user/99-save-tables.R"))
+source(here("R/user/50-save-tables.R"))
 
 
 
@@ -138,19 +145,9 @@ source(here("R/user/99-save-tables.R"))
 ## Aggregate data ####
 ##
 
-# source(here("R/analytics/strata-weights.R"))
+source(here("R/user/60a-prepa-aggregation-SPxLCS.R"))
 
-source(here("R/user/20a-prepa-aggregation-SPxLCS.R"))
-
-source(here("R/user/21-fct-nfi-aggregate1.R"))
-
-source(here("R/user/22-fct-nfi-aggregate2.R"))
-
-source(here("R/user/23-fct-nfi-aggregate3-new.R"))
-
-source(here("R/user/24-fct-nfi-aggregate4.R"))
-
-source(here("R/user/25-aggregate-all.R"))
+source(here("R/user/70-aggregate-SPxLCS.R"))
 
 
 
