@@ -15,8 +15,6 @@ sapling <- sapling |>
   select(-ends_with("_rm"))
 
 
-
-
 ## LU class ####
 sapling <- sapling |>
   mutate(
@@ -41,3 +39,6 @@ sapling <- sapling |>
       TRUE ~ lcs_lu_class_txt
     ))
   )
+
+## save table in 'results'
+if (usr$save_csv) write_csv(sapling, file.path(path$res$data, paste0("sapling_with_joins-", Sys.Date(), ".csv")))  

@@ -13,12 +13,11 @@ tmp_plotgps <- anci$ceo |>
 
 vec_pools <- c("agb", "bgb", "sap_agb", "dw", "stump", "ldw", "Ctot")
 
-save_csv <- F
 save_pre <- "res3-SPxLCS-"
 
 ## Save input tables
-if (save_csv) write_csv(ph1_data, file.path(path$res$data, paste0(save_pre, "ph1-info-", Sys.Date(), ".csv")))
-if (save_csv) write_csv(ph2_sp_all, file.path(path$res$data, paste0(save_pre, "ph2-subplot-allvars-", Sys.Date(), ".csv")))
+if (usr$save_csv) write_csv(ph1_data, file.path(path$res$data, paste0(save_pre, "ph1-info-", Sys.Date(), ".csv")))
+if (usr$save_csv) write_csv(ph2_sp_all, file.path(path$res$data, paste0(save_pre, "ph2-subplot-allvars-", Sys.Date(), ".csv")))
 
 
 
@@ -42,7 +41,7 @@ res3_agb <- allres3_agb$totals_short |>
   left_join(tmp_lc, by = join_by(lc_no)) |>
   select(lc_no, lc_code, everything())
 
-if (save_csv) write_csv(allres3_agb$plot, file.path(path$res$data, paste0(save_pre, "plot-summary-live-tree-agb.csv")))
+if (usr$save_csv) write_csv(allres3_agb$plot, file.path(path$res$data, paste0(save_pre, "plot-summary-live-tree-agb.csv")))
 
 
 
@@ -69,21 +68,21 @@ plot_all <- res3_all[str_detect(names(res3_all), "plot_")] |>
   list_rbind() |>
   pivot_wider(names_from = attr, names_prefix = "yid_", values_from = yid)
 
-if (save_csv) write_csv(plot_all, file.path(path$res$data, paste0(save_pre, "plot-summary-allvar", Sys.Date(),".csv")))
+if (usr$save_csv) write_csv(plot_all, file.path(path$res$data, paste0(save_pre, "plot-summary-allvar", Sys.Date(),".csv")))
 
 ## + + Save all subpop_stratum ####
 subpop_stratum_all <- res3_all[str_detect(names(res3_all), "subpopstratum")] |>
   list_rbind() |>
   filter(!lc_no %in% 30:90)
 
-if (save_csv) write_csv(subpop_stratum_all, file.path(path$res$data, paste0(save_pre, "subpopstratum-allvar", Sys.Date(),".csv")))
+if (usr$save_csv) write_csv(subpop_stratum_all, file.path(path$res$data, paste0(save_pre, "subpopstratum-allvar", Sys.Date(),".csv")))
 
 ## + + Save all subpop ####
 subpop_all <- res3_all[str_detect(names(res3_all), "subpop_")] |>
   list_rbind() |>
   filter(!lc_no %in% 30:90)
 
-if (save_csv) write_csv(subpop_all, file.path(path$res$data, paste0(save_pre, "subpop-allvar", Sys.Date(),".csv")))
+if (usr$save_csv) write_csv(subpop_all, file.path(path$res$data, paste0(save_pre, "subpop-allvar", Sys.Date(),".csv")))
 
 
 ## + + Save all totals ####
@@ -91,7 +90,7 @@ totals_all <- res3_all[str_detect(names(res3_all), "totals_")] |>
   list_rbind() |>
   filter(!lc_no %in% 30:90)
 
-if (save_csv) write_csv(totals_all, file.path(path$res$data, paste0(save_pre, "totals-allvar", Sys.Date(),".csv")))
+if (usr$save_csv) write_csv(totals_all, file.path(path$res$data, paste0(save_pre, "totals-allvar", Sys.Date(),".csv")))
 
 
 ## + + Save all totals simplified ####
@@ -99,7 +98,7 @@ totalshort_all <- res3_all[str_detect(names(res3_all), "totalshort_")] |>
   list_rbind() |>
   filter(!lc_no %in% 30:90)
 
-if (save_csv) write_csv(totalshort_all, file.path(path$res$data, paste0(save_pre, "totals-short-allvar", Sys.Date(),".csv")))
+if (usr$save_csv) write_csv(totalshort_all, file.path(path$res$data, paste0(save_pre, "totals-short-allvar", Sys.Date(),".csv")))
 
 
 ## + Make XLSX table ####
@@ -161,6 +160,14 @@ res3_list <- list(
 )
 
 writexl::write_xlsx(res3_list, file.path(path$res$data, paste0(save_pre, "all-results-", Sys.Date(),".xlsx")))
+
+## Make spatial plot tables
+sf_plot <- plot_out |>
+  mutate(x = plot_lon, y = plot_lat) |>
+  st_as_sf(coords = c("x", "y"), crs = 4326)
+
+st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-summary-", Sys.Date(), ".kml")))
+st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-summary-", Sys.Date(), ".geojson")))
 
 
 ## + Combine province results

@@ -28,3 +28,6 @@ usr$add_qc <- FALSE
 
 ## Specify timezone to get correct timestamps even outside country
 usr$time_zone <- "Asia/Bangkok"
+
+## Save intermediate tables
+usr$save_csv <- FALSE

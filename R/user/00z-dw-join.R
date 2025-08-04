@@ -59,7 +59,7 @@ dw <- dw |>
 
 
 ## save table in 'results'
-write_csv(dw, file.path(path$res$data, paste0("dw_with_joins-", Sys.Date(), ".csv")))  
+if (usr$save_csv) write_csv(dw, file.path(path$res$data, paste0("dw_with_joins-", Sys.Date(), ".csv")))  
 
 ## Remove tmp object
 rm(tmp)

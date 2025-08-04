@@ -212,6 +212,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
   
   
   ## Totals ####
+  DF_all <- sum(unique(subpop_d$subpop_n)) - length(unique(subpop_d$subpop_n))*Nstrat
   
   totals_d <- subpop_d |>
     group_by(!!class_d) |>
@@ -227,12 +228,12 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
       .groups = "drop"
     ) |>
     mutate(
-      Yd_mep = if_else(Yd != 0, round(qt(1-0.1/2, df = Inf) * sqrt(Yd_var) / Yd * 100, 2), 0),
-      Xd_mep = if_else(Xd != 0, round(qt(1-0.1/2, df = Inf) * sqrt(Xd_var) / Xd * 100, 2), 0),
+      Yd_mep = if_else(Yd != 0, round(qt(1-0.1/2, df = DF_all) * sqrt(Yd_var) / Yd * 100, 2), 0),
+      Xd_mep = if_else(Xd != 0, round(qt(1-0.1/2, df = DF_all) * sqrt(Xd_var) / Xd * 100, 2), 0),
       Rd     = round(Yd / Xd, 3),
       Rd_var = (Yd_var + Rd^2*Xd_var - 2*Rd*covar_XdYd)/Xd^2,
       ## Margin of Error = half width of confidence interval, mep = percentage margin of error
-      Rd_mep = if_else(Rd != 0, round(qt(1-0.1/2, df = Inf) * sqrt(Rd_var) / Rd * 100, 2), 0)
+      Rd_mep = if_else(Rd != 0, round(qt(1-0.1/2, df = DF_all) * sqrt(Rd_var) / Rd * 100, 2), 0)
     ) |>
     select(!!class_d, n_pp = total_plot, Yd, Yd_mep, Xd, Xd_mep, Rd, Rd_mep, Ytot, Xtot) |>
     mutate(attr = as_label(attr_y)) |>

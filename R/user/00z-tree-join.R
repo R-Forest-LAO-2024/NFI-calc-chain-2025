@@ -197,7 +197,7 @@ lcs_ <- lcs |>
 
 
 ## save table in 'results'
-write_csv(tree, file.path(path$res$data, paste0("tree_with_joins-", Sys.Date(), ".csv")))  
+if (usr$save_csv) write_csv(tree, file.path(path$res$data, paste0("tree_with_joins-", Sys.Date(), ".csv")))  
 
 ## Remove tmp object
 rm(tmp)

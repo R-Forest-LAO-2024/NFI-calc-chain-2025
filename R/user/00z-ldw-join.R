@@ -66,7 +66,7 @@ ldw <- ldw |>
 
 
 ## save table in 'results'
-write_csv(ldw, file.path(path$res$data, paste0("ldw_with_joins-", Sys.Date(), ".csv")))  
+if (usr$save_csv) write_csv(ldw, file.path(path$res$data, paste0("ldw_with_joins-", Sys.Date(), ".csv")))  
 
 ## Remove tmp object
 rm(tmp)

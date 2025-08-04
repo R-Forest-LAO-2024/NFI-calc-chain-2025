@@ -25,7 +25,8 @@ tree <- tree |>
     tree_agb_final = round(tree_agb_final, 3),
     tree_agb_chave14 = round(exp(-1.803 - 0.976*plot_E + 0.976*log(wd_all) + 2.673*log(tree_dbh) -0.0299*(log(tree_dbh))^2), 3),
     tree_agb_chave05 = round(wd_all * exp(-1.499 + 2.148 * log(tree_dbh) + 0.207 * (log(tree_dbh))^2 - 0.0281*(log(tree_dbh))^3), 3),
-    tree_agb_chave05_wd06 = round(0.6 * exp(-1.499 + 2.148 * log(tree_dbh) + 0.207 * (log(tree_dbh))^2 - 0.0281*(log(tree_dbh))^3), 3)
+    tree_agb_chave05_wd06 = round(0.6 * exp(-1.499 + 2.148 * log(tree_dbh) + 0.207 * (log(tree_dbh))^2 - 0.0281*(log(tree_dbh))^3), 3),
+    tree_agb_EG = 0.3112 * tree_dbh^2.2331,
   )
 
 
@@ -41,7 +42,7 @@ tree |>
   geom_line(aes(y = tree_agb_final)) +
   geom_line(aes(y = tree_agb_chave05_wd06), linetype = "dashed") +
   geom_point(aes(y = tree_agb_chave14), size = 0.8, col = "darkred", alpha = 0.4) +
-  #geom_point(aes(y = tree_agb_chave05), size = 0.8, col = "darkorange", shape = 4, alpha = 0.4) +
+  geom_point(aes(y = tree_agb_EG), size = 0.8, col = "darkorange", shape = 4, alpha = 0.4) +
   facet_wrap(~lu_code_new) +
   labs(
     x = "DBH",
@@ -58,7 +59,7 @@ tree |>
   geom_line(aes(y = tree_agb_final)) +
   geom_line(aes(y = tree_agb_chave05_wd06), linetype = "dashed") +
   geom_point(aes(y = tree_agb_chave14), size = 0.8, col = "darkred", alpha = 0.4) +
-  #geom_point(aes(y = tree_agb_chave05), size = 0.8, col = "darkorange", shape = 4, alpha = 0.4) +
+  geom_point(aes(y = tree_agb_EG), size = 0.8, col = "darkorange", shape = 4, alpha = 0.4) +
   facet_wrap(~lu_code_new) +
   labs(
     x = "DBH",
