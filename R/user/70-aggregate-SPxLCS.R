@@ -21,13 +21,12 @@ if (usr$save_csv) write_csv(ph2_sp_all, file.path(path$res$data, paste0(save_pre
 
 
 
-
 ##
 ## USING FUNCTION 3: ratio estimator, 2 phase sampling for stratification ####
 ##
 
-# ## + AGB ####
-# allres3_agb <- nfi_aggregate3(
+# ## + AGB for demo ####
+# res3_agb <- nfi_aggregate3(
 #   .ph1_df = ph1_data, 
 #   .ph2_sp = ph2_sp_all, 
 #   .class_d = lc_no, 
@@ -35,76 +34,15 @@ if (usr$save_csv) write_csv(ph2_sp_all, file.path(path$res$data, paste0(save_pre
 #   .attr_x = sp_area, 
 #   .aoi_area = 23680000
 #   ) 
-# 
-# res3_agb <- allres3_agb$totals_short |> 
-#   filter(lc_no <= 22 | lc_no >= 160) |>
-#   left_join(tmp_lc, by = join_by(lc_no)) |>
-#   select(lc_no, lc_code, everything())
-# 
-# if (usr$save_csv) write_csv(allres3_agb$plot, file.path(path$res$data, paste0(save_pre, "plot-summary-live-tree-agb.csv")))
 
+## + All pools ####
 
+res3_list <- make_outputs(.pools = vec_pools, .fct_no = 3)
 
+res3_names <- names(res3_list)[names(res3_list) != "plot_summary"]
 
-## + Combine everything  ####
-res3_all <- map(vec_pools, function(x){
-  
-  nfi_aggregate3(
-    .ph1_df = ph1_data, 
-    .ph2_sp = ph2_sp_all, 
-    .class_d = lc_no, 
-    .attr_y = !!sym(x), 
-    .attr_x = sp_area, 
-    .aoi_area = 23680000
-  )
-  
-})
-
-res3_all <- flatten(res3_all)
-names(res3_all) <- as.vector(outer(c("plot", "subpopstratum", "subpop", "totals", "totalshort"), vec_pools, paste, sep = "_"))
-
-
-
-## + + Save all plot data ####
-plot_all <- res3_all[str_detect(names(res3_all), "plot_")] |>
-  list_rbind() |>
-  pivot_wider(names_from = attr, names_prefix = "yid_", values_from = yid)
-
-if (usr$save_csv) write_csv(plot_all, file.path(path$res$data, paste0(save_pre, "plot-summary-allvar", Sys.Date(),".csv")))
-
-## + + Save all subpop_stratum ####
-subpop_stratum_all <- res3_all[str_detect(names(res3_all), "subpopstratum")] |>
-  list_rbind() |>
-  filter(!lc_no %in% 30:90)
-
-if (usr$save_csv) write_csv(subpop_stratum_all, file.path(path$res$data, paste0(save_pre, "subpopstratum-allvar", Sys.Date(),".csv")))
-
-## + + Save all subpop ####
-subpop_all <- res3_all[str_detect(names(res3_all), "subpop_")] |>
-  list_rbind() |>
-  filter(!lc_no %in% 30:90)
-
-if (usr$save_csv) write_csv(subpop_all, file.path(path$res$data, paste0(save_pre, "subpop-allvar", Sys.Date(),".csv")))
-
-
-## + + Save all totals ####
-totals_all <- res3_all[str_detect(names(res3_all), "totals_")] |>
-  list_rbind() |>
-  filter(!lc_no %in% 30:90)
-
-if (usr$save_csv) write_csv(totals_all, file.path(path$res$data, paste0(save_pre, "totals-allvar", Sys.Date(),".csv")))
-
-
-## + + Save all totals simplified ####
-totalshort_all <- res3_all[str_detect(names(res3_all), "totalshort_")] |>
-  list_rbind() |>
-  filter(!lc_no %in% 30:90)
-
-if (usr$save_csv) write_csv(totalshort_all, file.path(path$res$data, paste0(save_pre, "totals-short-allvar", Sys.Date(),".csv")))
-
-
-## + Make XLSX table ####
-plot_out <- plot_all |>
+## + Create plot output with per ha values ####
+plot_out <- res3_list$plot_summary |>
   left_join(tmp_lc, by = join_by(lc_no)) |>
   left_join(tmp_plotgps, by = join_by(plot_id)) |>
   mutate(
@@ -148,28 +86,24 @@ plot_unique <- plot_unique_init |>
   filter(!plot_id %in% plot_dup) |>
   bind_rows(plot_unique_lc)
 
-## Make a list of all tables
-res3_list <- list(
-  ph1_data       = ph1_data,
-  ph2_sp_all     = ph2_sp_all,
-  plot_summary   = plot_all,
-  plot_output    = plot_out,
-  plot_unique    = plot_unique,
-  subpop_stratum = subpop_stratum_all,
-  subpop         = subpop_all,
-  totals         = totals_all,
-  totals_short   = totalshort_all
-)
+
+## + Make XLSX table ####
+res3_list$plot_output <- plot_out
+res3_list$plot_unique <- plot_unique
+res3_list$ph1_data <- ph1_data
+res3_list$ph2_subplot <- ph2_sp_all
+
+res3_list <- res3_list[c("ph1_data", "ph2_subplot", "plot_summary", "plot_output", "plot_unique", res3_names)]
 
 writexl::write_xlsx(res3_list, file.path(path$res$data, paste0(save_pre, "all-results-", Sys.Date(),".xlsx")))
 
 ## Make spatial plot tables
-sf_plot <- plot_out |>
+sf_plot <- res3_list$plot_out |>
   mutate(x = plot_lon, y = plot_lat) |>
   st_as_sf(coords = c("x", "y"), crs = 4326)
 
-st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-summary-", Sys.Date(), ".kml")))
-st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-summary-", Sys.Date(), ".geojson")))
+st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-summary-", Sys.Date(), ".kml")), delete_dsn = TRUE)
+st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-summary-", Sys.Date(), ".geojson")), delete_dsn = TRUE)
 
 
 ## + Combine province results
