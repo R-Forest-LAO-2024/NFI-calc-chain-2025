@@ -41,7 +41,7 @@ make_outputs <- function(.pools, .fct_no){
   
   ## + Save plot data ####
   ## Plot data need pivot_wider()
-  plot_summary <- res[str_detect(names(res3_all), "plot")] |>
+  plot_summary <- res[str_detect(names(res), "plot")] |>
     list_rbind() |>
     pivot_wider(names_from = attr, names_prefix = "yid_", values_from = yid)
   
