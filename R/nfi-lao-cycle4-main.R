@@ -145,9 +145,10 @@ source(here("R/user/50-save-tables.R"))
 ## Aggregate data ####
 ##
 
-source(here("R/user/60a-prepa-aggregation-SPxLCS.R"))
+source(here("R/user/61-prepa-aggregation-SPxLCS.R"))
 
-source(here("R/user/70-aggregate-SPxLCS.R"))
+
+source(here("R/user/71-aggregate-SPxLCS.R"))
 
 
 

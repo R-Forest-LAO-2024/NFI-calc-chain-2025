@@ -39,7 +39,9 @@ if (usr$save_csv) write_csv(ph2_sp_all, file.path(path$res$data, paste0(save_pre
 
 res3_list <- make_outputs(.pools = vec_pools, .fct_no = 3)
 
-res3_names <- names(res3_list)[names(res3_list) != "plot_summary"]
+res3_names <- names(res3_list)
+
+res3_names_noplot <- res3_names[res3_names != "plot_summary"]
 
 ## + Create plot output with per ha values ####
 plot_out <- res3_list$plot_summary |>
