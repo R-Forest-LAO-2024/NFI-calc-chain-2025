@@ -1,8 +1,4 @@
----
-editor_options: 
-  markdown: 
-    wrap: 96
----
+
 
 # NFI-calc-chain-2025
 

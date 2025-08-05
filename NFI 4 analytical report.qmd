@@ -1,0 +1,94 @@
+---
+title: "NFI 4 analytical report"
+subtitle: ""
+author: "Gael Sola, FAO, Chip Scott, USFS (retired), Jeremy Ferrand (JICA), !!ADD OTHERS"
+date: "August 2025"
+execute:
+  echo: false
+format:
+  docx:
+    toc: true
+    number-sections: true
+    highlight-style: github
+  pdf:
+    documentclass: scrartcl
+    papersize: A4
+    toc: true
+    number-sections: true
+    number-depth: 2
+    colorlinks: true
+  html: 
+    number-sections: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    embed-resources: true
+editor: visual
+---
+
+# Preamble
+
+This report was written as a [Quarto document](https://quarto.org/) and developed with R Quarto. The tables, figures and numbers are automatically generated from the R scripts used to analyze Lao PDR national forest inventory cycle 4, carried out in 2024 and 2025.
+
+The code base and quarto document are available at:
+
+<https://github.com/R-Forest-LAO-2024/NFI-calc-chain-2025/>
+
+The code base itself is split into 3 groups of scripts with different objectives:
+
+-   Setup: load libraries, setup the environment and get the data from an initial master table in the ONA server into split tables by entity
+
+-   User: clean the data, join attributes, calculate entity level variables from field measurements, run aggregation functions to get the final results.
+
+-   Analytics: custom functions that aggregate data from the smallest area unit tom the domain and sub-population of interest.
+
+The whole sequence can be run from the master script: **'R/nfi-lao-cycle4-main.R'**.
+
+```{r}
+#| output: false
+source("R/nfi-lao-cycle4-main.R")
+```
+
+# Executive summary {.unnumbered}
+
+## Description of NFI Cycle 4  {.unnumbered}
+
+Lao implemented three cycles of national forest inventories (NFIs) between !!DATE and !!DATE. A major revision of its design took place in 2023 and 2024 with collaborative support from GIZ and the Goettingen University on one side, and Silvacarbon and the US Forest service on the other side.
+
+The initial plan that followed this collaboration was a two-phase systematic sampling design. The initial phase consisted in the visual observation of all the plot centers on a 6 by 6 km grid, followed by a second phase were all the plot on a larger 12 x 18 km grid wee marked for field measurement (phase 2). The Phase 2 plots were designed as clustered-plots composed by four 16 m radius subplots on a L shape, numbered A, B, C (south to north) and D (east of subplot A) and separated by 60 meters center to center.
+
+Two major changes impacted the design during implementation:
+
+1.  Not all initial phase 2 plots were measured, visited. This forced a change in design from systematic to stratified, in order to account for the fact that plot in different strata had different probability ofd selection.
+
+2.  Since land cover was recorded for each subplot and in practice on 5 observation points on each subplot (20 land cover section per plot), a ratio estimator approach was necessary to account for the fact that plots for a specific land cover or domain (d) didn't have all the same plot area.
+
+# Introduction
+
+## Context
+
+## Objective
+
+# Method
+
+## NFI sampling design 
+
+## NFI plot design
+
+## NFI response design
+
+# Analysis of the data 
+
+## Data preparation
+
+## Data correction 
+
+## Entity level calculations
+
+## Aggregation to domain and totals 
+
+## ERPA level aggregates
+
+## Province level aggregates
+
+# Annex: R script code base

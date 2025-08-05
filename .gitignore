@@ -1,4 +1,7 @@
-
+## Custom gitignore
+*.docx
+*.html
+*.pdf
 
 
 # History files
