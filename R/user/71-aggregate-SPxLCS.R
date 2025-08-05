@@ -95,7 +95,7 @@ res3_list$plot_unique <- plot_unique
 res3_list$ph1_data <- ph1_data
 res3_list$ph2_subplot <- ph2_sp_all
 
-res3_list <- res3_list[c("ph1_data", "ph2_subplot", "plot_summary", "plot_output", "plot_unique", res3_names)]
+res3_list <- res3_list[c("ph1_data", "ph2_subplot", "plot_summary", "plot_output", "plot_unique", res3_names_noplot)]
 
 writexl::write_xlsx(res3_list, file.path(path$res$data, paste0(save_pre, "all-results-", Sys.Date(),".xlsx")))
 
