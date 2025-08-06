@@ -6,6 +6,12 @@ date: "August 2025"
 execute:
   echo: false
 format:
+  html: 
+    number-sections: true
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    embed-resources: true
   docx:
     toc: true
     number-sections: true
@@ -17,12 +23,6 @@ format:
     number-sections: true
     number-depth: 2
     colorlinks: true
-  html: 
-    number-sections: true
-    toc: true
-    toc-depth: 2
-    toc-location: left
-    embed-resources: true
 editor: visual
 ---
 
@@ -46,12 +46,15 @@ The whole sequence can be run from the master script: **'R/nfi-lao-cycle4-main.R
 
 ```{r}
 #| output: false
+
+## Run all the code base
 source("R/nfi-lao-cycle4-main.R")
+
 ```
 
 # Executive summary {.unnumbered}
 
-## Description of NFI Cycle 4  {.unnumbered}
+## Description of NFI Cycle 4 {.unnumbered}
 
 Lao implemented three cycles of national forest inventories (NFIs) between !!DATE and !!DATE. A major revision of its design took place in 2023 and 2024 with collaborative support from GIZ and the Goettingen University on one side, and Silvacarbon and the US Forest service on the other side.
 
@@ -63,6 +66,57 @@ Two major changes impacted the design during implementation:
 
 2.  Since land cover was recorded for each subplot and in practice on 5 observation points on each subplot (20 land cover section per plot), a ratio estimator approach was necessary to account for the fact that plots for a specific land cover or domain (d) didn't have all the same plot area.
 
+As a result, the overall analytical approach was: **two-phase sampling for post-stratification with ratio estimator**.
+
+The aggregation of entity level variables, such as tree volume, tree biomass or deadwood biomass, to domain level (land cover class) followed this pattern:
+
+-   aggregation of entity level to the smallest area unit (subplot x land cover section in the new NFI cycle 4 design),
+
+-   smallest area unit to plot level,
+
+-   plot level to sub-population and strata level,
+
+-   sub-population and strata level to sub-population level,
+
+-   sub-population level to totals for the all domains.
+
+The strata are:
+
+1.  natural forest
+2.  forest plantations
+3.  regenerating vegetation
+4.  non-forest
+
+The sub-populations can be:
+
+-   no subpopulation
+
+-   ERPA provinces and all other provinces in two different sub-populations
+
+-   each province is a different sub-population
+
+## Results {.unnumbered}
+
+The Phase 1 one this inventory cycle included the interpretation of `r format(nrow(ph1_data), big.mark = ",")` plots on a 6 x 6 km grid. Nearly half the plots were natural forest, the rest mostly shared between non-forest and regeneration, and very plots were found on plantations areas (@tbl-ph1).
+
+```{r}
+#| label: tbl-ph1
+#| tbl-cap: "Number of plots per stratum in the phase 1."
+
+knitr::kable(tbl_Nh, format.args = list(big.mark = ','))
+
+```
+
+Out of all the phase 1 plots, a systematic subset of `r format(nplot_ph2, big.mark = ",")` plots were selected on a 12 x 18 km grid. From these plots `r format(nplot_visit, big.mark = ",")` were visited and `r format(nplot_access, big.mark = ",")` were at least partially accessible (@tbl-ph2).
+
+```{r}
+#| label: tbl-ph2
+#| tbl-cap: "Number of plots in the NFI Phase 2 planned, visited and accessed."
+
+knitr::kable(tbl_access, format.args = list(big.mark = ','))
+
+```
+
 # Introduction
 
 ## Context
@@ -71,21 +125,21 @@ Two major changes impacted the design during implementation:
 
 # Method
 
-## NFI sampling design 
+## NFI sampling design
 
 ## NFI plot design
 
 ## NFI response design
 
-# Analysis of the data 
+# Analysis of the data
 
 ## Data preparation
 
-## Data correction 
+## Data correction
 
 ## Entity level calculations
 
-## Aggregation to domain and totals 
+## Aggregation to domain and totals
 
 ## ERPA level aggregates
 

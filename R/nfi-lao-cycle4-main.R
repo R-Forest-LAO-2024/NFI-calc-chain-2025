@@ -151,6 +151,12 @@ source(here("R/user/61-prepa-aggregation-SPxLCS.R"))
 source(here("R/user/71-aggregate-SPxLCS.R"))
 
 
+##
+## Make report outputs ####
+##
+
+source(here("R/user/80-report-outputs.R"))
+
 
 ## 
 ## Other analytics ####
