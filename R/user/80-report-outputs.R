@@ -70,3 +70,17 @@ tmp$tbl_access_tot <- flatten(list(Status = "Total", colSums(select(tmp$tbl_acce
 
 tbl_access <- bind_rows(tmp$tbl_access, tmp$tbl_access_tot)
 tbl_access
+
+##
+## + Nb of measurements ####
+##
+
+n_meas <- tibble(
+  Entity = c("Tree", "Standing DW", "Stumps", "Sapling", "Lying DW"),
+  count  = 
+)
+n_tree <- nrow(tree)
+n_dw <- nrow(dw)
+n_stump <- nrow(stump)
+n_sap <- nrow(sapling)
+
