@@ -86,7 +86,7 @@ The data analysis objective was to calculate entity level variables, such as tre
 
     -   sub-population level to totals for the all domains.
 
-The strata were defined as (1) natural forest, (2) forest plantations, (3) regenerating vegetation and (4) non-forest and assigned at the plot level from the Phase 1 observations.
+The strata were defined as (1) natural forest, (2) forest plantations, (3) regenerating vegetation and (4) non-forest, and assigned at the plot level from the Phase 1 observations.
 
 Different sub-populations were defined: no sub-population, (1) ERPA provinces and (2) all other provinces in two different sub-populations, or each province is a different sub-population. When sub-populations were defined, the sub-population level tables provided the ratio estimates for all sub-populations with their confidence intervals.
 
@@ -124,27 +124,84 @@ knitr::kable(tbl_entity, format.args = list(big.mark = ','))
 
 ```
 
-The main result of the analysis were the biomass of different pools (live trees aboveground, live trees belowground, sapling aboveground, deadwood, stumps and lying dead wood) in ton of biomass per ha and the average total carbon of all domains (in ton C per ha).
+The main result of the analysis were the biomass of different pools (live trees aboveground, live trees belowground, sapling aboveground, deadwood, stumps and lying dead wood) in ton of biomass per ha and the average total carbon of all domains (in ton C per ha). The total carbon is presented in @tbl-carbon and the other results, including per province estimations can be found in the report or its annexes.
+
+```{r}
+#| label: tbl-carbon
+#| tbl-cap: "Total carbon stock per land cover class in tC/ha."
+
+knitr::kable(tbl_carbon, format.args = list(big.mark = ","))
+
+```
 
 # Introduction
 
 ## Context
 
+TBD
+
 ## Objective
+
+The main objective of the analysis was to estimate Lao PDR forest carbon stocks, in per hectare values and as total quantity, over the country or different administrative units (or subpopulations) and land cover classes (or domains).
+
+This reports present the method and results of the analysis.
 
 # Method
 
 ## NFI sampling design
 
+TBD
+
 ## NFI plot design
 
+TBD
+
 ## NFI response design
+
+TBD
 
 # Analysis of the data
 
 ## Data preparation
 
+The initial scripts were developed to retrieve the data directly from the ONA server into R as one master CSV (see ONA API instructions: <https://api.ona.ilri.org/static/docs/data.html>), or from manually downloaded tables as a ZIP file or as a CSV with long names (see ONA interface download options).
+
+Rstudio allows to request passwords, without storing them to maintain security, with the command `rstudioapi::askforsecret()`. With the `keyring` package installed, the password can even be stored securely in the operating system's keyring backend to avoid having to re-enter every time.
+
+Nevertheless, it was decided that the data would be downloaded manually by FIPD and shared with experts and analysts. In this case, the data was stored in the following directory inside the R project: `'data/data-source'`, and user inputs were set as follows in `'R/user/00-user-input.R'` (@lst-usrinput).
+
+```{r}
+#| eval: false
+#| echo: true
+#| lst-label: lst-usrinput
+#| lst-cap: "User inputs at the time of reporting in the script 'R/user/00-user-inputs.R'"
+## Initiate list to store user inputs 
+usr <- list()
+
+## Erase cleaned and harmonized data and recompile from source
+usr$recompile_source <- TRUE
+
+## Download source data from ONA
+usr$download_new <- FALSE
+
+## Delete all source data (useful if new data gets downloaded)
+usr$clean_all <- FALSE
+
+## File name of the NFI source data if not downloaded
+usr$get_filename <-  "4th_NFI_2025_06_04_09_11_28_457776.csv"
+
+## File name of the CEO file put in 'data/data-anci'
+usr$get_ceofile <- "ceo-2025-06-06-complete.csv"
+
+```
+
+Notice in @lst-usrinput that the CSV file of the Phase 1 data was placed in the ancillary data folder: `'data/data-ancillary'`, and its file name added to the user inputs as well.
+
+The data preparation was automated and part of the setup group of scripts in `'R/setup/'`. In particular `'get-data.R'` and `'load-anci.R'` took care of loading the raw data and splitting the master CSV file into entity level tables: subplot, tree, dw, sapling and ldw, and split out the QAQC re-measurements into separate tables. At this stage, all the entity tables were grouped in the R global Environment into an object (specifically a list) called: `data-prep`.
+
 ## Data correction
+
+The data correction scripts were placed in the user group of scripts, in `'R/user/'`, and developed manually to investigate and solve potential errors for each entity table. During this phase the five land cover observations for each subplot were separated from the subplot table into their own table: `lcs`, short for land cover section.
 
 ## Entity level calculations
 
@@ -154,6 +211,8 @@ The main result of the analysis were the biomass of different pools (live trees 
 
 ## Province level aggregates
 
-# Annex 1: R script code base description {#sec-annex-r}
+# Conclusion
 
-# Annex 2: QAQC plot revisited results {#sec-annex-qaqc}
+# Annex : R script code base description {#sec-annex-r}
+
+# Annex : QAQC plot revisited results {#sec-annex-qaqc}
