@@ -26,7 +26,7 @@ format:
 editor: visual
 ---
 
-# Preamble {.unnumbered}
+# Preamble {#sec-preamble .unnumbered}
 
 This report was written as a [Quarto document](https://quarto.org/) and developed with R Quarto. The tables, figures and numbers are automatically generated from the R scripts used to analyze Lao PDR national forest inventory cycle 4, carried out in 2024 and 2025.
 
@@ -52,7 +52,7 @@ source("R/nfi-lao-cycle4-main.R")
 
 ```
 
-# Executive summary {.unnumbered}
+# Executive summary {#sec-exec .unnumbered}
 
 ## Description of NFI Cycle 4 {.unnumbered}
 
@@ -97,7 +97,7 @@ The sub-populations can be:
 
 ## Results {.unnumbered}
 
-The Phase 1 one this inventory cycle included the interpretation of `r format(nrow(ph1_data), big.mark = ",")` plots on a 6 x 6 km grid. Nearly half the plots were natural forest, the rest mostly shared between non-forest and regeneration, and very plots were found on plantations areas (@tbl-ph1).
+The Phase 1 one this inventory cycle was carried out from XX to XX and consisted of the interpretation of `r format(nrow(ph1_data), big.mark = ",")` plots on a 6 x 6 km grid. Nearly half the plots were natural forest, the rest mostly shared between non-forest and regeneration, and very plots were found on plantations areas (@tbl-ph1).
 
 ```{r}
 #| label: tbl-ph1
@@ -107,7 +107,7 @@ knitr::kable(tbl_Nh, format.args = list(big.mark = ','))
 
 ```
 
-Out of all the phase 1 plots, a systematic subset of `r format(nplot_ph2, big.mark = ",")` plots were selected on a 12 x 18 km grid. From these plots `r format(nplot_visit, big.mark = ",")` were visited and `r format(nplot_access, big.mark = ",")` were at least partially accessible (@tbl-ph2).
+Out of all the phase 1 plots, a systematic subset of `r format(nplot_ph2, big.mark = ",")` plots were selected on a 12 x 18 km grid for the NFI phase 2: the field measurement campaign. From these plots `r format(nplot_visit, big.mark = ",")` were visited and `r format(nplot_access, big.mark = ",")` were at least partially accessible (@tbl-ph2). The field work phase took place from XX to XX. A subset of these plots were visited a second time for QAQC procedures (See annex ).
 
 ```{r}
 #| label: tbl-ph2
@@ -149,4 +149,6 @@ In total, `r format(nrow(tree), big.mark = ",")` trees were measured,
 
 ## Province level aggregates
 
-# Annex: R script code base
+# Annex 1: R script code base description {#sec-annex-r .unnumbered}
+
+# Annex 2: QAQC plot revisited results {#sec-annex-qaqc .unnumbered}

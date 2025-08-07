@@ -77,10 +77,6 @@ tbl_access
 
 n_meas <- tibble(
   Entity = c("Tree", "Standing DW", "Stumps", "Sapling", "Lying DW"),
-  count  = 
-)
-n_tree <- nrow(tree)
-n_dw <- nrow(dw)
-n_stump <- nrow(stump)
-n_sap <- nrow(sapling)
-
+  count  = c(nrow(tree), nrow(dw), nrow(stump), nrow(sapling), nrow(ldw))
+) |> pivot_wider(names_from = Entity, values_from = count)
+n_meas
