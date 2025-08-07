@@ -75,8 +75,8 @@ tbl_access
 ## + Nb of measurements ####
 ##
 
-n_meas <- tibble(
+tbl_entity <- tibble(
   Entity = c("Tree", "Standing DW", "Stumps", "Sapling", "Lying DW"),
   count  = c(nrow(tree), nrow(dw), nrow(stump), nrow(sapling), nrow(ldw))
 ) |> pivot_wider(names_from = Entity, values_from = count)
-n_meas
+tbl_entity

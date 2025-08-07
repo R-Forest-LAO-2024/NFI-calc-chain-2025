@@ -26,17 +26,13 @@ format:
 editor: visual
 ---
 
-# Preamble {#sec-preamble .unnumbered}
+# Preamble {.unnumbered}
 
-This report was written as a [Quarto document](https://quarto.org/) and developed with R Quarto. The tables, figures and numbers are automatically generated from the R scripts used to analyze Lao PDR national forest inventory cycle 4, carried out in 2024 and 2025.
-
-The code base and quarto document are available at:
-
-<https://github.com/R-Forest-LAO-2024/NFI-calc-chain-2025/>
+This report was written as a [Quarto document](https://quarto.org/) and developed with R Quarto. The tables, figures and numbers are automatically generated from the R scripts used to analyze Lao PDR national forest inventory cycle 4, carried out in 2024 and 2025. The code base and quarto document are available at: <https://github.com/R-Forest-LAO-2024/NFI-calc-chain-2025/>.
 
 The code base itself is split into 3 groups of scripts with different objectives:
 
--   Setup: load libraries, setup the environment and get the data from an initial master table in the ONA server into split tables by entity
+-   Setup: load libraries, setup the environment and get the data from an initial master table in the ONA server into split tables by entity.
 
 -   User: clean the data, join attributes, calculate entity level variables from field measurements, run aggregation functions to get the final results.
 
@@ -52,48 +48,47 @@ source("R/nfi-lao-cycle4-main.R")
 
 ```
 
-# Executive summary {#sec-exec .unnumbered}
+# Executive summary {.unnumbered}
 
 ## Description of NFI Cycle 4 {.unnumbered}
 
-Lao implemented three cycles of national forest inventories (NFIs) between !!DATE and !!DATE. A major revision of its design took place in 2023 and 2024 with collaborative support from GIZ and the Goettingen University on one side, and Silvacarbon and the US Forest service on the other side.
+Lao implemented three cycles of national forest inventories (NFIs) between XX and XX. A major revision of its design took place in 2023 and 2024 with collaborative support from GIZ and the Goettingen University on one side, and Silvacarbon and the US Forest service on the other side.
 
-The initial plan that followed this collaboration was a two-phase systematic sampling design. The initial phase consisted in the visual observation of all the plot centers on a 6 by 6 km grid, followed by a second phase were all the plot on a larger 12 x 18 km grid wee marked for field measurement (phase 2). The Phase 2 plots were designed as clustered-plots composed by four 16 m radius subplots on a L shape, numbered A, B, C (south to north) and D (east of subplot A) and separated by 60 meters center to center.
+This collaboration led to a improved two-phases systematic sampling design. The initial phase consisted of the visual observation of all the plot centers on a 6 by 6 km grid, followed by a second phase were all the plots on a larger 12 x 18 km grid were marked for field measurement (phase 2). The Phase 2 plots were designed as clustered-plots composed by four 16 m radius subplots on a L shape, numbered A, B, C (south to north) and D (east of subplot A) and separated by 60 meters center to center.
 
 Two major changes impacted the design during implementation:
 
-1.  Not all initial phase 2 plots were measured, visited. This forced a change in design from systematic to stratified, in order to account for the fact that plot in different strata had different probability of selection.
+1.  Not all initial phase 2 plots were visited. This forced a change in design from systematic to stratified, in order to account for the fact that plots in different strata had different probability of selection.
 
-2.  Since land cover was recorded for each subplot and in practice on 5 observation points on each subplot (20 land cover section per plot), a ratio estimator approach was necessary to account for the fact that plots for a specific land cover or domain (d) didn't have all the same plot area.
+2.  Since land cover was recorded for each subplot and in practice on 5 observation points on each subplot (20 land cover section per plot), a ratio estimator approach was necessary to account for unequal plot area at the domain level (in this case domain = land cover type).
 
 As a result, the overall analytical approach was: **two-phase sampling for post-stratification with ratio estimator**.
 
-The aggregation of entity level variables, such as tree volume, tree biomass or deadwood biomass, to domain level (land cover class) followed this pattern:
+The data analysis objective was to calculate entity level variables, such as tree volume, tree biomass or deadwood biomass, from field measurement and aggregate them to domain level (land cover class). The detailed tep-by-step process was:
 
--   aggregation of entity level to the smallest area unit (subplot x land cover section in the new NFI cycle 4 design),
+-   Data preparation: transformation of ONA raw data into entity level tables,
 
--   smallest area unit to plot level,
+-   Data cleaning: manual correction of data entry errors (very few) and mistake in coding plot, subplot and entities identification numbers.
 
--   plot level to sub-population and strata level,
+-   Entity level calculation: join attribute from different levels and calculate entity variables such as basal area, volume and biomass.
 
--   sub-population and strata level to sub-population level,
+<!-- -->
 
--   sub-population level to totals for the all domains.
+-   Aggregation to domain estimates: aggregation of entity varaibles to domqi estimates with uncertainty of sampling error. Aggregation levels:
 
-The strata are:
+    -   entity level to the smallest area unit (subplot x land cover section in the new NFI cycle 4 design),
 
-1.  natural forest
-2.  forest plantations
-3.  regenerating vegetation
-4.  non-forest
+    -   smallest area unit to plot level,
 
-The sub-populations can be:
+    -   plot level to sub-population and strata level,
 
--   no sub-population
+    -   sub-population and strata level to sub-population level,
 
--   ERPA provinces and all other provinces in two different sub-populations
+    -   sub-population level to totals for the all domains.
 
--   each province is a different sub-population
+The strata were defined as (1) natural forest, (2) forest plantations, (3) regenerating vegetation and (4) non-forest and assigned at the plot level from the Phase 1 observations.
+
+Different sub-populations were defined: no sub-population, (1) ERPA provinces and (2) all other provinces in two different sub-populations, or each province is a different sub-population. When sub-populations were defined, the sub-population level tables provided the ratio estimates for all sub-populations with their confidence intervals.
 
 ## Results {.unnumbered}
 
@@ -107,7 +102,7 @@ knitr::kable(tbl_Nh, format.args = list(big.mark = ','))
 
 ```
 
-Out of all the phase 1 plots, a systematic subset of `r format(nplot_ph2, big.mark = ",")` plots were selected on a 12 x 18 km grid for the NFI phase 2: the field measurement campaign. From these plots `r format(nplot_visit, big.mark = ",")` were visited and `r format(nplot_access, big.mark = ",")` were at least partially accessible (@tbl-ph2). The field work phase took place from XX to XX. A subset of these plots were visited a second time for QAQC procedures (See annex ).
+Out of all the phase 1 plots, a systematic subset of `r format(nplot_ph2, big.mark = ",")` plots were selected on a 12 x 18 km grid for the NFI phase 2: the field measurement campaign. From these plots `r format(nplot_visit, big.mark = ",")` were visited and `r format(nplot_access, big.mark = ",")` were at least partially accessible (@tbl-ph2). The field work phase took place from XX to XX. A portion of these plots were visited a second time for QAQC procedures. See @sec-annex-qaqc in annex for more details on QAQC results.
 
 ```{r}
 #| label: tbl-ph2
@@ -119,7 +114,17 @@ knitr::kable(tbl_access, format.args = list(big.mark = ','))
 
 The non-visited plots in strata 1 to 3 (all except non-forest) were considered as non-accessible and removed from the analysis. The non-visited plots in strata 4 (non-forest) were considered accessible with biomass 0. All non-forest plots were considered having 0 biomass as no allometric equation was chosen for the trees in visited and accessed non-forest plots.
 
-In total, `r format(nrow(tree), big.mark = ",")` trees were measured,
+In total, `r format(nrow(tree), big.mark = ",")` trees, `r format(nrow(dw), big.mark = ",")` standing dead trees and `r format(nrow(stump), big.mark = ",")` stumps were measured in the 8 and 16 m radius nested subplots. Saplings and lying deadwood were also measured in a 2 m radius circle and lying deadwood was measured on a 32 m line transect for each subplot (@tbl-entity).
+
+```{r}
+#| label: tbl-entity
+#| tbl-cap: "Number of measured individuals per entity."
+
+knitr::kable(tbl_entity, format.args = list(big.mark = ','))
+
+```
+
+The main result of the analysis were the biomass of different pools (live trees aboveground, live trees belowground, sapling aboveground, deadwood, stumps and lying dead wood) in ton of biomass per ha and the average total carbon of all domains (in ton C per ha).
 
 # Introduction
 
@@ -149,6 +154,6 @@ In total, `r format(nrow(tree), big.mark = ",")` trees were measured,
 
 ## Province level aggregates
 
-# Annex 1: R script code base description {#sec-annex-r .unnumbered}
+# Annex 1: R script code base description {#sec-annex-r}
 
-# Annex 2: QAQC plot revisited results {#sec-annex-qaqc .unnumbered}
+# Annex 2: QAQC plot revisited results {#sec-annex-qaqc}
