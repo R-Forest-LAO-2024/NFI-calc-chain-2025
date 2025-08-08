@@ -49,7 +49,7 @@ tmp$subplot1 <- data_prep$subplot |>
       TRUE ~ subplot_no
     ),
     subplot_plot_no = case_when(
-      ONA_index == 1269 ~ 333, ## plot_no typo should be 333
+      ONA_index == 1269 ~ 333, ## plot_no typo, should be 333
       ONA_index == 1270 ~ 333,
       ONA_index == 1271 ~ 333,
       ONA_index == 1272 ~ 333,

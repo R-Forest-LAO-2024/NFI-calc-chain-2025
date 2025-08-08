@@ -168,7 +168,7 @@ The initial scripts were developed to retrieve the data directly from the ONA se
 
 Rstudio allows to request passwords, without storing them to maintain security, with the command `rstudioapi::askforsecret()`. With the `keyring` package installed, the password can even be stored securely in the operating system's keyring backend to avoid having to re-enter every time.
 
-Nevertheless, it was decided that the data would be downloaded manually by FIPD and shared with experts and analysts. In this case, the data was stored in the following directory inside the R project: `'data/data-source'`, and user inputs were set as follows in `'R/user/00-user-input.R'` (@lst-usrinput).
+Nevertheless, it was decided that the data would be downloaded manually by FIPD and shared with experts and analysts. In this case, the data was stored in the following directory inside the R project: `'data/data-source'`, and user inputs were set as follows in `'R/user/00-user-input.R'` (Code @lst-usrinput).
 
 ```{r}
 #| eval: false
@@ -195,13 +195,68 @@ usr$get_ceofile <- "ceo-2025-06-06-complete.csv"
 
 ```
 
-Notice in @lst-usrinput that the CSV file of the Phase 1 data was placed in the ancillary data folder: `'data/data-ancillary'`, and its file name added to the user inputs as well.
+Notice in Code @lst-usrinput that the CSV file of the Phase 1 data was placed in the ancillary data folder: `'data/data-ancillary'`, and its file name added to the user inputs as well.
 
 The data preparation was automated and part of the setup group of scripts in `'R/setup/'`. In particular `'get-data.R'` and `'load-anci.R'` took care of loading the raw data and splitting the master CSV file into entity level tables: subplot, tree, dw, sapling and ldw, and split out the QAQC re-measurements into separate tables. At this stage, all the entity tables were grouped in the R global Environment into an object (specifically a list) called: `data-prep`.
 
 ## Data correction
 
 The data correction scripts were placed in the user group of scripts, in `'R/user/'`, and developed manually to investigate and solve potential errors for each entity table. During this phase the five land cover observations for each subplot were separated from the subplot table into their own table: `lcs`, short for land cover section.
+
+### Subplot corrections
+
+At subplot level the main type of issue found was entry error of subplot code (duplicates in A, B, C or D) and plot code. They were solved manually by looking at time stamps. The full list of corrections were coded in `'R/user/00a-clean-subplot.R'`, a snippet is presented in Code @lst-spcorr.
+
+```{r}
+#| eval: false
+#| echo: true
+#| lst-label: lst-spcorr
+#| lst-cap: "Code snippets with plot and subplot ID corrections."
+
+tmp$subplot1 <- data_prep$subplot |>
+  mutate(
+    subplot_no = case_when(
+      ONA_index == 109 ~ "B", ## 631C is actually 631B
+      ONA_index == 113 ~ "B", ## 632C is actually 632B
+      ONA_index == 265 ~ "C", ## 553D is actually 553C
+      ONA_index == 440 ~ "C", ## 336B is actually 336C
+      ONA_index == 980 ~ "B", ## 232C is actually 232B
+      TRUE ~ subplot_no
+    ),
+    subplot_plot_no = case_when(
+      ONA_index == 1269 ~ 333, ## plot_no typo, should be 333
+      ONA_index == 1270 ~ 333,
+      ONA_index == 1271 ~ 333,
+      ONA_index == 1272 ~ 333,
+      ONA_index == 1417 ~ 359, ## plot_no 369(B) is actually 359(B)
+      TRUE ~ subplot_plot_no
+    )
+  )
+
+tmp$subplot2 <- tmp$subplot1 |>
+  mutate(
+    subplot_plot_no = case_when(
+      subplot_crew_lead == 2 & ONA_index ==  102 ~ 636, # subplot_id == "0363B"
+      subplot_crew_lead == 4 & ONA_index == 1135 ~ 168, # subplot_id == "0198D"
+      subplot_crew_lead == 6 & ONA_index ==  270 ~ 554, # subplot_id == "0054C"
+      subplot_crew_lead == 6 & ONA_index == 1069 ~ 414, # subplot_id == "0141A"  
+      subplot_crew_lead == 8 & ONA_index ==  819 ~ 419, # subplot_id == "0149D"
+      TRUE ~ subplot_plot_no
+    )
+  )
+
+tmp$subplot3 <- tmp$subplot2 |>
+  filter(!ONA_index %in% c(1819, 2237, 2245)) |>
+  mutate(
+    subplot_no = case_when(
+      ONA_index == 2125 ~ "C", ## issue with 620B duplicate, so B becomes C and C becomes D
+      ONA_index == 2126 ~ "D",
+      ONA_index ==  103 ~ "C", ## issue with 627B
+      TRUE ~ subplot_no
+    )
+  )
+
+```
 
 ## Entity level calculations
 
