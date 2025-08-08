@@ -3,8 +3,8 @@ title: "NFI 4 analytical report"
 subtitle: ""
 author: "Gael Sola, FAO, Chip Scott, USFS (retired), Jeremy Ferrand (JICA), !!ADD OTHERS"
 date: "August 2025"
-execute:
-  echo: false
+# execute:
+#   echo: false
 format:
   html: 
     number-sections: true
@@ -12,6 +12,15 @@ format:
     toc-depth: 2
     toc-location: left
     embed-resources: true
+    theme: 
+      light: flatly
+      dark: darkly
+    highlight-style: github
+    #code-block-border-left: "#00BC8C"
+    code-fold: true
+    code-tools: 
+      source: false
+    code-summary: "Show the code"
   docx:
     toc: true
     number-sections: true
@@ -72,9 +81,7 @@ The data analysis objective was to calculate entity level variables, such as tre
 
 -   Entity level calculation: join attribute from different levels and calculate entity variables such as basal area, volume and biomass.
 
-<!-- -->
-
--   Aggregation to domain estimates: aggregation of entity varaibles to domqi estimates with uncertainty of sampling error. Aggregation levels:
+-   Aggregation to domain estimates: aggregation of entity variables to domain estimates with uncertainty of sampling error. Aggregation levels:
 
     -   entity level to the smallest area unit (subplot x land cover section in the new NFI cycle 4 design),
 
@@ -95,6 +102,7 @@ Different sub-populations were defined: no sub-population, (1) ERPA provinces an
 The Phase 1 one this inventory cycle was carried out from XX to XX and consisted of the interpretation of `r format(nrow(ph1_data), big.mark = ",")` plots on a 6 x 6 km grid. Nearly half the plots were natural forest, the rest mostly shared between non-forest and regeneration, and very plots were found on plantations areas (@tbl-ph1).
 
 ```{r}
+#| echo: false
 #| label: tbl-ph1
 #| tbl-cap: "Number of plots per stratum in the phase 1."
 
@@ -105,6 +113,7 @@ knitr::kable(tbl_Nh, format.args = list(big.mark = ','))
 Out of all the phase 1 plots, a systematic subset of `r format(nplot_ph2, big.mark = ",")` plots were selected on a 12 x 18 km grid for the NFI phase 2: the field measurement campaign. From these plots `r format(nplot_visit, big.mark = ",")` were visited and `r format(nplot_access, big.mark = ",")` were at least partially accessible (@tbl-ph2). The field work phase took place from XX to XX. A portion of these plots were visited a second time for QAQC procedures. See @sec-annex-qaqc in annex for more details on QAQC results.
 
 ```{r}
+#| echo: false
 #| label: tbl-ph2
 #| tbl-cap: "Number of plots in the NFI Phase 2 planned, visited and accessed."
 
@@ -117,6 +126,7 @@ The non-visited plots in strata 1 to 3 (all except non-forest) were considered a
 In total, `r format(nrow(tree), big.mark = ",")` trees, `r format(nrow(dw), big.mark = ",")` standing dead trees and `r format(nrow(stump), big.mark = ",")` stumps were measured in the 8 and 16 m radius nested subplots. Saplings and lying deadwood were also measured in a 2 m radius circle and lying deadwood was measured on a 32 m line transect for each subplot (@tbl-entity).
 
 ```{r}
+#| echo: false
 #| label: tbl-entity
 #| tbl-cap: "Number of measured individuals per entity."
 
@@ -127,6 +137,7 @@ knitr::kable(tbl_entity, format.args = list(big.mark = ','))
 The main result of the analysis were the biomass of different pools (live trees aboveground, live trees belowground, sapling aboveground, deadwood, stumps and lying dead wood) in ton of biomass per ha and the average total carbon of all domains (in ton C per ha). The total carbon is presented in @tbl-carbon and the other results, including per province estimations can be found in the report or its annexes.
 
 ```{r}
+#| echo: false
 #| label: tbl-carbon
 #| tbl-cap: "Total carbon stock per land cover class in tC/ha."
 
@@ -150,7 +161,19 @@ This reports present the method and results of the analysis.
 
 ## NFI sampling design
 
+### Representation of land uses
+
 TBD
+
+### Stratification
+
+TBD
+
+### Phase 1 sampling
+
+TBD
+
+### Phase 2 sampling
 
 ## NFI plot design
 
@@ -164,17 +187,19 @@ TBD
 
 ## Data preparation
 
-The initial scripts were developed to retrieve the data directly from the ONA server into R as one master CSV (see ONA API instructions: <https://api.ona.ilri.org/static/docs/data.html>), or from manually downloaded tables as a ZIP file or as a CSV with long names (see ONA interface download options).
+The initial scripts were developed to retrieve the data directly from the ONA server into R as one master CSV (see ONA API instructions: <https://api.ona.ilri.org/static/docs/data.html>), or from manually downloaded tables as a ZIP file or as a [**CSV with long names**]{.underline} (see ONA interface download options).
 
 Rstudio allows to request passwords, without storing them to maintain security, with the command `rstudioapi::askforsecret()`. With the `keyring` package installed, the password can even be stored securely in the operating system's keyring backend to avoid having to re-enter every time.
 
-Nevertheless, it was decided that the data would be downloaded manually by FIPD and shared with experts and analysts. In this case, the data was stored in the following directory inside the R project: `'data/data-source'`, and user inputs were set as follows in `'R/user/00-user-input.R'` (Code @lst-usrinput).
+Nevertheless, it was decided that the data would be downloaded manually by FIPD and shared with experts and analysts. In this case, the data was stored in the following directory inside the R project: *'data/data-source/'*, and user inputs were set in Code @lst-usrinput.
 
 ```{r}
 #| eval: false
 #| echo: true
 #| lst-label: lst-usrinput
 #| lst-cap: "User inputs at the time of reporting in the script 'R/user/00-user-inputs.R'"
+#| filename: "Extract from R/user/00-user-input.R"
+
 ## Initiate list to store user inputs 
 usr <- list()
 
@@ -195,23 +220,24 @@ usr$get_ceofile <- "ceo-2025-06-06-complete.csv"
 
 ```
 
-Notice in Code @lst-usrinput that the CSV file of the Phase 1 data was placed in the ancillary data folder: `'data/data-ancillary'`, and its file name added to the user inputs as well.
+Notice in Code @lst-usrinput that the CSV file of the Phase 1 data was placed in the ancillary data folder: *'data/data-ancillary/'*, and its file name added to the user inputs as well.
 
-The data preparation was automated and part of the setup group of scripts in `'R/setup/'`. In particular `'get-data.R'` and `'load-anci.R'` took care of loading the raw data and splitting the master CSV file into entity level tables: subplot, tree, dw, sapling and ldw, and split out the QAQC re-measurements into separate tables. At this stage, all the entity tables were grouped in the R global Environment into an object (specifically a list) called: `data-prep`.
+The data preparation was automated and part of the setup group of scripts in *'R/setup/'*. In particular *'get-data.R'* and *'load-anci.R'* took care of loading the raw data and splitting the master CSV file into entity level tables: subplot, tree, dw, sapling and ldw, and split out the QAQC re-measurements into separate tables. At this stage, all the entity tables were grouped in the R global Environment into an object (specifically a list) called: `data-prep`.
 
 ## Data correction
 
-The data correction scripts were placed in the user group of scripts, in `'R/user/'`, and developed manually to investigate and solve potential errors for each entity table. During this phase the five land cover observations for each subplot were separated from the subplot table into their own table: `lcs`, short for land cover section.
+The data correction scripts were placed in the user group of scripts, in *'R/user/'*, and developed manually to investigate and solve potential errors for each entity table. During this phase the five land cover observations for each subplot were separated from the subplot table into their own table: `lcs`, short for land cover section.
 
 ### Subplot corrections
 
-At subplot level the main type of issue found was entry error of subplot code (duplicates in A, B, C or D) and plot code. They were solved manually by looking at time stamps. The full list of corrections were coded in `'R/user/00a-clean-subplot.R'`, a snippet is presented in Code @lst-spcorr.
+At subplot level the main type of issue found was entry error of subplot code (duplicates in A, B, C or D) and plot code. They were solved manually by looking at time stamps, see Code @lst-spcorr.
 
 ```{r}
 #| eval: false
 #| echo: true
 #| lst-label: lst-spcorr
 #| lst-cap: "Code snippets with plot and subplot ID corrections."
+#| filename: "Extract from R/user/00a-clean-subplot.R"
 
 tmp$subplot1 <- data_prep$subplot |>
   mutate(
@@ -257,6 +283,16 @@ tmp$subplot3 <- tmp$subplot2 |>
   )
 
 ```
+
+### Creating land cover section table
+
+### Live tree corrections
+
+### Sapling corrections
+
+### Standing deadwood corrections
+
+### Lying deadwood corrections
 
 ## Entity level calculations
 
