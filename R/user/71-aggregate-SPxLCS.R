@@ -104,8 +104,8 @@ sf_plot <- res3_list$plot_out |>
   mutate(x = plot_lon, y = plot_lat) |>
   st_as_sf(coords = c("x", "y"), crs = 4326)
 
-st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-summary-", Sys.Date(), ".kml")), delete_dsn = TRUE)
-st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-summary-", Sys.Date(), ".geojson")), delete_dsn = TRUE)
+st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-summary-", Sys.Date(), ".kml")), delete_dsn = TRUE, quiet = T)
+st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-summary-", Sys.Date(), ".geojson")), delete_dsn = TRUE, quiet = T)
 
 
 ## + Combine province results

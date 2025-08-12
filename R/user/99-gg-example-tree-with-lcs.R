@@ -63,8 +63,8 @@ tmp$gg_lcs_example_new <- ggplot(tmp$gg_tree) +
   geom_segment(data = tmp$SE_line, aes(x = x1, y = y1, xend = x2, yend = y2)) +
   geom_point(data = tmp$lcs_location, aes(x = x, y = y), size = 2, shape = 3) +
   geom_point(data = tmp$lcs_location, aes(x = x, y = y), size = 2, shape = 21) +
-  geom_point(aes(x = tree_x, y = tree_y, color = as.character(tree_lcs_no_new))) +
-  geom_text_repel(aes(x = tree_x, y = tree_y, label = paste0(tree_distance, "/", tree_azimuth), color = as.character(tree_lcs_no_new)), size = 4) +
+  geom_point(aes(x = tree_x, y = tree_y, color = as.character(tree_lcs_no))) +
+  geom_text_repel(aes(x = tree_x, y = tree_y, label = paste0(tree_distance, "/", tree_azimuth), color = as.character(tree_lcs_no)), size = 4) +
   theme(legend.position = "none") +
   coord_fixed() +
   labs(

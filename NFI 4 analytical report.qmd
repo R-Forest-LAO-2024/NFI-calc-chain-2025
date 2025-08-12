@@ -286,6 +286,20 @@ tmp$subplot3 <- tmp$subplot2 |>
 
 ### Creating land cover section table
 
+In addition to the plot / subplot structure there were 5 five observation points for land cover in each subplots. These five points were located as follow: center point at the subplot center, then north, east, south and west points point at 12 m of the subplot center towards north, east, south and west respectively. These 5 points represent land cover sections for which an area can be calculated and assign to trees based on equi-distance or Thiessen polygons. This led to the specific land cover sections (LCS) ():
+
+-   center: a square of 12 m side centered on the subplot center
+
+-   north, east, south and west : a quarter of the larger subplot circle of 16 m radius minus the center square, split respectively by the northwest (315 degrees) and northeast (45 degrees), northeast and southeast (135 degrees), southeast and southwest (225 degrees), and southwest and northwest lines.
+
+```{r}
+#| label: fig-lcs
+#| fig-cap: "Example of land cover sections (LCS) and their trees assignements" 
+
+
+
+```
+
 ### Live tree corrections
 
 ### Sapling corrections
