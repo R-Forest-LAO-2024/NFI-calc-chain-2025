@@ -163,7 +163,7 @@ source(here("R/user/80-report-outputs.R"))
 ##
 
 ## Example of land cover classes
-source(here("R/user/99-gg-example-tree-with-lcs.R"))
+# source(here("R/user/99-gg-example-tree-with-lcs.R"))
 
 ## Carbon stock based on ratio estimator
 # source(here("R/user/99-cstock.R"))

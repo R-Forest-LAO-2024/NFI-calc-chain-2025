@@ -99,25 +99,25 @@ Different sub-populations were defined: no sub-population, (1) ERPA provinces an
 
 ## Results {.unnumbered}
 
-The Phase 1 one this inventory cycle was carried out from XX to XX and consisted of the interpretation of `r format(nrow(ph1_data), big.mark = ",")` plots on a 6 x 6 km grid. Nearly half the plots were natural forest, the rest mostly shared between non-forest and regeneration, and very plots were found on plantations areas (@tbl-ph1).
+The Phase 1 one this inventory cycle was carried out from XX to XX and consisted of the interpretation of `r format(nrow(val$nplot_ph1), big.mark = ",")` plots on a 6 x 6 km grid. Nearly half the plots were natural forest, the rest mostly shared between non-forest and regeneration, and very plots were found on plantations areas (@tbl-ph1).
 
 ```{r}
 #| echo: false
 #| label: tbl-ph1
 #| tbl-cap: "Number of plots per stratum in the phase 1."
 
-knitr::kable(tbl_Nh, format.args = list(big.mark = ','))
+knitr::kable(tab$tbl_Nh, format.args = list(big.mark = ','))
 
 ```
 
-Out of all the phase 1 plots, a systematic subset of `r format(nplot_ph2, big.mark = ",")` plots were selected on a 12 x 18 km grid for the NFI phase 2: the field measurement campaign. From these plots `r format(nplot_visit, big.mark = ",")` were visited and `r format(nplot_access, big.mark = ",")` were at least partially accessible (@tbl-ph2). The field work phase took place from XX to XX. A portion of these plots were visited a second time for QAQC procedures. See @sec-annex-qaqc in annex for more details on QAQC results.
+Out of all the phase 1 plots, a systematic subset of `r format(val$nplot_ph2, big.mark = ",")` plots were selected on a 12 x 18 km grid for the NFI phase 2: the field measurement campaign. From these plots `r format(val$nplot_visit, big.mark = ",")` were visited and `r format(val$nplot_access, big.mark = ",")` were at least partially accessible (@tbl-ph2). The field work phase took place from XX to XX. A portion of these plots were visited a second time for QAQC procedures. See @sec-annex-qaqc in annex for more details on QAQC results.
 
 ```{r}
 #| echo: false
 #| label: tbl-ph2
 #| tbl-cap: "Number of plots in the NFI Phase 2 planned, visited and accessed."
 
-knitr::kable(tbl_access, format.args = list(big.mark = ','))
+knitr::kable(tab$tbl_access, format.args = list(big.mark = ','))
 
 ```
 
@@ -130,7 +130,7 @@ In total, `r format(nrow(tree), big.mark = ",")` trees, `r format(nrow(dw), big.
 #| label: tbl-entity
 #| tbl-cap: "Number of measured individuals per entity."
 
-knitr::kable(tbl_entity, format.args = list(big.mark = ','))
+knitr::kable(tab$tbl_entity, format.args = list(big.mark = ','))
 
 ```
 
@@ -141,7 +141,7 @@ The main result of the analysis were the biomass of different pools (live trees 
 #| label: tbl-carbon
 #| tbl-cap: "Total carbon stock per land cover class in tC/ha."
 
-knitr::kable(tbl_carbon, format.args = list(big.mark = ","))
+knitr::kable(tab$tbl_carbon, format.args = list(big.mark = ","))
 
 ```
 
@@ -174,6 +174,8 @@ TBD
 TBD
 
 ### Phase 2 sampling
+
+TBD
 
 ## NFI plot design
 
@@ -284,18 +286,20 @@ tmp$subplot3 <- tmp$subplot2 |>
 
 ```
 
-### Creating land cover section table
+### Creating the land cover sections
 
-In addition to the plot / subplot structure there were 5 five observation points for land cover in each subplots. These five points were located as follow: center point at the subplot center, then north, east, south and west points point at 12 m of the subplot center towards north, east, south and west respectively. These 5 points represent land cover sections for which an area can be calculated and assign to trees based on equi-distance or Thiessen polygons. This led to the specific land cover sections (LCS) ():
+In addition to the plot / subplot structure there were 5 five observation points for land cover in each subplots. These five points were located as follow: center point at the subplot center, then north, east, south and west points point at 12 m of the subplot center towards north, east, south and west respectively. These 5 points represent land cover sections for which an area can be calculated and assign to trees based on equi-distance or Thiessen polygons. As a result, land cover sections (LCS) were created as follows (@fig-lcs):
 
 -   center: a square of 12 m side centered on the subplot center
 
 -   north, east, south and west : a quarter of the larger subplot circle of 16 m radius minus the center square, split respectively by the northwest (315 degrees) and northeast (45 degrees), northeast and southeast (135 degrees), southeast and southwest (225 degrees), and southwest and northwest lines.
 
 ```{r}
+#| echo: false
 #| label: fig-lcs
-#| fig-cap: "Example of land cover sections (LCS) and their trees assignements" 
+#| fig-cap: "Example of land cover sections (LCS) and their trees assignements in one subplot" 
 
+fig$lcs_ex
 
 
 ```
@@ -309,6 +313,49 @@ In addition to the plot / subplot structure there were 5 five observation points
 ### Lying deadwood corrections
 
 ## Entity level calculations
+
+### Tree weight
+
+In the context of ratio estimator, the sum of trees' characteristics is required at plot level rather than their per hectare value. Weights were therefore used to estimate the sum of tree characteristics in the 16 m radius circle for small trees that were measured in the 8 m radius circle (@eq-treeweight, @lst-treeweight).
+
+$$
+\text{tree_weight} = 
+  \begin{cases} 
+    \text{4   when tree DBH} \le \text{30 cm} \\
+    \text{1   when tree DBH > 30 cm} 
+  \end{cases}
+$$ {#eq-treeweight}
+
+```{r}
+#| eval: false
+#| echo: true
+#| lst-label: lst-treeweight
+#| lst-cap: "Code snippet for tree weights."
+#| filename: "Extract from R/user/02-tree-weight.R"
+
+tree <- tree |>
+  mutate(
+    tree_weight = case_when(
+      tree_dbh <= 30 ~ pi * 16^2 / (pi * 8 ^2),
+      tree_dbh > 30  ~ 1 
+    )
+  )
+
+```
+
+### Tree basal area
+
+### Tree aboveground biomass
+
+### Tree belowground biomass
+
+### Sapling aboveground biomass
+
+### Standing deadwood aboveground biomass
+
+### Stump aboveground biomass
+
+### lying deadwood biomass
 
 ## Aggregation to domain and totals
 
