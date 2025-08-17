@@ -17,7 +17,7 @@ format:
       dark: darkly
     highlight-style: github
     #code-block-border-left: "#00BC8C"
-    code-fold: true
+    code-fold: false
     code-tools: 
       source: false
     code-summary: "Show the code"
@@ -106,7 +106,7 @@ The Phase 1 one this inventory cycle was carried out from XX to XX and consisted
 #| label: tbl-ph1
 #| tbl-cap: "Number of plots per stratum in the phase 1."
 
-knitr::kable(tab$tbl_Nh, format.args = list(big.mark = ','))
+knitr::kable(tab$Nh, format.args = list(big.mark = ','))
 
 ```
 
@@ -117,7 +117,7 @@ Out of all the phase 1 plots, a systematic subset of `r format(val$nplot_ph2, bi
 #| label: tbl-ph2
 #| tbl-cap: "Number of plots in the NFI Phase 2 planned, visited and accessed."
 
-knitr::kable(tab$tbl_access, format.args = list(big.mark = ','))
+knitr::kable(tab$access, format.args = list(big.mark = ','))
 
 ```
 
@@ -130,7 +130,7 @@ In total, `r format(nrow(tree), big.mark = ",")` trees, `r format(nrow(dw), big.
 #| label: tbl-entity
 #| tbl-cap: "Number of measured individuals per entity."
 
-knitr::kable(tab$tbl_entity, format.args = list(big.mark = ','))
+knitr::kable(tab$entity, format.args = list(big.mark = ','))
 
 ```
 
@@ -141,7 +141,7 @@ The main result of the analysis were the biomass of different pools (live trees 
 #| label: tbl-carbon
 #| tbl-cap: "Total carbon stock per land cover class in tC/ha."
 
-knitr::kable(tab$tbl_carbon, format.args = list(big.mark = ","))
+knitr::kable(tab$carbon, format.args = list(big.mark = ","))
 
 ```
 
@@ -319,10 +319,10 @@ fig$lcs_ex
 In the context of ratio estimator, the sum of trees' characteristics is required at plot level rather than their per hectare value. Weights were therefore used to estimate the sum of tree characteristics in the 16 m radius circle for small trees that were measured in the 8 m radius circle (@eq-treeweight, @lst-treeweight).
 
 $$
-\text{tree_weight} = 
+w_{tree} = 
   \begin{cases} 
-    \text{4   when tree DBH} \le \text{30 cm} \\
-    \text{1   when tree DBH > 30 cm} 
+    \text{4   when D} \le \text{30 cm} \\ 
+    \text{1   when D > 30 cm} 
   \end{cases}
 $$ {#eq-treeweight}
 
@@ -345,9 +345,145 @@ tree <- tree |>
 
 ### Tree basal area
 
+Basal area (BA) is calculated as follows:
+
+$$
+BA = \pi \times {r}^{2} = \pi \times {\left(\frac{D}{200}\right)}^{2}
+$$ {#eq-tree-ba}
+
+Its calculation was implemented in the Code @lst-treeba.
+
+```{r}
+#| eval: false
+#| echo: true
+#| lst-label: lst-treeba
+#| lst-cap: "Code snippet for tree weights."
+#| filename: "Extract from R/user/03-tree-ba.R"
+
+tree <- tree |>
+  mutate(
+    tree_ba = round(pi * (tree_dbh / 200)^2, 2)
+  )
+
+```
+
 ### Tree aboveground biomass
 
+Aboveground biomass was estimated for each tree using allometric equations linking it to field measurements (species, DBH, land cover). Land cover was assigned at the land cover section level. The equations were based on literature, mostly from neighbor countries and pan-tropical models (@tbl-allometry, Code @lst-treeagb).
+
+```{r}
+#| echo: false
+#| label: tbl-allometry
+#| tbl-cap: "Aboveground biomass allometric equations for trees and deadwood."
+
+knitr::kable(tab$allometry, format.args = list(big.mark = ","), escape = FALSE)
+
+```
+
+```{r}
+#| eval: false
+#| echo: true
+#| lst-label: lst-treeagb
+#| lst-cap: "Code snippet for tree aboveground biomass."
+#| filename: "Extract from R/user/04-tree-agb.R"
+
+tree <- tree |>
+  mutate(
+    tree_agb_final = case_when(
+      lu_code_new == "EG"    ~ 0.3112 * tree_dbh^2.2331,
+      lu_code_new == "MD"    ~ 0.523081 * tree_dbh^2,
+      lu_code_new == "DD"    ~ 0.2137 * tree_dbh^2.2575,
+      lu_code_new == "CF"    ~ 0.1277 * tree_dbh^2.3944,
+      lu_code_new == "MCB"   ~ 0.1277 * tree_dbh^2.3944,
+      lu_code_new == "P_AC"  ~ 0.1173 * tree_dbh^2.454,
+      lu_code_new == "P_EC"  ~ 0.199 * tree_dbh^2.185,
+      lu_code_new == "P_RB"  ~ 0.0082 * (pi*tree_dbh)^2.5623,
+      lu_code_new == "P_TK"  ~ 0.077 * tree_dbh^2.546,
+      lu_code_new == "P_OTH" ~ 0.3112 * tree_dbh^2.2331,
+      lu_code_new == "RV"    ~ 0.6 * exp(-1.499 + 2.148 * log(tree_dbh) + 0.207 * (log(tree_dbh))^2 - 0.0281*(log(tree_dbh))^3),
+      lu_code_new == "B"     ~ 0.6 * exp(-1.499 + 2.148 * log(tree_dbh) + 0.207 * (log(tree_dbh))^2 - 0.0281*(log(tree_dbh))^3),
+      TRUE ~ 0
+    ),
+    tree_agb_final = round(tree_agb_final, 3),
+  )
+
+```
+
+Land cover-based tree AGB was compared with the Evergreen forest model and two pantropical models from Chave et al, 2005 (@eq-chave05) and 2014 (@eq-chave14) without height, respectively:
+
+$$
+\text{AGB} = 0.6 \times exp\left(-1.499 + 2.148 \times log(D) + 0.207 \times log(D)^2 - 0.0281 \times log(D)^3\right)
+$$ {#eq-chave05}
+
+and
+
+$$
+AGB = exp\left(-1.803 - 0.976 \times E + 0.976 \times log(0.6) + 2.673 \times log(D) - 0.0299 \times log(D)^2\right)
+$$ {#eq-chave14}
+
+Figures -@fig-treeagb and -@fig-treeagbp show that the selected models were all conservative, except the models bamboo (B), regenerative vegetation (RV) and rubber plantation model, but the MRV team felt comfortable that the models selected were adequate for Lao PDR.
+
+```{r}
+#| echo: false
+#| label: fig-treeagb
+#| fig-cap: "Comparison of AGB models for natural forests" 
+
+fig$tree_agb
+
+```
+
+```{r}
+#| echo: false
+#| label: fig-treeagbp
+#| fig-cap: "Comparison of AGB models for forest plantations" 
+
+fig$tree_agbp
+
+```
+
 ### Tree belowground biomass
+
+Tree belowground biomass was calculated at the tree level as $BGB = RS \times AGB$, with RS the root-to-shoot ratio to convert aboveground to belowground biomass. The root-to-shoot ratios were based on land cover and plot level aboveground biomass, and taken from IPCC 2006 for non-coniferous (table guidelines, ch.4 vol.4 table 4.4) and XX (ADD SOURCE) for coniferous forests (@tbl-rs).
+
+```{r}
+#| echo: false
+#| label: tbl-rs
+#| tbl-cap: "Root-to-shoot ratios for converting aboveground to belowground biomass"
+
+knitr::kable(tab$rs, format.args = list(big.mark = ","))
+
+```
+
+To apply the root-to-shoot ratios to each tree, land cover information was taken from land cover sections and plot AGB was calculated at the subplot level and re-assigned to trees (Code @lst-treebgb). The justification for choosing subplot level for AGB aggregation for RS, was that the land cover sections were too small in area and could yield wild AGB values.
+
+```{r}
+#| eval: false
+#| echo: true
+#| lst-label: lst-treeagb
+#| lst-cap: "Code snippet for tree belowground biomass."
+#| filename: "Extract from R/user/05-tree-bgb.R"
+
+tmp_subplot_agb <- tree |>
+  group_by(subplot_plot_no, subplot_no) |>
+  summarise(subplot_agb = round(sum(tree_agb_final * tree_weight / 5)/ 1000), .groups = "drop")
+
+tree <- tree |>
+  mutate(subplot_agb = NA) |>
+  left_join(tmp_subplot_agb, by = join_by(subplot_plot_no, subplot_no), suffix = c("_rm", "")) |>
+  select(-ends_with("_rm")) |>
+  mutate(
+    tree_rs = case_when(
+      lu_code_new == "CF" & subplot_agb <  50 ~ 0.46,
+      lu_code_new == "CF" & subplot_agb <= 150 ~ 0.32,
+      lu_code_new == "CF" & subplot_agb >  150 ~ 0.23,
+      lu_code_new != "CF" & subplot_agb <  125 ~ 0.2,
+      lu_code_new != "CF" & subplot_agb >= 125 ~ 0.24,
+      TRUE ~ NA_real_
+    ),
+    tree_bgb = round(tree_agb_final * tree_rs, 3),
+  )
+
+```
 
 ### Sapling aboveground biomass
 
@@ -355,13 +491,19 @@ tree <- tree |>
 
 ### Stump aboveground biomass
 
-### lying deadwood biomass
+### Lying deadwood biomass
 
-## Aggregation to domain and totals
+## Aggregation
 
-## ERPA level aggregates
+### Aggregation to the minimal area unit
 
-## Province level aggregates
+### Aggregation to domain and totals
+
+### Subpopulation intermediate results
+
+#### ERPA level
+
+#### Province level aggregates
 
 # Conclusion
 
