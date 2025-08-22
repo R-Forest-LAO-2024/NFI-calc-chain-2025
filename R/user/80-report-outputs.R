@@ -113,7 +113,12 @@ tab$allometry <- tibble(
     "$0.6 \\times exp(-1.499 + 2.148 \\times log(D) + 0.207 \\times (log(D))^2 - 0.0281 \\times (log(D))^3)$",
     "$0.6 \\times exp(-1.499 + 2.148 \\times log(D) + 0.207 \\times (log(D))^2 - 0.0281 \\times (log(D))^3)$"
     ),
-  Source = c(rep("TBD", 12))
+  Source = c(
+  rep("TBD", 7), 
+  "A. Chantuma, T. Wichitchonlachai, and P. Chantuma, “Rubber new planting in Thailand:
+towards the world affected on climate change,” Rubber Thai. 1, 40–47 (2012)", 
+  rep("TBD", 4)
+  )
 )
 
 

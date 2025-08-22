@@ -15,6 +15,10 @@ vec_pools <- c("agb", "bgb", "sap_agb", "dw", "stump", "ldw", "Ctot")
 
 save_pre <- "res3-SPxLCS-"
 
+## Edit aggregation function inputs if necessary
+ph1_data <- ph1_data |> mutate(subpop = 1)
+ph2_sp_all <- ph2_sp_all |> mutate(subpop = 1)
+
 ## Save input tables
 if (usr$save_csv) write_csv(ph1_data, file.path(path$res$data, paste0(save_pre, "ph1-info-", Sys.Date(), ".csv")))
 if (usr$save_csv) write_csv(ph2_sp_all, file.path(path$res$data, paste0(save_pre, "ph2-subplot-allvars-", Sys.Date(), ".csv")))
@@ -97,7 +101,7 @@ res3_list$ph2_subplot <- ph2_sp_all
 
 res3_list <- res3_list[c("ph1_data", "ph2_subplot", "plot_summary", "plot_output", "plot_unique", res3_names_noplot)]
 
-writexl::write_xlsx(res3_list, file.path(path$res$data, paste0(save_pre, "all-results-", Sys.Date(),".xlsx")))
+writexl::write_xlsx(res3_list, file.path(path$res$data, paste0(save_pre, "all-results-", Sys.Date(),"-no-subpop.xlsx")))
 
 ## Make spatial plot tables
 sf_plot <- res3_list$plot_out |>
