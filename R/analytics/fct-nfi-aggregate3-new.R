@@ -96,7 +96,7 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
     left_join(ss_ph1_totals, by = join_by(subpop)) |>
     mutate(
       Wh = Nh/N,
-      Ah = .aoi_area * Nh / Ntot
+      Ah = .aoi_area * Nh / Ntot ## divided by overall total number of plot in Phase 1
     )
   
   ss_ph2_totals <- plot_attr |>

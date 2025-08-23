@@ -459,7 +459,7 @@ To apply the root-to-shoot ratios to each tree, land cover information was taken
 ```{r}
 #| eval: false
 #| echo: true
-#| lst-label: lst-treeagb
+#| lst-label: lst-treebgb
 #| lst-cap: "Code snippet for tree belowground biomass."
 #| filename: "Extract from R/user/05-tree-bgb.R"
 
@@ -499,7 +499,69 @@ tree <- tree |>
 
 ### Aggregation to domain and totals
 
-### Subpopulation intermediate results
+Aggregation steps:
+
+1.  aggregation from subplots to partial plots
+
+2.  aggregation of partial plots to (subpopulation) and stratum
+
+3.  aggregation to (subpopulation)
+
+4.  domain totals
+
+#### Subplots to partial plots
+
+For an attribute $y_{ij,d}$ of plot $i$, subplot $j$ in domain $d$ the formula is
+
+$$
+y_{i,d} = \sum_j \delta_j \times y_{i,j,d}
+$$
+
+with $\delta_j$ = 1 with the subplot $j$ is accessible and $\delta_j$ = 0 when not accessible.
+
+This section is illustrated with an example from a subset of 5 plots from the data (see @exm-pres).
+
+::: {.callout-tip appearance="simple"}
+## Set example {#exm-pres}
+
+Let's take example of plot no. 1 and the calculation of AGB.
+
+XX INSERT TABLE
+
+plot no.1 is composed of 20 subplots, 18 in DD, and 2 in RV. When aggregation subplots to plot level, there will be 2 partial plots $1_{DD}$ and $1_{RV}$ . In this example:
+
+$$
+\text{AGB}_{1,DD} = \sum_{j=A1}^{D5} AGB_{1,j,DD} 
+$$
+
+and
+
+$$
+\text{AGB}_{1,RV} = \sum_{j=A1}^{D5} AGB_{1,j,RV} 
+$$
+:::
+
+For area attributes, the area is considered 0 when not accessible. The aggregation of measurement area $x_{i,j,d}$ for a domain $d$, plot $i$ and subplot $j$ and the total plot measurement $a_{i,j}$, regardless of domain are therefore:
+
+$$
+x_{i,d} = \sum_j \delta_j \times x_{i,j,d}
+$$ $$
+a_{i} = \sum_j \delta_j \times a_{i,j}
+$$
+
+with $\delta_j$ = 1 with the subplot $j$ is accessible and $\delta_j$ = 0 when not accessible.
+
+In the previous example, TBC
+
+This led to the 'plot-summary' table in the results workbook. Each row of the 'plot-summary' table is a partial plot with unique combination of plot ID and domain.
+
+#### Partial plots to subpopulation and stratum
+
+# Results
+
+## Country level 
+
+## Subpopulation intermediate results
 
 #### ERPA level
 

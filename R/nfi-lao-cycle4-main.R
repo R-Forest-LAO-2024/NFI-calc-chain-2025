@@ -48,7 +48,7 @@ source(here("R/analytics/fct-nfi-aggregate4.R"))
 
 source(here("R/analytics/fct-make-outputs.R"))
 
-##
+ ##
 ## Data preparation ####
 ##
 
