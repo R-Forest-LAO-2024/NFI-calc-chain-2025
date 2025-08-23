@@ -421,7 +421,7 @@ $$
 AGB = exp\left(-1.803 - 0.976 \times E + 0.976 \times log(0.6) + 2.673 \times log(D) - 0.0299 \times log(D)^2\right)
 $$ {#eq-chave14}
 
-Figures -@fig-treeagb and -@fig-treeagbp show that the selected models were all conservative, except the models bamboo (B), regenerative vegetation (RV) and rubber plantation model, but the MRV team felt comfortable that the models selected were adequate for Lao PDR.
+Figures [-@fig-treeagb] and [-@fig-treeagbp] show that the selected models were all conservative, except the models bamboo (B), regenerative vegetation (RV) and rubber plantation model, but the MRV team felt comfortable that the models selected were adequate for Lao PDR.
 
 ```{r}
 #| echo: false
