@@ -115,25 +115,26 @@ table(ph2_subplot$access, useNA = "ifany")
 ## + tree AGB & BGB ####
 
 ph2_sp_tree <- tree |>
-  select(plot_id = subplot_plot_no, subplot_no, lcs_no = tree_lcs_no, tree_no, tree_stem_no, tree_dbh, tree_agb_final, tree_bgb) |>
+  select(plot_id = subplot_plot_no, subplot_no, lcs_no = tree_lcs_no, tree_no, tree_stem_no, tree_dbh, tree_weight, tree_ba, tree_agb_final, tree_bgb) |>
   mutate(
-    subplot_id = paste0(subplot_no, lcs_no),
-    tree_weight = if_else(tree_dbh < 30, 4, 1) ## here inclusion proba for small trees is 16^2.pi / 8^2.pi = 4
+    subplot_id = paste0(subplot_no, lcs_no)
   ) |>
   group_by(plot_id, subplot_id) |>
   summarise(
     n_tree = sum(tree_weight),
-    agb    = sum(tree_agb_final * tree_weight) / 1000,
+    ba     = sum(tree_ba * tree_weight),
+    agb    = sum(tree_agb_final * tree_weight) / 1000, ## Convert kg to tons
     bgb    = sum(tree_bgb * tree_weight) / 1000,
     .groups= "drop"
   ) |>
   right_join(select(ph2_subplot, plot_id, subplot_id, sp_area), by = join_by(plot_id, subplot_id)) |>
   mutate(
     n_tree = if_else(!is.na(n_tree), n_tree, 0),
+    ba     = if_else(!is.na(ba), ba, 0),
     agb    = if_else(!is.na(agb), agb, 0),
     bgb    = if_else(!is.na(bgb), bgb, 0),
   ) |>
-  select(plot_id, subplot_id, n_tree, agb, bgb) |>
+  select(plot_id, subplot_id, n_tree, ba, agb, bgb) |>
   arrange(plot_id, subplot_id)
 ph2_sp_tree
 
@@ -231,15 +232,32 @@ ph2_sp_ldw <- ph2_subplot |>
 ## Combined entities at subplot level ####
 ##
 
-ph2_sp_all <- ph2_subplot |>
-  left_join(ph2_sp_tree, by = join_by(plot_id, subplot_id)) |>
-  left_join(ph2_sp_sap, by = join_by(plot_id, subplot_id)) |>
-  left_join(ph2_sp_dw, by = join_by(plot_id, subplot_id)) |>
-  left_join(ph2_sp_stump, by = join_by(plot_id, subplot_id)) |>
-  left_join(ph2_sp_ldw, by = join_by(plot_id, subplot_id)) |>
+ph2_subplot <- ph2_subplot |>
+  mutate(
+    n_tree  = NA,
+    ba      = NA,
+    agb     = NA,
+    bgb     = NA,
+    sap_agb = NA,
+    n_dw    = NA,
+    dw      = NA,
+    n_stump = NA,
+    ldw     = NA,
+  ) |>
+  left_join(ph2_sp_tree, by = join_by(plot_id, subplot_id), suffix = c("_rm", "")) |>
+  left_join(ph2_sp_sap, by = join_by(plot_id, subplot_id), suffix = c("_rm", "")) |>
+  left_join(ph2_sp_dw, by = join_by(plot_id, subplot_id), suffix = c("_rm", "")) |>
+  left_join(ph2_sp_stump, by = join_by(plot_id, subplot_id), suffix = c("_rm", "")) |>
+  left_join(ph2_sp_ldw, by = join_by(plot_id, subplot_id), suffix = c("_rm", "")) |>
+  select(-ends_with("_rm")) |>
   mutate(
     Btot = agb + bgb + sap_agb + dw + stump + ldw,
     Ctot = Btot * CF
   )
-ph2_sp_all
+ph2_subplot
 
+
+## Remove all tmp objects
+rm(list = str_subset(ls(), pattern = "ph2_sp_"))
+rm(center_sp)
+rm(tmp)

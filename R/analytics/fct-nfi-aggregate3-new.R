@@ -247,8 +247,8 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
   out <- list(
     plot = plot_attr, 
     subpop_stratum = subpop_stratum_d, 
-    subpop = subpop_d,
-    totals = totals_d,
+    subpop_d = subpop_d,
+    totals_d = totals_d,
     totals_short = totals_short
   )
   

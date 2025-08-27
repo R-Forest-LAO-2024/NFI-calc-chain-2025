@@ -25,6 +25,7 @@ format:
     toc: true
     number-sections: true
     highlight-style: github
+    reference-doc: custom-reference-doc.docx
   pdf:
     documentclass: scrartcl
     papersize: A4
@@ -195,33 +196,6 @@ Rstudio allows to request passwords, without storing them to maintain security, 
 
 Nevertheless, it was decided that the data would be downloaded manually by FIPD and shared with experts and analysts. In this case, the data was stored in the following directory inside the R project: *'data/data-source/'*, and user inputs were set in Code @lst-usrinput.
 
-```{r}
-#| eval: false
-#| echo: true
-#| lst-label: lst-usrinput
-#| lst-cap: "User inputs at the time of reporting in the script 'R/user/00-user-inputs.R'"
-#| filename: "Extract from R/user/00-user-input.R"
-
-## Initiate list to store user inputs 
-usr <- list()
-
-## Erase cleaned and harmonized data and recompile from source
-usr$recompile_source <- TRUE
-
-## Download source data from ONA
-usr$download_new <- FALSE
-
-## Delete all source data (useful if new data gets downloaded)
-usr$clean_all <- FALSE
-
-## File name of the NFI source data if not downloaded
-usr$get_filename <-  "4th_NFI_2025_06_04_09_11_28_457776.csv"
-
-## File name of the CEO file put in 'data/data-anci'
-usr$get_ceofile <- "ceo-2025-06-06-complete.csv"
-
-```
-
 Notice in Code @lst-usrinput that the CSV file of the Phase 1 data was placed in the ancillary data folder: *'data/data-ancillary/'*, and its file name added to the user inputs as well.
 
 The data preparation was automated and part of the setup group of scripts in *'R/setup/'*. In particular *'get-data.R'* and *'load-anci.R'* took care of loading the raw data and splitting the master CSV file into entity level tables: subplot, tree, dw, sapling and ldw, and split out the QAQC re-measurements into separate tables. At this stage, all the entity tables were grouped in the R global Environment into an object (specifically a list) called: `data-prep`.
@@ -233,6 +207,325 @@ The data correction scripts were placed in the user group of scripts, in *'R/use
 ### Subplot corrections
 
 At subplot level the main type of issue found was entry error of subplot code (duplicates in A, B, C or D) and plot code. They were solved manually by looking at time stamps, see Code @lst-spcorr.
+
+### Creating the land cover sections
+
+In addition to the plot / subplot structure there were 5 five observation points for land cover in each subplots. These five points were located as follow: center point at the subplot center, then north, east, south and west points point at 12 m of the subplot center towards north, east, south and west respectively. These 5 points represent land cover sections for which an area can be calculated and assign to trees based on equi-distance or Thiessen polygons. As a result, land cover sections (LCS) were created as follows (@fig-lcs):
+
+-   center: a square of 12 m side centered on the subplot center
+
+-   north, east, south and west : a quarter of the larger subplot circle of 16 m radius minus the center square, split respectively by the northwest (315 degrees) and northeast (45 degrees), northeast and southeast (135 degrees), southeast and southwest (225 degrees), and southwest and northwest lines.
+
+```{r}
+#| echo: false
+#| label: fig-lcs
+#| fig-cap: "Example of land cover sections (LCS) and their trees assignements in one subplot" 
+
+fig$lcs_ex
+
+
+```
+
+### Live tree corrections
+
+### Sapling corrections
+
+### Standing deadwood corrections
+
+### Lying deadwood corrections
+
+## Entity level calculations
+
+### Tree weight
+
+In the context of ratio estimator, the sum of trees' characteristics is required at plot level rather than their per hectare value. Weights were therefore used to estimate the sum of tree characteristics in the 16 m radius circle for small trees that were measured in the 8 m radius circle (@eq-treeweight, @lst-treeweight).
+
+$$
+w_{tree} = 
+  \begin{cases} 
+    \text{4   when D} \le \text{30 cm} \\ 
+    \text{1   when D > 30 cm} 
+  \end{cases}
+$$ {#eq-treeweight}
+
+### Tree basal area
+
+Basal area (BA) is calculated as follows:
+
+$$
+BA = \pi \times {r}^{2} = \pi \times {\left(\frac{D}{200}\right)}^{2}
+$$ {#eq-tree-ba}
+
+Its calculation was implemented in the Code @lst-treeba.
+
+### Tree aboveground biomass
+
+Aboveground biomass was estimated for each tree using allometric equations linking it to field measurements (species, DBH, land cover). Land cover was assigned at the land cover section level. The equations were based on literature, mostly from neighbor countries and pan-tropical models (@tbl-allometry, Code @lst-treeagb).
+
+```{r}
+#| echo: false
+#| label: tbl-allometry
+#| tbl-cap: "Aboveground biomass allometric equations for trees and deadwood. Sources: (1), ..., (8) A. Chantuma, T. Wichitchonlachai, and P. Chantuma, Rubber new planting in Thailand: towards the world affected on climate change, Rubber Thai. 1, 40–47 (2012)"
+
+knitr::kable(tab$allometry, format.args = list(big.mark = ","), escape = FALSE)
+```
+
+Land cover-based tree AGB was compared with the Evergreen forest model and two pantropical models from Chave et al, 2005 (@eq-chave05) and 2014 (@eq-chave14) without height, respectively:
+
+$$
+\text{AGB} = 0.6 \times exp\left(-1.499 + 2.148 \times log(D) + 0.207 \times log(D)^2 - 0.0281 \times log(D)^3\right)
+$$ {#eq-chave05}
+
+and
+
+$$
+AGB = exp\left(-1.803 - 0.976 \times E + 0.976 \times log(0.6) + 2.673 \times log(D) - 0.0299 \times log(D)^2\right)
+$$ {#eq-chave14}
+
+Figures [-@fig-treeagb] and [-@fig-treeagbp] show that the selected models were all conservative, except the models bamboo (B), regenerative vegetation (RV) and rubber plantation model, but the MRV team felt comfortable that the models selected were adequate for Lao PDR.
+
+```{r}
+#| echo: false
+#| label: fig-treeagb
+#| fig-cap: "Comparison of AGB models for natural forests" 
+
+fig$tree_agb
+
+```
+
+```{r}
+#| echo: false
+#| label: fig-treeagbp
+#| fig-cap: "Comparison of AGB models for forest plantations" 
+
+fig$tree_agbp
+
+```
+
+### Tree belowground biomass
+
+Tree belowground biomass was calculated at the tree level as $BGB = RS \times AGB$, with RS the root-to-shoot ratio to convert aboveground to belowground biomass. The root-to-shoot ratios were based on land cover and plot level aboveground biomass, and taken from IPCC 2006 for non-coniferous (table guidelines, ch.4 vol.4 table 4.4) and XX (ADD SOURCE) for coniferous forests (@tbl-rs).
+
+```{r}
+#| echo: false
+#| label: tbl-rs
+#| tbl-cap: "Root-to-shoot ratios for converting aboveground to belowground biomass"
+
+knitr::kable(tab$rs, format.args = list(big.mark = ","))
+
+```
+
+To apply the root-to-shoot ratios to each tree, land cover information was taken from land cover sections and plot AGB was calculated at the subplot level and re-assigned to trees (Code @lst-treebgb). The justification for choosing subplot level for AGB aggregation for RS, was that the land cover sections were too small in area and could yield wild AGB values.
+
+### Sapling aboveground biomass
+
+TBD
+
+### Standing deadwood aboveground biomass
+
+TBD
+
+### Stump aboveground biomass
+
+TBD
+
+### Lying deadwood biomass
+
+## Aggregation
+
+### Guiding example
+
+::: {.callout-tip appearance="simple"}
+## Introducing the guiding example {#exm-intro}
+
+To illustrate the formulas and step-by-step aggregation of the NFI data from entities to domain totals, a subset of 5 phase 2 plots (2 DD, 2 RV, 1 mix) and 20 phase 1 plots (15 RV, 5 DD) was prepared (see @tbl-guidex-ph1 and @tbl-guidex-ph2init. The guiding example was also limited to live trees and AGB aggregation, but the principles are the same for other entities and attributes. All the initial tree data is presented in @sec-guidex.
+
+```{r}
+#| echo: false
+#| label: tbl-guidex-ph1
+#| tbl-cap: "Guiding example Phase 1 subset."
+
+knitr::kable(guidex$ph1_data, format.args = list(big.mark = ','))
+```
+
+```{r}
+#| echo: false
+#| label: tbl-guidex-ph2init
+#| tbl-cap: "Guiding example Phase 2 initial subset."
+
+knitr::kable(guidex$ph2_init, format.args = list(big.mark = ','))
+
+```
+:::
+
+### Aggregation to the minimal area unit
+
+In the NFI cycle 4, the minimal unit area was the subplot's land cover section, i.e. the area defined by setting equidistance between the five land cover observation points for each subplot. In the whole aggregation section, subplots, land cover or subplot x land cover were used interchangeably to refer to this minimal area unit that constitute the initial aggregation of entities to a measurement area.
+
+The initial `ph2_subplot` table was generated from all possible combinations of phase 2 plot numbers, subplot numbers (A, B, C or D) and land cover section (1 to 5).
+
+Each entity table's variables were then sumed to the subplot level.
+
+The area of each subplot $j$ of a plot $i$ was:
+
+$$
+A_{i,j} = 
+\begin{cases} 
+12^2/10000 = 0.0144 \space ha \text{, for center land cover section} \\
+(\pi \times 16^2 - 12^2) / 40000 = 0.0165 \space ha \text{, for other land cover sections}
+\end{cases}
+$$ {#eq-lcs-area}
+
+::: {.callout-tip appearance="simple"}
+## Aggregating tree to subplot {#exm-aggsp}
+
+Here the tree AGB was summed to the subplot level either in R with `group_by()` and `summarise()` or in MS Excel with SUMIFS() or pivotTable. The tree aggregated data was then combined with the initial phase 1 subplot data. In R use `left_join()` from the subplot initial table to make sure all subplots are there even if there are no trees (see @tbl-guidex-ph2).
+
+TIP: Replace potential NAs with 0 in AGB values, with `if_else(is.na(X), 0, X)`, X being the variable aggregated.
+
+```{r}
+#| echo: false
+#| label: tbl-guidex-ph2
+#| tbl-cap: "Phase 2 subplot with tree AGB and area."
+
+knitr::kable(guidex$ph2_subplot, format.args = list(big.mark = ','))
+```
+:::
+
+### Aggregation to domain and totals
+
+Aggregation steps:
+
+1.  aggregation from subplots to partial plots
+
+2.  aggregation of partial plots to (subpopulation) and stratum
+
+3.  aggregation to (subpopulation)
+
+4.  domain totals
+
+In case there is no subpopulation, step 3 gives the totals.
+
+#### Subplots to partial plots
+
+For an attribute $y_{ij,d}$ of plot $i$, subplot $j$ in domain $d$ the formula is
+
+$$
+y_{i,d} = \sum_j \delta_j \times y_{i,j,d}
+$$
+
+with $\delta_j$ = 1 with the subplot $j$ is accessible and $\delta_j$ = 0 when not accessible.
+
+For area attributes, the area is considered 0 when not accessible. The aggregation of measurement area $x_{i,j,d}$ for a domain $d$, plot $i$ and subplot $j$ and the total plot measurement $a_{i,j}$, regardless of domain are therefore:
+
+$$
+x_{i,d} = \sum_j \delta_j \times x_{i,j,d}
+$$ $$
+a_{i} = \sum_j \delta_j \times a_{i,j}
+$$
+
+with $\delta_j$ = 1 with the subplot $j$ is accessible and $\delta_j$ = 0 when not accessible.
+
+::: {.callout-tip appearance="simple"}
+## Subplot to plot aggregation {#exm-plotsum}
+
+Plot no.1 is composed of 20 subplots, 18 in DD, and 2 in RV. When aggregating subplots to plot level, there are 2 partial plots:
+
+$$
+\text{AGB}_{i = 1,DD} = \sum_{j=A1}^{D5} AGB_{i = 1,j,DD} 
+\space \text{  and  } \space 
+\text{AGB}_{i = 1,RV} = \sum_{j=A1}^{D5} AGB_{i = 1,j,RV}
+$$
+
+Here:
+
+$y_{i=1, DD} = AGB_{i=1, DD} \sim 3.7 + 1.3 + 3.4 + 2.1 + 1.1 + 1.1 + 0.9 + 0.5 + 3.1 + 0.6 + 1.8 + 1.1 \sim 20.7 \space tons$
+
+$y_{i=1, RV} = AGB_{i=1, RV} \sim 1.3 + 0.0 \sim 1.3 \space tons$
+
+Since the 2 subplots RV are not centers, the partial plot areas are:
+
+$x_{i=1,DD} = 4 \times 0.0144 + 14 \times 0.0165 \sim 0.289 \space ha$
+
+and
+
+$x_{i=1,DD} = 2 \times 0.0165 \sim 0.033 \space ha$
+
+And the accessible area at plot level, since all subplots are accessible in the example:
+
+$a_{i=1} = 4 \times 0.0144 + 16 \times 0.0165 \sim 0.32 \space ha$
+
+The results for all plots are in @tbl-guidex-plotsum.
+
+```{r}
+#| echo: false
+#| label: tbl-guidex-plotsum
+#| tbl-cap: "Guided example: plot summary."
+
+knitr::kable(guidex$plotsum, format.args = list(big.mark = ','))
+```
+:::
+
+This led to the 'plot-summary' table in the results workbook. Each row of the 'plot-summary' table is a partial plot with unique combination of plot ID and domain.
+
+#### Partial plots to subpopulation and stratum
+
+# Results
+
+## Country level
+
+## Subpopulation intermediate results
+
+#### ERPA level
+
+#### Province level aggregates
+
+# Conclusion
+
+TBD
+
+# Annex: Data for the guiding example {#sec-guiding-example}
+
+To help understand the aggregation process, a subset of 20 phase 1 plots and 5 phase 2 plots were used. The phase 2 plots include 1 mixed land use plot: 18 subplots x land cover sections in Dry Dipterocarp forests (DD) and 2 subplots x land cover sections in Regenerative Vegetation (RV). The 4 other plots are pure, 3 in Dry Dipterocarp and 1 in Regenerative Vegetation. The 20 Phase 1 plots we selected to include the Phase 2 plots are respect the ratio of RV to DD, which is around 3/4 RV, 1/4 DD in the full dataset (see @tbl-ex-ph1 and @tbl-ex-tree).
+
+```{r}
+#| echo: false
+#| label: tbl-ex-ph1
+#| tbl-cap: "Phase 1 information for the guiding example"
+
+knitr::kable(guidex$ph1_data, format.args = list(big.mark = ","))
+```
+
+```{r}
+#| echo: false
+#| label: tbl-ex-tree
+#| tbl-cap: "Phase 2 tree measurements for the guiding example"
+
+knitr::kable(guidex$tree_init, format.args = list(big.mark = ","))
+
+
+```
+
+# Annex : QAQC plot revisited results {#sec-annex-qaqc}
+
+TBD
+
+# Annex : R scripts code base {#sec-annex-r}
+
+## Data preparation
+
+```{r}
+#| eval: false
+#| echo: true
+#| lst-label: lst-usrinput
+#| lst-cap: "User inputs at the time of reporting in the script 'R/user/00-user-inputs.R'"
+#| file: "R/user/00-user-inputs.R"
+
+```
+
+## Data correction
+
+### Subplot corrections
 
 ```{r}
 #| eval: false
@@ -283,26 +576,9 @@ tmp$subplot3 <- tmp$subplot2 |>
       TRUE ~ subplot_no
     )
   )
-
 ```
 
 ### Creating the land cover sections
-
-In addition to the plot / subplot structure there were 5 five observation points for land cover in each subplots. These five points were located as follow: center point at the subplot center, then north, east, south and west points point at 12 m of the subplot center towards north, east, south and west respectively. These 5 points represent land cover sections for which an area can be calculated and assign to trees based on equi-distance or Thiessen polygons. As a result, land cover sections (LCS) were created as follows (@fig-lcs):
-
--   center: a square of 12 m side centered on the subplot center
-
--   north, east, south and west : a quarter of the larger subplot circle of 16 m radius minus the center square, split respectively by the northwest (315 degrees) and northeast (45 degrees), northeast and southeast (135 degrees), southeast and southwest (225 degrees), and southwest and northwest lines.
-
-```{r}
-#| echo: false
-#| label: fig-lcs
-#| fig-cap: "Example of land cover sections (LCS) and their trees assignements in one subplot" 
-
-fig$lcs_ex
-
-
-```
 
 ### Live tree corrections
 
@@ -315,16 +591,6 @@ fig$lcs_ex
 ## Entity level calculations
 
 ### Tree weight
-
-In the context of ratio estimator, the sum of trees' characteristics is required at plot level rather than their per hectare value. Weights were therefore used to estimate the sum of tree characteristics in the 16 m radius circle for small trees that were measured in the 8 m radius circle (@eq-treeweight, @lst-treeweight).
-
-$$
-w_{tree} = 
-  \begin{cases} 
-    \text{4   when D} \le \text{30 cm} \\ 
-    \text{1   when D > 30 cm} 
-  \end{cases}
-$$ {#eq-treeweight}
 
 ```{r}
 #| eval: false
@@ -345,14 +611,6 @@ tree <- tree |>
 
 ### Tree basal area
 
-Basal area (BA) is calculated as follows:
-
-$$
-BA = \pi \times {r}^{2} = \pi \times {\left(\frac{D}{200}\right)}^{2}
-$$ {#eq-tree-ba}
-
-Its calculation was implemented in the Code @lst-treeba.
-
 ```{r}
 #| eval: false
 #| echo: true
@@ -368,17 +626,6 @@ tree <- tree |>
 ```
 
 ### Tree aboveground biomass
-
-Aboveground biomass was estimated for each tree using allometric equations linking it to field measurements (species, DBH, land cover). Land cover was assigned at the land cover section level. The equations were based on literature, mostly from neighbor countries and pan-tropical models (@tbl-allometry, Code @lst-treeagb).
-
-```{r}
-#| echo: false
-#| label: tbl-allometry
-#| tbl-cap: "Aboveground biomass allometric equations for trees and deadwood."
-
-knitr::kable(tab$allometry, format.args = list(big.mark = ","), escape = FALSE)
-
-```
 
 ```{r}
 #| eval: false
@@ -409,52 +656,7 @@ tree <- tree |>
 
 ```
 
-Land cover-based tree AGB was compared with the Evergreen forest model and two pantropical models from Chave et al, 2005 (@eq-chave05) and 2014 (@eq-chave14) without height, respectively:
-
-$$
-\text{AGB} = 0.6 \times exp\left(-1.499 + 2.148 \times log(D) + 0.207 \times log(D)^2 - 0.0281 \times log(D)^3\right)
-$$ {#eq-chave05}
-
-and
-
-$$
-AGB = exp\left(-1.803 - 0.976 \times E + 0.976 \times log(0.6) + 2.673 \times log(D) - 0.0299 \times log(D)^2\right)
-$$ {#eq-chave14}
-
-Figures [-@fig-treeagb] and [-@fig-treeagbp] show that the selected models were all conservative, except the models bamboo (B), regenerative vegetation (RV) and rubber plantation model, but the MRV team felt comfortable that the models selected were adequate for Lao PDR.
-
-```{r}
-#| echo: false
-#| label: fig-treeagb
-#| fig-cap: "Comparison of AGB models for natural forests" 
-
-fig$tree_agb
-
-```
-
-```{r}
-#| echo: false
-#| label: fig-treeagbp
-#| fig-cap: "Comparison of AGB models for forest plantations" 
-
-fig$tree_agbp
-
-```
-
 ### Tree belowground biomass
-
-Tree belowground biomass was calculated at the tree level as $BGB = RS \times AGB$, with RS the root-to-shoot ratio to convert aboveground to belowground biomass. The root-to-shoot ratios were based on land cover and plot level aboveground biomass, and taken from IPCC 2006 for non-coniferous (table guidelines, ch.4 vol.4 table 4.4) and XX (ADD SOURCE) for coniferous forests (@tbl-rs).
-
-```{r}
-#| echo: false
-#| label: tbl-rs
-#| tbl-cap: "Root-to-shoot ratios for converting aboveground to belowground biomass"
-
-knitr::kable(tab$rs, format.args = list(big.mark = ","))
-
-```
-
-To apply the root-to-shoot ratios to each tree, land cover information was taken from land cover sections and plot AGB was calculated at the subplot level and re-assigned to trees (Code @lst-treebgb). The justification for choosing subplot level for AGB aggregation for RS, was that the land cover sections were too small in area and could yield wild AGB values.
 
 ```{r}
 #| eval: false
@@ -487,88 +689,16 @@ tree <- tree |>
 
 ### Sapling aboveground biomass
 
+TBD
+
 ### Standing deadwood aboveground biomass
+
+TBD
 
 ### Stump aboveground biomass
 
+TBD
+
 ### Lying deadwood biomass
 
-## Aggregation
-
-### Aggregation to the minimal area unit
-
-### Aggregation to domain and totals
-
-Aggregation steps:
-
-1.  aggregation from subplots to partial plots
-
-2.  aggregation of partial plots to (subpopulation) and stratum
-
-3.  aggregation to (subpopulation)
-
-4.  domain totals
-
-#### Subplots to partial plots
-
-For an attribute $y_{ij,d}$ of plot $i$, subplot $j$ in domain $d$ the formula is
-
-$$
-y_{i,d} = \sum_j \delta_j \times y_{i,j,d}
-$$
-
-with $\delta_j$ = 1 with the subplot $j$ is accessible and $\delta_j$ = 0 when not accessible.
-
-This section is illustrated with an example from a subset of 5 plots from the data (see @exm-pres).
-
-::: {.callout-tip appearance="simple"}
-## Set example {#exm-pres}
-
-Let's take example of plot no. 1 and the calculation of AGB.
-
-XX INSERT TABLE
-
-plot no.1 is composed of 20 subplots, 18 in DD, and 2 in RV. When aggregation subplots to plot level, there will be 2 partial plots $1_{DD}$ and $1_{RV}$ . In this example:
-
-$$
-\text{AGB}_{1,DD} = \sum_{j=A1}^{D5} AGB_{1,j,DD} 
-$$
-
-and
-
-$$
-\text{AGB}_{1,RV} = \sum_{j=A1}^{D5} AGB_{1,j,RV} 
-$$
-:::
-
-For area attributes, the area is considered 0 when not accessible. The aggregation of measurement area $x_{i,j,d}$ for a domain $d$, plot $i$ and subplot $j$ and the total plot measurement $a_{i,j}$, regardless of domain are therefore:
-
-$$
-x_{i,d} = \sum_j \delta_j \times x_{i,j,d}
-$$ $$
-a_{i} = \sum_j \delta_j \times a_{i,j}
-$$
-
-with $\delta_j$ = 1 with the subplot $j$ is accessible and $\delta_j$ = 0 when not accessible.
-
-In the previous example, TBC
-
-This led to the 'plot-summary' table in the results workbook. Each row of the 'plot-summary' table is a partial plot with unique combination of plot ID and domain.
-
-#### Partial plots to subpopulation and stratum
-
-# Results
-
-## Country level 
-
-## Subpopulation intermediate results
-
-#### ERPA level
-
-#### Province level aggregates
-
-# Conclusion
-
-# Annex : R script code base description {#sec-annex-r}
-
-# Annex : QAQC plot revisited results {#sec-annex-qaqc}
+TBD

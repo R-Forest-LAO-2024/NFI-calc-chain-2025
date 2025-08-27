@@ -39,7 +39,7 @@ tmp$stratum_name <- anci$lc |>
   select(stratum = lu_strata_no, stratum_name = lu_strata_name) |>
   distinct()
 
-tab$Nh <- res3_list$subpop_stratum |> 
+tab$Nh <- res3_SPxLCS_nosubpop_$subpop_stratum |> 
   distinct(subpop, stratum, Nh) |>
   summarise(Nh = sum(Nh), .by = stratum) |>
   left_join(tmp$stratum_name, by = join_by(stratum)) |>
@@ -90,7 +90,7 @@ tab$entity
 ## + Total C ####
 tmp$lc_name <- anci$lc |> select(lc_no = lu_no, `LC code` = lu_code_new, `LC name` = lu_name, `LC name Lao` = lu_name_lao)
 
-tab$carbon <- res3_list$totals_short |> 
+tab$carbon <- res3_SPxLCS_nosubpop_$totals_short |> 
   filter(attr == "Ctot", lc_no <= 30 | lc_no > 160) |>
   left_join(tmp$lc_name, by = join_by(lc_no)) |>
   select(`LC no` = lc_no, `LC code`, `LC name`, `LC name Lao`, Ctot = Rd, `U (perc)` = Rd_mep)
@@ -115,8 +115,7 @@ tab$allometry <- tibble(
     ),
   Source = c(
   rep("TBD", 7), 
-  "A. Chantuma, T. Wichitchonlachai, and P. Chantuma, “Rubber new planting in Thailand:
-towards the world affected on climate change,” Rubber Thai. 1, 40–47 (2012)", 
+  "(8)", 
   rep("TBD", 4)
   )
 )
@@ -161,6 +160,6 @@ fig$lcs_ex <- tmp$gg_lcs_example_new
 
 ## + AGB models ####
 
-fig$tree_agb <- gg_tree_agb
-fig$tree_agbp <- gg_tree_agbp
+fig$tree_agb <- res_gg$tree_agb
+fig$tree_agbp <- res_gg$tree_agbp
 

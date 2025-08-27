@@ -46,7 +46,7 @@ source(here("R/analytics/fct-nfi-aggregate2.R"))
 source(here("R/analytics/fct-nfi-aggregate3-new.R"))
 source(here("R/analytics/fct-nfi-aggregate4.R"))
 
-source(here("R/analytics/fct-make-outputs.R"))
+#source(here("R/analytics/fct-make-outputs.R"))
 
  ##
 ## Data preparation ####
@@ -148,7 +148,7 @@ source(here("R/user/50-save-tables.R"))
 source(here("R/user/61-prepa-aggregation-SPxLCS.R"))
 
 
-source(here("R/user/71-aggregate-SPxLCS.R"))
+source(here("R/user/71a-aggregate-SPxLCS-nosubpop.R"))
 
 
 ##
@@ -157,6 +157,7 @@ source(here("R/user/71-aggregate-SPxLCS.R"))
 
 source(here("R/user/80-report-outputs.R"))
 
+source(here("R/user/81-guiding-example.R"))
 
 ## 
 ## Other analytics ####

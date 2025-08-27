@@ -34,7 +34,7 @@ tree <- tree |>
 ## Check
 table(tree$lu_strata_name)
 
-gg_tree_agb <- tree |>
+res_gg$tree_agb <- tree |>
   filter(
     lu_strata_name != "Nonforest", 
     !lu_code_new %in% c("P_AC", "P_EC", "P_OTH", "P_RB", "P_TK"),
@@ -50,9 +50,9 @@ gg_tree_agb <- tree |>
     y = "AGB",
     caption = "red line: selected model, line: EG model,\ndash: chave05, cross: Chave14"
   )
-print(gg_tree_agb)
+print(res_gg$tree_agb)
 
-gg_tree_agbp <- tree |>
+res_gg$tree_agbp <- tree |>
   filter(
     lu_code_new %in% c("P_AC", "P_EC", "P_OTH", "P_RB", "P_TK"),
   ) |>
@@ -67,5 +67,5 @@ gg_tree_agbp <- tree |>
     y = "AGB",
     caption = "red line: selected model, line: EG model,\ndash: chave05, cross: Chave14"
   )
-print(gg_tree_agbp)
+print(res_gg$tree_agbp)
 
