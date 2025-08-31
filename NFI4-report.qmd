@@ -7,9 +7,6 @@ date: "August 2025"
 #   echo: false
 format:
   html: 
-    number-sections: true
-    toc: true
-    toc-depth: 2
     toc-location: left
     embed-resources: true
     theme: 
@@ -22,17 +19,20 @@ format:
       source: false
     code-summary: "Show the code"
   docx:
-    toc: true
-    number-sections: true
+    #toc: true
+    #number-sections: true
     highlight-style: github
     reference-doc: custom-reference-doc.docx
   pdf:
     documentclass: scrartcl
     papersize: A4
-    toc: true
-    number-sections: true
-    number-depth: 2
+    #toc: true
+    #number-sections: true
+    #number-depth: 2
     colorlinks: true
+number-sections: true
+toc: true
+toc-depth: 2
 editor: visual
 ---
 
@@ -335,8 +335,13 @@ TBD
 
 ### Guiding example
 
-::: {.callout-tip appearance="simple"}
-## Introducing the guiding example {#exm-intro}
+To illustrate the formulas and step-by-step aggregation of the NFI data from entities to domain totals, a subset of 5 phase 2 plots (2 DD, 2 RV, 1 mix) and 20 phase 1 plots (15 RV, 5 DD) was prepared (see @exm-guidex-intro)
+
+:::: {.callout-tip appearance="simple"}
+::: {#exm-guidex-intro}
+## Introducing guiding example
+
+\linebreak
 
 To illustrate the formulas and step-by-step aggregation of the NFI data from entities to domain totals, a subset of 5 phase 2 plots (2 DD, 2 RV, 1 mix) and 20 phase 1 plots (15 RV, 5 DD) was prepared (see @tbl-guidex-ph1 and @tbl-guidex-ph2init. The guiding example was also limited to live trees and AGB aggregation, but the principles are the same for other entities and attributes. All the initial tree data is presented in @sec-guidex.
 
@@ -357,6 +362,7 @@ knitr::kable(guidex$ph2_init, format.args = list(big.mark = ','))
 
 ```
 :::
+::::
 
 ### Aggregation to the minimal area unit
 
@@ -371,8 +377,8 @@ The area of each subplot $j$ of a plot $i$ was:
 $$
 A_{i,j} = 
 \begin{cases} 
-12^2/10000 = 0.0144 \space ha \text{, for center land cover section} \\
-(\pi \times 16^2 - 12^2) / 40000 = 0.0165 \space ha \text{, for other land cover sections}
+12^2/10000 = 0.0144 \space \text{ ha, for center land cover section} \\
+(\pi \times 16^2 - 12^2) / 40000 = 0.0165 \space \text{ ha, for other land cover sections}
 \end{cases}
 $$ {#eq-lcs-area}
 
@@ -484,7 +490,7 @@ This led to the 'plot-summary' table in the results workbook. Each row of the 'p
 
 TBD
 
-# Annex: Data for the guiding example {#sec-guiding-example}
+# Annex: Data for the guiding example {#sec-guidex}
 
 To help understand the aggregation process, a subset of 20 phase 1 plots and 5 phase 2 plots were used. The phase 2 plots include 1 mixed land use plot: 18 subplots x land cover sections in Dry Dipterocarp forests (DD) and 2 subplots x land cover sections in Regenerative Vegetation (RV). The 4 other plots are pure, 3 in Dry Dipterocarp and 1 in Regenerative Vegetation. The 20 Phase 1 plots we selected to include the Phase 2 plots are respect the ratio of RV to DD, which is around 3/4 RV, 1/4 DD in the full dataset (see @tbl-ex-ph1 and @tbl-ex-tree).
 
@@ -495,6 +501,8 @@ To help understand the aggregation process, a subset of 20 phase 1 plots and 5 p
 
 knitr::kable(guidex$ph1_data, format.args = list(big.mark = ","))
 ```
+
+\pagebreak
 
 ```{r}
 #| echo: false

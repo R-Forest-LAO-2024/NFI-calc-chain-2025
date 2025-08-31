@@ -70,3 +70,14 @@ guidex$plotsum <- guidex$ph2_subplot |>
   left_join(tmp$plota, by = join_by(subpop, stratum), suffix = c("_rm", "")) |>
   select(-ends_with("_rm"))
 
+
+##
+## Save tables ####
+##
+
+write_csv(guidex$ph1_data, file.path(path$res$test, "guidex_ph1_data.csv"))
+write_csv(guidex$ph2_init, file.path(path$res$test, "guidex_ph2_subplot_init.csv"))
+write_csv(guidex$ph2_subplot, file.path(path$res$test, "guidex_ph2_subplot_calc.csv"))
+write_csv(guidex$tree_init, file.path(path$res$test, "guidex_tree.csv"))
+
+

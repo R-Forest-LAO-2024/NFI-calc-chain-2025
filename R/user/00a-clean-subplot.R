@@ -114,9 +114,8 @@ tmp$subplot2 <- tmp$subplot1 |>
     ),
     ## RECALC plot_id, subplot_id
     subplot_plot_id = case_when(
-      subplot_plot_no < 10 ~ paste0("000", subplot_plot_no),
-      subplot_plot_no < 100 ~ paste0("00", subplot_plot_no),
-      subplot_plot_no < 1000 ~ paste0("0", subplot_plot_no),
+      subplot_plot_no < 10 ~ paste0("00", subplot_plot_no),
+      subplot_plot_no < 100 ~ paste0("0", subplot_plot_no),
       TRUE ~ as.character(subplot_plot_no)
     ),
     subplot_id = paste0(subplot_plot_id, subplot_no)

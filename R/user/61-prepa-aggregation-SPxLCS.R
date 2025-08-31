@@ -24,7 +24,7 @@ ph1_data <- anci$ceo |>
   left_join(tmp$ceo_fid, by = join_by(ph1_plot_no)) |>
   mutate(ph1_subpop_no = if_else(ph1_prov_no %in% 3:8, 1, 2)) |>
   left_join(tmp$ph1_lc_class, by = join_by(ph1_lc_no)) |>
-  select(ph1_plot_no, plot_id = ph2_plot_no, subpop = ph1_subpop_no, stratum = ph1_stratum_no, ph1_lc_no) |>
+  select(ph1_plot_no, plot_id = ph2_plot_no, subpop = ph1_subpop_no, stratum = ph1_stratum_no, ph1_lc_no, ph1_prov_no, ph1_prov_name) |>
   arrange(ph1_plot_no)
 
 
