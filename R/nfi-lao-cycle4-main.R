@@ -28,7 +28,6 @@ source(here("R/setup/paths.R"))
 source(here("R/setup/sampling.R"))
 source(here("R/setup/load-anci.R"))
 
-
 ## + Load NFI data, prepare from raw table(s) if needed ####
 source(here("R/setup/get-data.R"))
 
@@ -97,7 +96,7 @@ source(here("R/user/50-save-tables.R"))
 
 source(here("R/user/61-prepa-aggregation-SPxLCS.R"))
 source(here("R/user/71a-aggregate-SPxLCS-nosubpop.R"))
-
+source(here("R/user/71b-aggregate-SPxLCS-ERPA.R"))
 
 ##
 ## Make report outputs ####

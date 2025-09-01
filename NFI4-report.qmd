@@ -100,7 +100,7 @@ Different sub-populations were defined: no sub-population, (1) ERPA provinces an
 
 ## Results {.unnumbered}
 
-The Phase 1 one this inventory cycle was carried out from XX to XX and consisted of the interpretation of `r format(nrow(val$nplot_ph1), big.mark = ",")` plots on a 6 x 6 km grid. Nearly half the plots were natural forest, the rest mostly shared between non-forest and regeneration, and very plots were found on plantations areas (@tbl-ph1).
+The Phase 1 one this inventory cycle was carried out from XX to XX and consisted of the interpretation of `r format(val$nplot_ph1, big.mark = ",")` plots on a 6 x 6 km grid. Nearly half the plots were natural forest, the rest mostly shared between non-forest and regeneration, and very plots were found on plantations areas (@tbl-ph1).
 
 ```{r}
 #| echo: false
@@ -135,15 +135,23 @@ knitr::kable(tab$entity, format.args = list(big.mark = ','))
 
 ```
 
-The main result of the analysis were the biomass of different pools (live trees aboveground, live trees belowground, sapling aboveground, deadwood, stumps and lying dead wood) in ton of biomass per ha and the average total carbon of all domains (in ton C per ha). The total carbon is presented in @tbl-carbon and the other results, including per province estimations can be found in the report or its annexes.
+The main result of the analysis were the biomass of different pools (live trees aboveground, live trees belowground, sapling aboveground, deadwood, stumps and lying dead wood) in ton of biomass per ha and the average total carbon of all domains (in ton C per ha). The total carbon is presented in @tbl-carbon1 and @tbl-carbon2 and the other results, including per province estimations can be found in the report or its annexes.
 
 ```{r}
 #| echo: false
-#| label: tbl-carbon
-#| tbl-cap: "Total carbon stock per land cover class in tC/ha."
+#| label: tbl-carbon1
+#| tbl-cap: "Total carbon stock per land cover class in tC/ha, no subpopulation."
 
-knitr::kable(tab$carbon, format.args = list(big.mark = ","))
+knitr::kable(tab$carbon1, format.args = list(big.mark = ","))
 
+```
+
+```{r}
+#| echo: false
+#| label: tbl-carbon2
+#| tbl-cap: "Total carbon stock per land cover class in tC/ha, ERPA subpopulation."
+
+knitr::kable(tab$carbon1, format.args = list(big.mark = ","))
 ```
 
 # Introduction
@@ -417,10 +425,8 @@ In case there is no subpopulation, step 3 gives the totals.
 For an attribute $y_{ij,d}$ of plot $i$, subplot $j$ in domain $d$ the formula is
 
 $$
-y_{i,d} = \sum_j \delta_j \times y_{i,j,d}
+y_{i,d} = \sum_j y_{i,j,d}
 $$
-
-with $\delta_j$ = 1 with the subplot $j$ is accessible and $\delta_j$ = 0 when not accessible.
 
 For area attributes, the area is considered 0 when not accessible. The aggregation of measurement area $x_{i,j,d}$ for a domain $d$, plot $i$ and subplot $j$ and the total plot measurement $a_{i,j}$, regardless of domain are therefore:
 
@@ -475,6 +481,12 @@ knitr::kable(guidex$plotsum, format.args = list(big.mark = ','))
 This led to the 'plot-summary' table in the results workbook. Each row of the 'plot-summary' table is a partial plot with unique combination of plot ID and domain.
 
 #### Partial plots to subpopulation and stratum
+
+Overall formula:
+
+$$
+R_d = \frac{Y_d}{X_d}
+$$
 
 # Results
 

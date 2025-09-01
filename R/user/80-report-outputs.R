@@ -90,7 +90,12 @@ tab$entity
 ## + Total C ####
 tmp$lc_name <- anci$lc |> select(lc_no = lu_no, `LC code` = lu_code_new, `LC name` = lu_name, `LC name Lao` = lu_name_lao)
 
-tab$carbon <- res3_SPxLCS_nosubpop_$totals_short |> 
+tab$carbon1 <- res3_SPxLCS_nosubpop_$totals_short |> 
+  filter(attr == "Ctot", lc_no <= 30 | lc_no > 160) |>
+  left_join(tmp$lc_name, by = join_by(lc_no)) |>
+  select(`LC no` = lc_no, `LC code`, `LC name`, `LC name Lao`, Ctot = Rd, `U (perc)` = Rd_mep)
+
+tab$carbon2 <- res3_SPxLCS_ERPA_$totals_short |> 
   filter(attr == "Ctot", lc_no <= 30 | lc_no > 160) |>
   left_join(tmp$lc_name, by = join_by(lc_no)) |>
   select(`LC no` = lc_no, `LC code`, `LC name`, `LC name Lao`, Ctot = Rd, `U (perc)` = Rd_mep)

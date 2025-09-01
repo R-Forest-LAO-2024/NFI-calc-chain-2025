@@ -20,11 +20,11 @@ tmp$plotgps <- anci$ceo |>
 ## + prepare function inputs ####
 vec_pools <- c("agb", "bgb", "sap_agb", "dw", "stump", "ldw", "Ctot")
 
-ph1 <- ph1_data |> mutate(subpop = 1)
-ph2 <- ph2_subplot |> mutate(subpop = 1)
+# ph1 <- ph1_data |> mutate(subpop = 1)
+# ph2 <- ph2_subplot |> mutate(subpop = 1)
 
 ## + Prepare prefix for filenames ####
-save_pre <- "res3-SPxLCS-nosubpop-"
+save_pre <- "res3-SPxLCS-ERPA-"
 
 ## Save input tables
 if (usr$save_csv) write_csv(ph1, file.path(path$res$data, paste0(save_pre, "ph1-info-", Sys.Date(), ".csv")))
