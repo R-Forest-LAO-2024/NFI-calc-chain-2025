@@ -5,8 +5,8 @@
 tree <- tree |>
   mutate(
     tree_weight = case_when(
-      tree_dbh <= 30 ~ pi * 16^2 / (pi * 8 ^2),
-      tree_dbh > 30  ~ 1 
+      tree_dbh < 30 ~ pi * 16^2 / (pi * 8 ^2),
+      tree_dbh >= 30  ~ 1 
     )
   )
 

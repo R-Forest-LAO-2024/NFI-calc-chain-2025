@@ -152,6 +152,15 @@ tab$rs <- tibble(
 # Other, Rotten 0.30 ± 0.12 (32) "Development of specific allometric equations in Lao PDR"(2017)
 
 
+## + AGB res
+tab$res3_nosubpop <- res3_SPxLCS_nosubpop_$totals_short |>
+  filter(lc_no < 30, attr == "agb") |>
+  select(-attr)
+  
+  
+
+
+
 ##
 ## FIGURES ####
 ##

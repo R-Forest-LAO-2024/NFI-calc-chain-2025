@@ -36,6 +36,7 @@ use_package(dplyr)
 use_package(sf)
 use_package(terra)
 use_package(writexl)
+use_package(kableExtra)
 
 ## Default theme for ggplot
 theme_set(theme_bw())
