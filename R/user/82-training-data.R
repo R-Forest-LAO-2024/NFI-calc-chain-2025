@@ -74,6 +74,7 @@ training_anci_plotE <- anci$plot_chaveE
 
 training_anci_ph1 <- ph1_data
 
+training_anci_ph2 <- ph2_subplot
 
 ##
 ## Save tables ####
@@ -84,5 +85,6 @@ write_csv(training_lcs    , file.path(path$res$test, "training_lcs.csv"))
 write_csv(training_tree , file.path(path$res$test, "training_tree.csv"))
 write_csv(training_anci_plotE , file.path(path$res$test, "training_anci_plotE.csv"))
 write_csv(training_anci_ph1 , file.path(path$res$test, "training_anci_phase1.csv"))
+write_csv(training_anci_ph2 , file.path(path$res$test, "training_anci_phase2.csv"))
 
 
