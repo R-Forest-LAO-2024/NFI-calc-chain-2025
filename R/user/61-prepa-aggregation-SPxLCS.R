@@ -47,17 +47,22 @@ tmp$ph1_info <- ph1_data |>
   left_join(tmp$shifted_lc, by = join_by(plot_id)) |>
   mutate(
     ph1_lc_no_ceo = ph1_lc_no,
-    ph1_lc_no = if_else(!is.na(ph1_lc_no_shifted), ph1_lc_no_shifted, ph1_lc_no_ceo)
+    ph1_lc_no = if_else(!is.na(ph1_lc_no_shifted), ph1_lc_no_shifted, ph1_lc_no_ceo),
+    ph1_lc
   ) |>
   left_join(tmp$ph1_lc_class, by = join_by(ph1_lc_no)) |>
-  select(plot_id, subpop, stratum = ph1_stratum_no)
+  select(plot_id, subpop, stratum = ph1_stratum_no, ph1_lc_no, ph1_lc_no_ceo)
+
+table(tmp$ph1_info$stratum, tmp$ph1_info$ph1_lc_no)
+table(tmp$ph1_info$ph1_lc_no_ceo, tmp$ph1_info$ph1_lc_no)
+table(tmp$ph1_info$ph1_lc_no_ceo)
 
 tmp$sp_access <- subplot |> select(plot_id = subplot_plot_no, subplot_no, subplot_access_txt = subplot_access) 
 
 tmp$lcs_lc <- lcs_ |> select(plot_id = lcs_plot_no, subplot_no = lcs_subplot_no, lcs_no, lc_no_field = lcs_lu_class_no)
 
 tmp$ftm_lc <- anci$ceo_nfi_id |>
-  left_join(anci$ceo_nfi_id_all, b = join_by(ORIG_FID == pl_orig_fid, ID)) |>
+  left_join(anci$ceo_nfi_id_all, by = join_by(ORIG_FID == pl_orig_fid, ID)) |>
   select(plot_id = plotid_all, subplot_no = Plot, lc_no_ftm = FTM2022) |>
   mutate(
     lc_no_ftm = case_when(
@@ -83,8 +88,19 @@ ph2_subplot <- expand_grid(
   left_join(tmp$lcs_lc, by = join_by(plot_id, subplot_no, lcs_no)) |>
   left_join(tmp$ftm_lc, by = join_by(plot_id, subplot_no)) |>
   mutate(
-    lc_no = if_else(!is.na(lc_no_field), lc_no_field, lc_no_ftm),
-    lc_no_origin = if_else(!is.na(lc_no_field), "field", "FTM2022"),
+    #lc_no = if_else(!is.na(lc_no_field), lc_no_field, lc_no_ftm),
+    #lc_no_origin = if_else(!is.na(lc_no_field), "field", "FTM2022"),
+    ## TESTING SOLVING STRATA ISSUE
+    lc_no = case_when(
+      !is.na(lc_no_field) ~ lc_no_field,
+      !is.na(ph1_lc_no) ~ ph1_lc_no,
+      TRUE ~ lc_no_ftm
+    ),
+    lc_no_origin = case_when(
+      !is.na(lc_no_field) ~ "field",
+      !is.na(ph1_lc_no) ~ "ph1",
+      TRUE ~ "FTM2022"
+    ),
     access = case_when(
       plot_id <= 636 & subplot_access_txt == "accessible" ~ TRUE,
       plot_id <= 636 & subplot_access_txt != "accessible" ~ FALSE,
@@ -93,16 +109,19 @@ ph2_subplot <- expand_grid(
       stratum == 4 ~ TRUE,
       TRUE ~ NA
     ),
-    # sp_area = (pi*16^2 / 5) / 10000
+    #sp_area = (pi*16^2 / 5) / 10000
     sp_area = if_else(lcs_no == 1, 12^2, (pi*16^2 - 12^2)/4) / 10000
   ) |>
-  select(plot_id, subplot_id, subpop, stratum, lc_no, subplot_access_txt, access, sp_area, subplot_no, lcs_no) |>
+  select(plot_id, subplot_id, subpop, stratum, lc_no, lc_no_origin, lc_no_field, ph1_lc_no, subplot_access_txt, access, sp_area, subplot_no, lcs_no) |>
   arrange(plot_id)
 
 ## Checks
 table(ph2_subplot$lc_no, useNA = "ifany")
 table(ph2_subplot$access, useNA = "ifany")
+table(ph2_subplot$lc_no_origin, ph2_subplot$stratum, ph2_subplot$lc_no, useNA = "ifany")
+table(ph2_subplot$ph1_lc_no, ph2_subplot$lc_no, useNA = "ifany")
 
+tt <- ph2_subplot |> filter(is.na(lc_no_field), access)
 
 
 ## 

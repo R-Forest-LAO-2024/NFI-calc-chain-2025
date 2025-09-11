@@ -24,7 +24,7 @@ ph1 <- ph1_data |> mutate(subpop = 1)
 ph2 <- ph2_subplot |> mutate(subpop = 1)
 
 ## + Prepare prefix for filenames ####
-save_pre <- "res3-SPxLCS-nosubpop-"
+save_pre <- "res3-SPxLCS-nosubpop-strata-solve-"
 
 ## Save input tables
 if (usr$save_csv) write_csv(ph1, file.path(path$res$data, paste0(save_pre, "ph1-info-", Sys.Date(), ".csv")))
