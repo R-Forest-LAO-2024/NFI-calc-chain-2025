@@ -39,7 +39,7 @@ ph1_data <- anci$ceo |>
 ## For ratio estimator subplot is in practice subplot x land cover section (5 lcs per subplot, 20 per plot)
 
 ## Prepare data to link
-tmp$shifted_lc <- anci$shifted_spA |> select(plot_id = plot_code_, ph1_lc_no_shifted = CEO_Phase_I)
+tmp$shifted_lc <- anci$shifted_spA |> select(plot_id = plot_code_, ph1_lc_no_shifted = CEO_Phase_I, ORIG_FID)
 
 tmp$ph1_info <- ph1_data |>
   filter(!is.na(plot_id)) |>
@@ -47,15 +47,14 @@ tmp$ph1_info <- ph1_data |>
   left_join(tmp$shifted_lc, by = join_by(plot_id)) |>
   mutate(
     ph1_lc_no_ceo = ph1_lc_no,
-    ph1_lc_no = if_else(!is.na(ph1_lc_no_shifted), ph1_lc_no_shifted, ph1_lc_no_ceo),
-    ph1_lc
+    ph1_lc_no = if_else(!is.na(ph1_lc_no_shifted), ph1_lc_no_shifted, ph1_lc_no_ceo)
   ) |>
   left_join(tmp$ph1_lc_class, by = join_by(ph1_lc_no)) |>
   select(plot_id, subpop, stratum = ph1_stratum_no, ph1_lc_no, ph1_lc_no_ceo)
 
-table(tmp$ph1_info$stratum, tmp$ph1_info$ph1_lc_no)
-table(tmp$ph1_info$ph1_lc_no_ceo, tmp$ph1_info$ph1_lc_no)
-table(tmp$ph1_info$ph1_lc_no_ceo)
+# table(tmp$ph1_info$stratum, tmp$ph1_info$ph1_lc_no)
+# table(tmp$ph1_info$ph1_lc_no_ceo, tmp$ph1_info$ph1_lc_no)
+# table(tmp$ph1_info$ph1_lc_no_ceo)
 
 tmp$sp_access <- subplot |> select(plot_id = subplot_plot_no, subplot_no, subplot_access_txt = subplot_access) 
 
@@ -88,19 +87,20 @@ ph2_subplot <- expand_grid(
   left_join(tmp$lcs_lc, by = join_by(plot_id, subplot_no, lcs_no)) |>
   left_join(tmp$ftm_lc, by = join_by(plot_id, subplot_no)) |>
   mutate(
-    #lc_no = if_else(!is.na(lc_no_field), lc_no_field, lc_no_ftm),
-    #lc_no_origin = if_else(!is.na(lc_no_field), "field", "FTM2022"),
-    ## TESTING SOLVING STRATA ISSUE
-    lc_no = case_when(
-      !is.na(lc_no_field) ~ lc_no_field,
-      !is.na(ph1_lc_no) ~ ph1_lc_no,
-      TRUE ~ lc_no_ftm
-    ),
-    lc_no_origin = case_when(
-      !is.na(lc_no_field) ~ "field",
-      !is.na(ph1_lc_no) ~ "ph1",
-      TRUE ~ "FTM2022"
-    ),
+    ## FILLING IN WITH FTM -- WRONG
+    lc_no = if_else(!is.na(lc_no_field), lc_no_field, lc_no_ftm),
+    lc_no_origin = if_else(!is.na(lc_no_field), "field", "FTM2022"),
+    ## ASSIGNING PH1 to non-visited 
+    # lc_no = case_when(
+    #   !is.na(lc_no_field) ~ lc_no_field,
+    #   !is.na(ph1_lc_no) ~ ph1_lc_no,
+    #   TRUE ~ lc_no_ftm
+    # ),
+    # lc_no_origin = case_when(
+    #   !is.na(lc_no_field) ~ "field",
+    #   !is.na(ph1_lc_no) ~ "ph1",
+    #   TRUE ~ "FTM2022"
+    # ),
     access = case_when(
       plot_id <= 636 & subplot_access_txt == "accessible" ~ TRUE,
       plot_id <= 636 & subplot_access_txt != "accessible" ~ FALSE,
@@ -118,8 +118,9 @@ ph2_subplot <- expand_grid(
 ## Checks
 table(ph2_subplot$lc_no, useNA = "ifany")
 table(ph2_subplot$access, useNA = "ifany")
-table(ph2_subplot$lc_no_origin, ph2_subplot$stratum, ph2_subplot$lc_no, useNA = "ifany")
 table(ph2_subplot$ph1_lc_no, ph2_subplot$lc_no, useNA = "ifany")
+table(ph2_subplot$stratum, ph2_subplot$lc_no, useNA = "ifany")
+table(ph2_subplot$lc_no_origin, ph2_subplot$stratum, ph2_subplot$lc_no, useNA = "ifany")
 
 tt <- ph2_subplot |> filter(is.na(lc_no_field), access)
 

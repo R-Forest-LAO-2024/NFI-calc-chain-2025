@@ -20,11 +20,11 @@ tmp$plotgps <- anci$ceo |>
 ## + prepare function inputs ####
 vec_pools <- c("agb", "bgb", "sap_agb", "dw", "stump", "ldw", "Ctot")
 
-# ph1 <- ph1_data |> mutate(subpop = 1)
-# ph2 <- ph2_subplot |> mutate(subpop = 1)
+ph1 <- ph1_data
+ph2 <- ph2_subplot
 
 ## + Prepare prefix for filenames ####
-save_pre <- "res3-SPxLCS-ERPA-"
+save_pre <- "res3-SPxLCS-ERPA-consist-"
 
 ## Save input tables
 if (usr$save_csv) write_csv(ph1, file.path(path$res$data, paste0(save_pre, "ph1-info-", Sys.Date(), ".csv")))
@@ -151,8 +151,10 @@ sf_plot <- res_list$plot_final |>
   mutate(x = plot_lon, y = plot_lat) |>
   st_as_sf(coords = c("x", "y"), crs = 4326)
 
-st_write(sf_plot, file.path(path$res$data, str_replace_all(paste0(save_pre, "plot-final-", Sys.Date(), ".kml"), "-", "_")), delete_dsn = TRUE, quiet = T)
-st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-final-", Sys.Date(), ".geojson")), delete_dsn = TRUE, quiet = T)
+if (usr$save_csv) {
+  st_write(sf_plot, file.path(path$res$data, str_replace_all(paste0(save_pre, "plot-final-", Sys.Date(), ".kml"), "-", "_")), delete_dsn = TRUE, quiet = T)
+  st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-final-", Sys.Date(), ".geojson")), delete_dsn = TRUE, quiet = T)
+}
 
 ## + Keep results in new object ####
 assign(str_replace_all(save_pre, "-", "_"), res_list)

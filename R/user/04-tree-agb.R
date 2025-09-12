@@ -4,9 +4,9 @@ table(tree$lu_name, tree$lu_code_new)
 tree <- tree |>
   mutate(
     tree_agb_final = case_when(
-      lu_code_new == "EG"    ~ 0.3112 * tree_dbh^2.2331,
+      lu_code_new == "EG"    ~ 0.3112 * tree_dbh^2.2331, #1.045282 * 0.3112 * tree_dbh^2.2331,
       lu_code_new == "MD"    ~ 0.523081 * tree_dbh^2,
-      lu_code_new == "DD"    ~ 0.2137 * tree_dbh^2.2575,
+      lu_code_new == "DD"    ~ 0.2137 * tree_dbh^2.2575, #1.035969 * 0.2137 * tree_dbh^2.2575,
       lu_code_new == "CF"    ~ 0.1277 * tree_dbh^2.3944,
       lu_code_new == "MCB"   ~ 0.1277 * tree_dbh^2.3944,
       lu_code_new == "P_AC"  ~ 0.1173 * tree_dbh^2.454,
