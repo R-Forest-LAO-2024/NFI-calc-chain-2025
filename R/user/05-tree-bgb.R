@@ -2,7 +2,7 @@
 ## Tree BGB require first subplot level tree agb estimate to assign the AGB threshold 
 tmp_subplot_agb <- tree |>
   group_by(subplot_plot_no, subplot_no) |>
-  summarise(subplot_agb = round(sum(tree_agb_final * tree_weight / 5)/ 1000), .groups = "drop")
+  summarise(subplot_agb = sum(tree_agb_final * tree_weight_spha)/ 1000, .groups = "drop")
 
 ## Check
 # tmp_subplot_agb |>
@@ -28,7 +28,7 @@ tree <- tree |>
       lu_code_new != "CF" & subplot_agb >= 125 ~ 0.24,
       TRUE ~ NA_real_
     ),
-    tree_bgb = round(tree_agb_final * tree_rs, 3),
+    tree_bgb = tree_agb_final * tree_rs,
   )
 
 rm(tmp_subplot_agb)

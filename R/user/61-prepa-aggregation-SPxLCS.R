@@ -60,15 +60,15 @@ tmp$sp_access <- subplot |> select(plot_id = subplot_plot_no, subplot_no, subplo
 
 tmp$lcs_lc <- lcs_ |> select(plot_id = lcs_plot_no, subplot_no = lcs_subplot_no, lcs_no, lc_no_field = lcs_lu_class_no)
 
-tmp$ftm_lc <- anci$ceo_nfi_id |>
-  left_join(anci$ceo_nfi_id_all, by = join_by(ORIG_FID == pl_orig_fid, ID)) |>
-  select(plot_id = plotid_all, subplot_no = Plot, lc_no_ftm = FTM2022) |>
-  mutate(
-    lc_no_ftm = case_when(
-      lc_no_ftm == 16 ~ 169,
-      TRUE ~ lc_no_ftm
-    )
-  )
+# tmp$ftm_lc <- anci$ceo_nfi_id |>
+#   left_join(anci$ceo_nfi_id_all, by = join_by(ORIG_FID == pl_orig_fid, ID)) |>
+#   select(plot_id = plotid_all, subplot_no = Plot, lc_no_ftm = FTM2022) |>
+#   mutate(
+#     lc_no_ftm = case_when(
+#       lc_no_ftm == 16 ~ 169,
+#       TRUE ~ lc_no_ftm
+#     )
+#   )
 
 tmp$vec_ph2 <- ph1_data |> filter(!is.na(plot_id)) |> pull(plot_id)
 
@@ -85,22 +85,23 @@ ph2_subplot <- expand_grid(
   left_join(tmp$ph1_info, by = join_by(plot_id)) |>
   left_join(tmp$sp_access, by = join_by(plot_id, subplot_no)) |>
   left_join(tmp$lcs_lc, by = join_by(plot_id, subplot_no, lcs_no)) |>
-  left_join(tmp$ftm_lc, by = join_by(plot_id, subplot_no)) |>
+  #left_join(tmp$ftm_lc, by = join_by(plot_id, subplot_no)) |>
   mutate(
     ## FILLING IN WITH FTM -- WRONG
-    lc_no = if_else(!is.na(lc_no_field), lc_no_field, lc_no_ftm),
-    lc_no_origin = if_else(!is.na(lc_no_field), "field", "FTM2022"),
+    # lc_no = if_else(!is.na(lc_no_field), lc_no_field, lc_no_ftm),
+    # lc_no_origin = if_else(!is.na(lc_no_field), "field", "FTM2022"),
     ## ASSIGNING PH1 to non-visited 
-    # lc_no = case_when(
-    #   !is.na(lc_no_field) ~ lc_no_field,
-    #   !is.na(ph1_lc_no) ~ ph1_lc_no,
-    #   TRUE ~ lc_no_ftm
-    # ),
-    # lc_no_origin = case_when(
-    #   !is.na(lc_no_field) ~ "field",
-    #   !is.na(ph1_lc_no) ~ "ph1",
-    #   TRUE ~ "FTM2022"
-    # ),
+    lc_no = case_when(
+      !is.na(lc_no_field) ~ lc_no_field,
+      !is.na(ph1_lc_no) ~ ph1_lc_no,
+      TRUE ~ NA_integer_
+    ),
+    lc_no_origin = case_when(
+      !is.na(lc_no_field) ~ "field",
+      !is.na(ph1_lc_no) ~ "ph1",
+      TRUE ~ NA_character_
+    ),
+    lc_no = if_else(lc_no == 16, 169, lc_no),
     access = case_when(
       plot_id <= 636 & subplot_access_txt == "accessible" ~ TRUE,
       plot_id <= 636 & subplot_access_txt != "accessible" ~ FALSE,
@@ -120,7 +121,7 @@ table(ph2_subplot$lc_no, useNA = "ifany")
 table(ph2_subplot$access, useNA = "ifany")
 table(ph2_subplot$ph1_lc_no, ph2_subplot$lc_no, useNA = "ifany")
 table(ph2_subplot$stratum, ph2_subplot$lc_no, useNA = "ifany")
-table(ph2_subplot$lc_no_origin, ph2_subplot$stratum, ph2_subplot$lc_no, useNA = "ifany")
+table(ph2_subplot$lc_no_origin, ph2_subplot$stratum, useNA = "ifany")
 
 tt <- ph2_subplot |> filter(is.na(lc_no_field), access)
 

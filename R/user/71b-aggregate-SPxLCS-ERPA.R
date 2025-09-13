@@ -30,7 +30,11 @@ save_pre <- "res3-SPxLCS-ERPA-consist-"
 if (usr$save_csv) write_csv(ph1, file.path(path$res$data, paste0(save_pre, "ph1-info-", Sys.Date(), ".csv")))
 if (usr$save_csv) write_csv(ph2, file.path(path$res$data, paste0(save_pre, "ph2-subplot-allvars-", Sys.Date(), ".csv")))
 
-
+## TESTS
+tt <- ph2_subplot |> filter(plot_id == 57)
+tt <- tree |> 
+  filter(subplot_plot_no == 179, subplot_no == "C", tree_lcs_no == 4) |>
+  select(-starts_with("lcs_"), - starts_with("lu_"))
 ##
 ## Aggregate subplots to totals ####
 ##
@@ -72,7 +76,7 @@ tab_names <- unique(names(res))
 tab_names2 <- tab_names[!tab_names %in% "plot"]
 
 res_list <- map(tab_names2, function(x){
-  res[str_detect(names(res), x)] |> list_rbind()
+  res[str_detect(names(res), x)] |> list_rbind() |> filter(lc_no <= 22 | lc_no >= 161)
 })
 
 names(res_list) <- tab_names2
@@ -137,7 +141,7 @@ plot_unique <- tmp$plot_unique_agb |>
 
 ## + Make XLSX table ####
 res_list$plot_summary <- plot_summary
-res_list$plot_final  <- plot_final
+res_list$plot_final   <- plot_final
 res_list$plot_unique  <- plot_unique
 res_list$ph1_data     <- ph1_data
 res_list$ph2_subplot  <- ph2_subplot

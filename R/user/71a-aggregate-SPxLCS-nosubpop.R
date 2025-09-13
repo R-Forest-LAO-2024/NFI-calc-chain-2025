@@ -24,7 +24,7 @@ ph1 <- ph1_data |> mutate(subpop = 1)
 ph2 <- ph2_subplot |> mutate(subpop = 1)
 
 ## + Prepare prefix for filenames ####
-save_pre <- "res3-SPxLCS-nosubpop-solWeigthAgbPh1lc-"
+save_pre <- "res3-SPxLCS-nosubpop-"
 
 ## Save input tables
 if (usr$save_csv) write_csv(ph1, file.path(path$res$data, paste0(save_pre, "ph1-info-", Sys.Date(), ".csv")))
@@ -72,7 +72,7 @@ tab_names <- unique(names(res))
 tab_names2 <- tab_names[!tab_names %in% "plot"]
 
 res_list <- map(tab_names2, function(x){
-  res[str_detect(names(res), x)] |> list_rbind()
+  res[str_detect(names(res), x)] |> list_rbind() |> filter(lc_no <= 22 | lc_no >= 161)
 })
 
 names(res_list) <- tab_names2
@@ -151,8 +151,10 @@ sf_plot <- res_list$plot_final |>
   mutate(x = plot_lon, y = plot_lat) |>
   st_as_sf(coords = c("x", "y"), crs = 4326)
 
-st_write(sf_plot, file.path(path$res$data, str_replace_all(paste0(save_pre, "plot-final-", Sys.Date(), ".kml"), "-", "_")), delete_dsn = TRUE, quiet = T)
-st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-final-", Sys.Date(), ".geojson")), delete_dsn = TRUE, quiet = T)
+if (usr$save_csv) {
+  st_write(sf_plot, file.path(path$res$data, str_replace_all(paste0(save_pre, "plot-final-", Sys.Date(), ".kml"), "-", "_")), delete_dsn = TRUE, quiet = T)
+  st_write(sf_plot, file.path(path$res$data, paste0(save_pre, "plot-final-", Sys.Date(), ".geojson")), delete_dsn = TRUE, quiet = T)
+}
 
 ## + Keep results in new object ####
 assign(str_replace_all(save_pre, "-", "_"), res_list)
@@ -162,47 +164,23 @@ assign(str_replace_all(save_pre, "-", "_"), res_list)
 # rm(tmp, plot_summary, plot_final, plot_unique, res, tab_names, tab_names2)
 
 
-## + Combine province results
-# res3_prov <- map(c("agb", "bgb", "sap_agb", "dw", "stump", "ldw", "Ctot"), function(x){
-#   
-#   tt <- nfi_aggregate3(
-#     .ph1_df = ph1_data, 
-#     .ph2_sp = ph2_sp_all, 
-#     .class_d = lc_no, 
-#     .attr_y = !!sym(x), 
-#     .attr_x = sp_area, 
-#     .aoi_area = 23680000
-#   )
-#   
-#   tt$totals_short |> 
-#     filter(lc_no < 30 | lc_no > 160) |>
-#     left_join(tmp_lc, by = join_by(lc_no)) |>
-#     select(lc_no, lc_code, everything())
-#   
-# }) |> list_rbind()
-# 
-# if (save_csv) write_csv(res3, file.path(path$res$data, paste0(save_pre, "allpools-", Sys.Date(),".csv")))
+## COMBINE WITH PLOT LEVEL LC SIMPLE AVERAGE
 
+tt1 <- res3_SPxLCS_nosubpop_$totals_short |>
+  filter(attr == "agb") |>
+  mutate(type = "double sampling") |>
+  select(type, lc_no, agb = Rd, agb_U = Rd_mep)
+  
 
+tt2 <- ftype_agb |>
+  mutate(type = "simple") |>
+  select(type, lc_no, agb = ftype_agb, agb_U = ftype_agb_U)
 
-# ## NOT NEEDED: showcasing less abstraction
-# ## + Combine all totals simplified
-# res3_simple <- map(vec_pools, function(x){
-#   
-#   tt <- nfi_aggregate3(
-#     .ph1_df = ph1_data, 
-#     .ph2_sp = ph2_sp_all, 
-#     .class_d = lc_no, 
-#     .attr_y = !!sym(x), 
-#     .attr_x = sp_area, 
-#     .aoi_area = 23680000
-#   )
-#   
-#   tt$totals_short |>
-#     filter(lc_no < 30 | lc_no > 160) |>
-#     left_join(tmp_lc, by = join_by(lc_no)) |>
-#     select(lc_no, lc_code, everything())
-#   
-# }) |> list_rbind()
-# 
-# if (save_csv) write_csv(res3_simple, file.path(path$res$data, paste0(save_pre, "simple-allpools-", Sys.Date(),".csv")))
+bind_rows(tt1, tt2) |>
+  ggplot(aes(x = as.character(lc_no), y = agb)) +
+  geom_col(aes(fill = type), col = "grey30", position = position_dodge()) +
+  geom_errorbar(aes(ymin = agb * (1 - agb_U/100), ymax = agb * (1 + agb_U/100), group = type), position = position_dodge()) +
+  theme(legend.position = "bottom") +
+  ylim(0, 500)
+  
+  
