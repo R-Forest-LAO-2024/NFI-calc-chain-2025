@@ -64,11 +64,11 @@ source("R/nfi-lao-cycle4-main.R")
 
 Lao implemented three cycles of national forest inventories (NFIs) between XX and XX. A major revision of its design took place in 2023 and 2024 with collaborative support from GIZ and the Goettingen University on one side, and Silvacarbon and the US Forest service on the other side.
 
-This collaboration led to a improved two-phases systematic sampling design. The initial phase consisted of the visual observation of all the plot centers on a 6 by 6 km grid, followed by a second phase were all the plots on a larger 12 x 18 km grid were marked for field measurement (phase 2). The Phase 2 plots were designed as clustered-plots composed by four 16 m radius subplots on a L shape, numbered A, B, C (south to north) and D (east of subplot A) and separated by 60 meters center to center.
+This collaboration led to a improved two-phases systematic sampling design. The initial phase consisted of the visual observation of all the plot centers on a 6 by 6 km grid, followed by a second phase were all the plots on a larger 12 x 18 km grid were marked for field measurement (phase II). The phase II plots were designed as clustered-plots composed by four 16 m radius subplots on a L shape, numbered A, B, C (south to north) and D (east of subplot A) and separated by 60 meters center to center.
 
 Two major changes impacted the design during implementation:
 
-1.  Not all initial phase 2 plots were visited. This forced a change in design from systematic to stratified, in order to account for the fact that plots in different strata had different probability of selection.
+1.  Not all initial phase II plots were visited. This forced a change in design from systematic to stratified, in order to account for the fact that plots in different strata had different probability of selection.
 
 2.  Since land cover was recorded for each subplot and in practice on 5 observation points on each subplot (20 land cover section per plot), a ratio estimator approach was necessary to account for unequal plot area at the domain level (in this case domain = land cover type).
 
@@ -94,29 +94,29 @@ The data analysis objective was to calculate entity level variables, such as tre
 
     -   sub-population level to totals for the all domains.
 
-The strata were defined as (1) natural forest, (2) forest plantations, (3) regenerating vegetation and (4) non-forest, and assigned at the plot level from the Phase 1 observations.
+The strata were defined as (1) natural forest, (2) forest plantations, (3) regenerating vegetation and (4) non-forest, and assigned at the plot level from the phase I observations.
 
 Different sub-populations were defined: no sub-population, (1) ERPA provinces and (2) all other provinces in two different sub-populations, or each province is a different sub-population. When sub-populations were defined, the sub-population level tables provided the ratio estimates for all sub-populations with their confidence intervals.
 
-## Results {.unnumbered}
+## Key implementation numbers {.unnumbered}
 
-The Phase 1 one this inventory cycle was carried out from XX to XX and consisted of the interpretation of `r format(val$nplot_ph1, big.mark = ",")` plots on a 6 x 6 km grid. Nearly half the plots were natural forest, the rest mostly shared between non-forest and regeneration, and very plots were found on plantations areas (@tbl-ph1).
+The phase I one this inventory cycle was carried out from XX to XX and consisted of the interpretation of `r format(val$nplot_ph1, big.mark = ",")` plots on a 6 x 6 km grid. Nearly half the plots were natural forest, the rest mostly shared between non-forest and regeneration, and very plots were found on plantations areas (@tbl-ph1).
 
 ```{r}
 #| echo: false
 #| label: tbl-ph1
-#| tbl-cap: "Number of plots per stratum in the phase 1."
+#| tbl-cap: "Number of plots per stratum in the phase I."
 
 knitr::kable(tab$Nh, format.args = list(big.mark = ','))
 
 ```
 
-Out of all the phase 1 plots, a systematic subset of `r format(val$nplot_ph2, big.mark = ",")` plots were selected on a 12 x 18 km grid for the NFI phase 2: the field measurement campaign. From these plots `r format(val$nplot_visit, big.mark = ",")` were visited and `r format(val$nplot_access, big.mark = ",")` were at least partially accessible (@tbl-ph2). The field work phase took place from XX to XX. A portion of these plots were visited a second time for QAQC procedures. See @sec-annex-qaqc in annex for more details on QAQC results.
+Out of all the phase I plots, a systematic subset of `r format(val$nplot_ph2, big.mark = ",")` plots were selected on a 12 x 18 km grid for the NFI phase II: the field measurement campaign. From these plots `r format(val$nplot_visit, big.mark = ",")` were visited and `r format(val$nplot_access, big.mark = ",")` were at least partially accessible (@tbl-ph2). The field work phase took place from XX to XX. A portion of these plots were visited a second time for QAQC procedures. See @sec-annex-qaqc in annex for more details on QAQC results.
 
 ```{r}
 #| echo: false
 #| label: tbl-ph2
-#| tbl-cap: "Number of plots in the NFI Phase 2 planned, visited and accessed."
+#| tbl-cap: "Number of plots in the NFI phase II planned, visited and accessed."
 
 knitr::kable(tab$access, format.args = list(big.mark = ','))
 
@@ -134,6 +134,8 @@ In total, `r format(nrow(tree), big.mark = ",")` trees, `r format(nrow(dw), big.
 knitr::kable(tab$entity, format.args = list(big.mark = ','))
 
 ```
+
+## Core NFI result: forest carbon {.unnumbered}
 
 The main result of the analysis were the biomass of different pools (live trees aboveground, live trees belowground, sapling aboveground, deadwood, stumps and lying dead wood) in ton of biomass per ha and the average total carbon of all domains (in ton C per ha). The total carbon is presented in @tbl-carbon1 and @tbl-carbon2 and the other results, including per province estimations can be found in the report or its annexes.
 
@@ -178,11 +180,11 @@ TBD
 
 TBD
 
-### Phase 1 sampling
+### phase I sampling
 
 TBD
 
-### Phase 2 sampling
+### phase II sampling
 
 TBD
 
@@ -204,7 +206,7 @@ Rstudio allows to request passwords, without storing them to maintain security, 
 
 Nevertheless, it was decided that the data would be downloaded manually by FIPD and shared with experts and analysts. In this case, the data was stored in the following directory inside the R project: *'data/data-source/'*, and user inputs were set in Code @lst-usrinput.
 
-Notice in Code @lst-usrinput that the CSV file of the Phase 1 data was placed in the ancillary data folder: *'data/data-ancillary/'*, and its file name added to the user inputs as well.
+Notice in Code @lst-usrinput that the CSV file of the phase I data was placed in the ancillary data folder: *'data/data-ancillary/'*, and its file name added to the user inputs as well.
 
 The data preparation was automated and part of the setup group of scripts in *'R/setup/'*. In particular *'get-data.R'* and *'load-anci.R'* took care of loading the raw data and splitting the master CSV file into entity level tables: subplot, tree, dw, sapling and ldw, and split out the QAQC re-measurements into separate tables. At this stage, all the entity tables were grouped in the R global Environment into an object (specifically a list) called: `data-prep`.
 
@@ -339,24 +341,36 @@ TBD
 
 ### Lying deadwood biomass
 
+TBD
+
 ## Aggregation
 
 ### Guiding example
 
-To illustrate the formulas and step-by-step aggregation of the NFI data from entities to domain totals, a subset of 5 phase 2 plots (2 DD, 2 RV, 1 mix) and 20 phase 1 plots (15 RV, 5 DD) was prepared (see @exm-guidex-intro)
+This section introduces the mathematical formulas used to aggregate the tree level data to the domain level estimates and the country level totals. Since the formulas can quite complex, a subset of 5 phase II plots and 20 phase I plots was selected to serve as a guiding example (see @exm-guidex-intro).
 
 :::: {.callout-tip appearance="simple"}
+<!-- #01 guidex intro -->
+
 ::: {#exm-guidex-intro}
 ## Introducing guiding example
 
 \linebreak
 
-To illustrate the formulas and step-by-step aggregation of the NFI data from entities to domain totals, a subset of 5 phase 2 plots (2 DD, 2 RV, 1 mix) and 20 phase 1 plots (15 RV, 5 DD) was prepared (see @tbl-guidex-ph1 and @tbl-guidex-ph2init. The guiding example was also limited to live trees and AGB aggregation, but the principles are the same for other entities and attributes. All the initial tree data is presented in @sec-guidex.
+To illustrate the formulas and step-by-step aggregation of the NFI data from entities to domain totals, a subset of 5 phase II plots (3 DD, 1 RV, 1 mix) and 20 phase I plots (15 RV, 5 DD) was prepared (see @tbl-guidex-ph1 and @tbl-guidex-ph2init-10rows. The guiding example was also limited to live trees and AGB aggregation, but the principles are the same for other entities and attributes. All the initial tree data is presented in @sec-annex-guidex.
+
+The 5 phase II plots were prepared as follows:
+
+-   3 plots in Dry dipterocarp forest (land cover code DD or land cover number 13), with plot IDs: 50, 126, 128.
+
+-   1 plot in regenerating vegetation (land cover code RV or land cover number 22), with plot ID 157.
+
+-   1 plot in mix land cover, with plot ID 1 and subplots A, B and C in dry dipterocarp forest and subplot D split between dry dipterocarp forest in land cover sections D1, D4 and D5, and regenerating vegetation in land cover sections D2 and D3.
 
 ```{r}
 #| echo: false
 #| label: tbl-guidex-ph1
-#| tbl-cap: "Guiding example Phase 1 subset."
+#| tbl-cap: "Guiding example phase I subset."
 
 knitr::kable(guidex$ph1_data, format.args = list(big.mark = ','))
 ```
@@ -364,9 +378,9 @@ knitr::kable(guidex$ph1_data, format.args = list(big.mark = ','))
 ```{r}
 #| echo: false
 #| label: tbl-guidex-ph2init
-#| tbl-cap: "Guiding example Phase 2 initial subset."
+#| tbl-cap: "Guiding example phase II initial subset."
 
-knitr::kable(guidex$ph2_init, format.args = list(big.mark = ','))
+knitr::kable(head(guidex$ph2_init), format.args = list(big.mark = ','))
 
 ```
 :::
@@ -374,11 +388,15 @@ knitr::kable(guidex$ph2_init, format.args = list(big.mark = ','))
 
 ### Aggregation to the minimal area unit
 
-In the NFI cycle 4, the minimal unit area was the subplot's land cover section, i.e. the area defined by setting equidistance between the five land cover observation points for each subplot. In the whole aggregation section, subplots, land cover or subplot x land cover were used interchangeably to refer to this minimal area unit that constitute the initial aggregation of entities to a measurement area.
+In the NFI cycle 4, the minimal unit area was the subplot's land cover section, i.e. the area defined by setting equi-distance between the five land cover observation points for each subplot.
 
-The initial `ph2_subplot` table was generated from all possible combinations of phase 2 plot numbers, subplot numbers (A, B, C or D) and land cover section (1 to 5).
+::: callout-note
+In the whole aggregation chapter, subplots equal to land cover sections and refer to this minimal area unit that constitute the initial aggregation of entities to a measurement area.
+:::
 
-Each entity table's variables were then sumed to the subplot level.
+The initial `ph2_subplot` table was generated from all possible combinations of phase II plot numbers, subplot numbers (A, B, C or D) and land cover section (1 to 5).
+
+Each entity table's variables were then summed to the subplot level.
 
 The area of each subplot $j$ of a plot $i$ was:
 
@@ -390,17 +408,27 @@ A_{i,j} =
 \end{cases}
 $$ {#eq-lcs-area}
 
+For tree, deadwood and stumps entities, the harmonized values of the different measured and calculated variables were aggregated top the subplot level as follows:
+
+$$
+X_{y,i,j} = \sum_k{X_{y,i,j,k} \times w_y}
+$$
+
+with $X$ the calculated variable (ex. biomass or basal area), $y$ the entity (tree, stump or deadwood) and $i,.j$ the plot and subplot number respectiveley.
+
 ::: {.callout-tip appearance="simple"}
+<!-- #02 guidex aggregastion to subplot -->
+
 ## Aggregating tree to subplot {#exm-aggsp}
 
-Here the tree AGB was summed to the subplot level either in R with `group_by()` and `summarise()` or in MS Excel with SUMIFS() or pivotTable. The tree aggregated data was then combined with the initial phase 1 subplot data. In R use `left_join()` from the subplot initial table to make sure all subplots are there even if there are no trees (see @tbl-guidex-ph2).
+Here the tree AGB was summed to the subplot level either in R with `group_by()` and `summarise()` or in MS Excel with SUMIFS() or pivotTable. The tree aggregated data was then combined with the initial phase I subplot data. In R use `left_join()` from the subplot initial table to make sure all subplots are there even if there are no trees (see @tbl-guidex-ph2).
 
 TIP: Replace potential NAs with 0 in AGB values, with `if_else(is.na(X), 0, X)`, X being the variable aggregated.
 
 ```{r}
 #| echo: false
 #| label: tbl-guidex-ph2
-#| tbl-cap: "Phase 2 subplot with tree AGB and area."
+#| tbl-cap: "phase II subplot with tree AGB and area."
 
 knitr::kable(guidex$ph2_subplot, format.args = list(big.mark = ','))
 ```
@@ -504,12 +532,12 @@ TBD
 
 # Annex: Data for the guiding example {#sec-guidex}
 
-To help understand the aggregation process, a subset of 20 phase 1 plots and 5 phase 2 plots were used. The phase 2 plots include 1 mixed land use plot: 18 subplots x land cover sections in Dry Dipterocarp forests (DD) and 2 subplots x land cover sections in Regenerative Vegetation (RV). The 4 other plots are pure, 3 in Dry Dipterocarp and 1 in Regenerative Vegetation. The 20 Phase 1 plots we selected to include the Phase 2 plots are respect the ratio of RV to DD, which is around 3/4 RV, 1/4 DD in the full dataset (see @tbl-ex-ph1 and @tbl-ex-tree).
+To help understand the aggregation process, a subset of 20 phase I plots and 5 phase II plots were used. The phase II plots include 1 mixed land use plot: 18 subplots x land cover sections in Dry Dipterocarp forests (DD) and 2 subplots x land cover sections in Regenerative Vegetation (RV). The 4 other plots are pure, 3 in Dry Dipterocarp and 1 in Regenerative Vegetation. The 20 phase I plots we selected to include the phase II plots are respect the ratio of RV to DD, which is around 3/4 RV, 1/4 DD in the full dataset (see @tbl-ex-ph1 and @tbl-ex-tree).
 
 ```{r}
 #| echo: false
 #| label: tbl-ex-ph1
-#| tbl-cap: "Phase 1 information for the guiding example"
+#| tbl-cap: "phase I information for the guiding example"
 
 knitr::kable(guidex$ph1_data, format.args = list(big.mark = ","))
 ```
@@ -519,7 +547,7 @@ knitr::kable(guidex$ph1_data, format.args = list(big.mark = ","))
 ```{r}
 #| echo: false
 #| label: tbl-ex-tree
-#| tbl-cap: "Phase 2 tree measurements for the guiding example"
+#| tbl-cap: "phase II tree measurements for the guiding example"
 
 knitr::kable(guidex$tree_init, format.args = list(big.mark = ","))
 
