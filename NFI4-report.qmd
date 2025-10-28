@@ -32,7 +32,7 @@ format:
     colorlinks: true
 number-sections: true
 toc: true
-toc-depth: 2
+toc-depth: 3
 editor: visual
 ---
 
@@ -345,7 +345,7 @@ TBD
 
 ## Aggregation
 
-### Guiding example
+### Introduction to the guiding example
 
 This section introduces the mathematical formulas used to aggregate the tree level data to the domain level estimates and the country level totals. Since the formulas can quite complex, a subset of 5 phase II plots and 20 phase I plots was selected to serve as a guiding example (see @exm-guidex-intro).
 
@@ -377,7 +377,7 @@ knitr::kable(guidex$ph1_data, format.args = list(big.mark = ','))
 
 ```{r}
 #| echo: false
-#| label: tbl-guidex-ph2init
+#| label: tbl-guidex-ph2init-10rows
 #| tbl-cap: "Guiding example phase II initial subset."
 
 knitr::kable(head(guidex$ph2_init), format.args = list(big.mark = ','))
@@ -394,27 +394,27 @@ In the NFI cycle 4, the minimal unit area was the subplot's land cover section, 
 In the whole aggregation chapter, subplots equal to land cover sections and refer to this minimal area unit that constitute the initial aggregation of entities to a measurement area.
 :::
 
-The initial `ph2_subplot` table was generated from all possible combinations of phase II plot numbers, subplot numbers (A, B, C or D) and land cover section (1 to 5).
+The initial `ph2_subplot` table was generated from all possible combinations of phase II plot numbers, subplot numbers (A, B, C or D) and land cover section (1 to 5). The area of each subplot was calculated and each entity variables were then summed to the subplot level.
 
-Each entity table's variables were then summed to the subplot level.
+#### Area of each subplot $A_{i,j}$ 
 
 The area of each subplot $j$ of a plot $i$ was:
 
 $$
 A_{i,j} = 
 \begin{cases} 
-12^2/10000 = 0.0144 \space \text{ ha, for center land cover section} \\
-(\pi \times 16^2 - 12^2) / 40000 = 0.0165 \space \text{ ha, for other land cover sections}
+12^2/10000 = 0.0144 \space \text{ ha, for the center land cover section} \\
+(\pi \times 16^2 - 12^2) / 40000 = 0.0165 \space \text{ ha, for outer land cover sections}
 \end{cases}
 $$ {#eq-lcs-area}
 
 For tree, deadwood and stumps entities, the harmonized values of the different measured and calculated variables were aggregated top the subplot level as follows:
 
 $$
-X_{y,i,j} = \sum_k{X_{y,i,j,k} \times w_y}
+(X_y)_{i,j} = \sum_k{(X_y)_{i,j,k} \times w_y}
 $$
 
-with $X$ the calculated variable (ex. biomass or basal area), $y$ the entity (tree, stump or deadwood) and $i,.j$ the plot and subplot number respectiveley.
+with $X_y$ the calculated variable $X$ (ex. biomass or basal area) of the entity $y$ (tree, stump or deadwood) and $i,j,k$ the plot and subplot and entity number respectively (ex. plot 1, subplot 1A, tree 1).
 
 ::: {.callout-tip appearance="simple"}
 <!-- #02 guidex aggregastion to subplot -->
