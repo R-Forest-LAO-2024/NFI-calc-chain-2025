@@ -277,8 +277,17 @@ ph2_subplot <- ph2_subplot |>
   )
 ph2_subplot
 
+## Write entity table:
+if (usr$save_csv){
+  write_csv(tree, file.path(path$res$data, paste0("tree-", Sys.Date(), ".csv")))
+  write_csv(dw, file.path(path$res$data, paste0("dw-", Sys.Date(), ".csv")))
+  write_csv(stump, file.path(path$res$data, paste0("stump-", Sys.Date(), ".csv")))
+  write_csv(ph2_sp_sap, file.path(path$res$data, paste0("sapling-splcs-", Sys.Date(), ".csv")))
+  write_csv(ph2_sp_ldw, file.path(path$res$data, paste0("ldw-splcs-", Sys.Date(), ".csv")))
+}
 
 ## Remove all tmp objects
 rm(list = str_subset(ls(), pattern = "ph2_sp_"))
 rm(center_sp)
 rm(tmp)
+

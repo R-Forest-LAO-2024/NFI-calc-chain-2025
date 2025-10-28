@@ -184,7 +184,6 @@ nfi_aggregate3 <- function(.ph1_df, .ph2_sp, .class_d, .attr_y, .attr_x, .aoi_ar
     select(attr, everything())
   
   ## Aggregate to sub-populations ####
-  
   subpop_d <- subpop_stratum_d |>
     group_by(!!class_d, subpop) |>
     summarise(

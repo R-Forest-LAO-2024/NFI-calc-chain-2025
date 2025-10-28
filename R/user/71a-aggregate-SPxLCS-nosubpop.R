@@ -181,6 +181,11 @@ bind_rows(tt1, tt2) |>
   geom_col(aes(fill = type), col = "grey30", position = position_dodge()) +
   geom_errorbar(aes(ymin = agb * (1 - agb_U/100), ymax = agb * (1 + agb_U/100), group = type), position = position_dodge()) +
   theme(legend.position = "bottom") +
-  ylim(0, 500)
+  ylim(0, 500) +
+  labs(
+    x = "Land cover code",
+    y = "AGB (ton dm/ha)",
+    fill = ""
+  )
   
   
