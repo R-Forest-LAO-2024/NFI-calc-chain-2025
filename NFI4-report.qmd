@@ -353,7 +353,7 @@ This section introduces the mathematical formulas used to aggregate the tree lev
 <!-- #01 guidex intro -->
 
 ::: {#exm-guidex-intro}
-## Introducing guiding example
+## -- Introducing guiding example
 
 \linebreak
 
@@ -396,7 +396,7 @@ In the whole aggregation chapter, subplots equal to land cover sections and refe
 
 The initial `ph2_subplot` table was generated from all possible combinations of phase II plot numbers, subplot numbers (A, B, C or D) and land cover section (1 to 5). The area of each subplot was calculated and each entity variables were then summed to the subplot level.
 
-#### Area of each subplot $A_{i,j}$ 
+#### Area of each subplot $A_{i,j}$
 
 The area of each subplot $j$ of a plot $i$ was:
 
@@ -407,6 +407,8 @@ A_{i,j} =
 (\pi \times 16^2 - 12^2) / 40000 = 0.0165 \space \text{ ha, for outer land cover sections}
 \end{cases}
 $$ {#eq-lcs-area}
+
+#### Tree deadwood and stump measurements $(X_y)_{i,j}$
 
 For tree, deadwood and stumps entities, the harmonized values of the different measured and calculated variables were aggregated top the subplot level as follows:
 
@@ -433,6 +435,10 @@ TIP: Replace potential NAs with 0 in AGB values, with `if_else(is.na(X), 0, X)`,
 knitr::kable(guidex$ph2_subplot, format.args = list(big.mark = ','))
 ```
 :::
+
+#### Sapling measurements $(X_\text{sap})_{i,j}$
+
+Lying Deadwood $(X_\text{ldw})_{i,j}$
 
 ### Aggregation to domain and totals
 
