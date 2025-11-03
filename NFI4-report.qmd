@@ -416,7 +416,7 @@ $$
 (X_y)_{i,j} = \sum_k{(X_y)_{i,j,k} \times w_y}
 $$
 
-with $X_y$ the calculated variable $X$ (ex. biomass or basal area) of the entity $y$ (tree, stump or deadwood) and $i,j,k$ the plot and subplot and entity number respectively (ex. plot 1, subplot 1A, tree 1).
+with $X_y$ the calculated variable $X$ (ex. biomass or basal area) of the entity $y$ (tree, stump or deadwood), $i,j,k$ the plot and subplot and entity number respectively (ex. plot 1, subplot 1A, tree 1) and $w_y$ the weights (See @eq-treeweight for trees, standing deadwood and stumps).
 
 ::: {.callout-tip appearance="simple"}
 <!-- #02 guidex aggregastion to subplot -->
