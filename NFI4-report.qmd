@@ -196,9 +196,13 @@ TBD
 
 TBD
 
-# Analysis of the data
+## Data recording in the field
 
-## Data preparation
+TBD
+
+# Data analysis: Preparation of the data
+
+## Data archiving and structure for the R project
 
 The initial scripts were developed to retrieve the data directly from the ONA server into R as one master CSV (see ONA API instructions: <https://api.ona.ilri.org/static/docs/data.html>), or from manually downloaded tables as a ZIP file or as a [**CSV with long names**]{.underline} (see ONA interface download options).
 
@@ -244,9 +248,9 @@ fig$lcs_ex
 
 ### Lying deadwood corrections
 
-## Entity level calculations
+# Data analysis: entity level calculations
 
-### Tree weight
+## Tree weight
 
 In the context of ratio estimator, the sum of trees' characteristics is required at plot level rather than their per hectare value. Weights were therefore used to estimate the sum of tree characteristics in the 16 m radius circle for small trees that were measured in the 8 m radius circle (@eq-treeweight, @lst-treeweight).
 
@@ -258,7 +262,7 @@ w_{tree} =
   \end{cases}
 $$ {#eq-treeweight}
 
-### Tree basal area
+## Tree basal area
 
 Basal area (BA) is calculated as follows:
 
@@ -268,7 +272,7 @@ $$ {#eq-tree-ba}
 
 Its calculation was implemented in the Code @lst-treeba.
 
-### Tree aboveground biomass
+## Tree aboveground biomass
 
 Aboveground biomass was estimated for each tree using allometric equations linking it to field measurements (species, DBH, land cover). Land cover was assigned at the land cover section level. The equations were based on literature, mostly from neighbor countries and pan-tropical models (@tbl-allometry, Code @lst-treeagb).
 
@@ -312,7 +316,7 @@ fig$tree_agbp
 
 ```
 
-### Tree belowground biomass
+## Tree belowground biomass
 
 Tree belowground biomass was calculated at the tree level as $BGB = RS \times AGB$, with RS the root-to-shoot ratio to convert aboveground to belowground biomass. The root-to-shoot ratios were based on land cover and plot level aboveground biomass, and taken from IPCC 2006 for non-coniferous (table guidelines, ch.4 vol.4 table 4.4) and XX (ADD SOURCE) for coniferous forests (@tbl-rs).
 
@@ -327,33 +331,42 @@ knitr::kable(tab$rs, format.args = list(big.mark = ","))
 
 To apply the root-to-shoot ratios to each tree, land cover information was taken from land cover sections and plot AGB was calculated at the subplot level and re-assigned to trees (Code @lst-treebgb). The justification for choosing subplot level for AGB aggregation for RS, was that the land cover sections were too small in area and could yield wild AGB values.
 
-### Sapling aboveground biomass
+## Sapling aboveground biomass
 
 TBD
 
-### Standing deadwood aboveground biomass
+## Standing deadwood aboveground biomass
 
 TBD
 
-### Stump aboveground biomass
+## Stump aboveground biomass
 
 TBD
 
-### Lying deadwood biomass
+## Lying deadwood biomass
 
 TBD
 
-## Aggregation
+# Data analysis: Aggregation
 
-### Introduction to the guiding example
+<!-- No guiding example for now -->
+
+```{=html}
+<!--
+
+## Guiding example
 
 This section introduces the mathematical formulas used to aggregate the tree level data to the domain level estimates and the country level totals. Since the formulas can quite complex, a subset of 5 phase II plots and 20 phase I plots was selected to serve as a guiding example (see @exm-guidex-intro).
 
 :::: {.callout-tip appearance="simple"}
 <!-- #01 guidex intro -->
+```
+
+````{=html}
+<!--
 
 ::: {#exm-guidex-intro}
-## -- Introducing guiding example
+## ** Introducing guiding example
 
 \linebreak
 
@@ -386,7 +399,10 @@ knitr::kable(head(guidex$ph2_init), format.args = list(big.mark = ','))
 :::
 ::::
 
-### Aggregation to the minimal area unit
+-->
+````
+
+## Aggregation to the minimal area unit
 
 In the NFI cycle 4, the minimal unit area was the subplot's land cover section, i.e. the area defined by setting equi-distance between the five land cover observation points for each subplot.
 
@@ -396,7 +412,7 @@ In the whole aggregation chapter, subplots equal to land cover sections and refe
 
 The initial `ph2_subplot` table was generated from all possible combinations of phase II plot numbers, subplot numbers (A, B, C or D) and land cover section (1 to 5). The area of each subplot was calculated and each entity variables were then summed to the subplot level.
 
-#### Area of each subplot $A_{i,j}$
+### Area of each subplot $A_{i,j}$
 
 The area of each subplot $j$ of a plot $i$ was:
 
@@ -408,7 +424,7 @@ A_{i,j} =
 \end{cases}
 $$ {#eq-lcs-area}
 
-#### Tree deadwood and stump measurements $(X_y)_{i,j}$
+### Tree, deadwood and stump measurements $(X_y)_{i,j}$
 
 For tree, deadwood and stumps entities, the harmonized values of the different measured and calculated variables were aggregated top the subplot level as follows:
 
@@ -418,10 +434,15 @@ $$
 
 with $X_y$ the calculated variable $X$ (ex. biomass or basal area) of the entity $y$ (tree, stump or deadwood), $i,j,k$ the plot and subplot and entity number respectively (ex. plot 1, subplot 1A, tree 1) and $w_y$ the weights (See @eq-treeweight for trees, standing deadwood and stumps).
 
+```{=html}
+<!-- 
 ::: {.callout-tip appearance="simple"}
-<!-- #02 guidex aggregastion to subplot -->
+<!-- #02 guidex aggregation to subplot -->
+```
 
-## Aggregating tree to subplot {#exm-aggsp}
+````{=html}
+<!-- 
+## ** Aggregating tree to subplot {#exm-aggsp}
 
 Here the tree AGB was summed to the subplot level either in R with `group_by()` and `summarise()` or in MS Excel with SUMIFS() or pivotTable. The tree aggregated data was then combined with the initial phase I subplot data. In R use `left_join()` from the subplot initial table to make sure all subplots are there even if there are no trees (see @tbl-guidex-ph2).
 
@@ -435,12 +456,20 @@ TIP: Replace potential NAs with 0 in AGB values, with `if_else(is.na(X), 0, X)`,
 knitr::kable(guidex$ph2_subplot, format.args = list(big.mark = ','))
 ```
 :::
+-->
+````
 
-#### Sapling measurements $(X_\text{sap})_{i,j}$
+### Sapling measurements $(X_\text{sap})_{i,j}$
 
-Lying Deadwood $(X_\text{ldw})_{i,j}$
+Sapling were measured in a 2m radius circle located in the center land cover section. To account for the fact that the sapling measurement only reflect the land cover of the center land cover section, their measurement were applied only to the partial plots of the center land cover section. For other land cover sections, the amount of sapling was considered 0.
 
-### Aggregation to domain and totals
+To extrapolate the number of sapling from the 2m radius measurement subplot to the land cover sections the calculation sequence was as follows:
+
+Filter the
+
+### Lying Deadwood $(X_\text{ldw})_{i,j}$
+
+## Aggregation to domain and totals
 
 Aggregation steps:
 
@@ -454,7 +483,7 @@ Aggregation steps:
 
 In case there is no subpopulation, step 3 gives the totals.
 
-#### Subplots to partial plots
+### Subplots to partial plots
 
 For an attribute $y_{ij,d}$ of plot $i$, subplot $j$ in domain $d$ the formula is
 
@@ -472,6 +501,8 @@ $$
 
 with $\delta_j$ = 1 with the subplot $j$ is accessible and $\delta_j$ = 0 when not accessible.
 
+````{=html}
+<!-- 
 ::: {.callout-tip appearance="simple"}
 ## Subplot to plot aggregation {#exm-plotsum}
 
@@ -511,10 +542,12 @@ The results for all plots are in @tbl-guidex-plotsum.
 knitr::kable(guidex$plotsum, format.args = list(big.mark = ','))
 ```
 :::
+-->
+````
 
 This led to the 'plot-summary' table in the results workbook. Each row of the 'plot-summary' table is a partial plot with unique combination of plot ID and domain.
 
-#### Partial plots to subpopulation and stratum
+### Partial plots to subpopulation and stratum
 
 Overall formula:
 
