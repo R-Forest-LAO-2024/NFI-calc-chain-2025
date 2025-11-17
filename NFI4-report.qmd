@@ -347,7 +347,7 @@ TBD
 
 TBD
 
-# Data analysis: Aggregation
+# Data analysis: aggregation
 
 <!-- No guiding example for now -->
 
